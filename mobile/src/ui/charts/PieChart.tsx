@@ -1,37 +1,43 @@
-// mobile/src/ui/charts/PieChart.tsx
 import React from 'react';
-import { Stack, Text } from 'tamagui';
+import { View, Text, StyleSheet } from 'react-native';
 
-export type PieChartProps = {
-  data?: { label: string; value: number; color: string }[];
+interface PieData { label: string; value: number; color: string }
+
+interface PieChartProps {
+  data: PieData[];
   size?: number;
-  innerRadius?: number;
-  showLegend?: boolean;
-  animate?: boolean;
   style?: any;
+}
+
+export const PieChart: React.FC<PieChartProps> = ({ data, size = 160, style }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  return (
+    <View style={[{ alignItems: 'center' }, style]}>
+      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: '#334155', overflow: 'hidden', flexDirection: 'row' }}>
+        {data.map((d, i) => {
+          const pct = (d.value / total) * 100;
+          return (
+            <View key={i} style={{ width: `${pct}%`, height: '100%', backgroundColor: d.color }} />
+          );
+        })}
+      </View>
+      <View style={styles.legend}>
+        {data.map((d, i) => (
+          <View key={i} style={styles.legendItem}>
+            <View style={[styles.dot, { backgroundColor: d.color }]} />
+            <Text style={styles.label}>{d.label}</Text>
+            <Text style={styles.value}>{d.value}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
 };
 
-export function PieChart({ data = [], size = 160, showLegend = true, style }: PieChartProps) {
-  const total = data.reduce((s, d) => s + d.value, 0) || 1;
-  return (
-    <Stack alignItems="center" style={style}>
-      <Stack width={size} height={size} borderRadius={size / 2} overflow="hidden" backgroundColor="#1E293B">
-        <Stack flex={1} flexDirection="row">
-          {data.map((d, i) => (
-            <Stack key={i} flex={d.value} backgroundColor={d.color} />
-          ))}
-        </Stack>
-      </Stack>
-      {showLegend && (
-        <Stack flexDirection="row" flexWrap="wrap" justifyContent="center" marginTop={8} gap={8}>
-          {data.map((d, i) => (
-            <Stack key={i} flexDirection="row" alignItems="center" gap={4}>
-              <Stack width={8} height={8} borderRadius={4} backgroundColor={d.color} />
-              <Text color="#94A3B8" fontSize={11}>{d.label} ({Math.round((d.value / total) * 100)}%)</Text>
-            </Stack>
-          ))}
-        </Stack>
-      )}
-    </Stack>
-  );
-}
+const styles = StyleSheet.create({
+  legend: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 12, gap: 12 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  label: { color: '#CBD5E1', fontSize: 12 },
+  value: { color: '#F8FAFC', fontSize: 12, fontWeight: '600' },
+});

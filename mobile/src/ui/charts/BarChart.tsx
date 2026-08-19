@@ -1,31 +1,35 @@
-// mobile/src/ui/charts/BarChart.tsx
 import React from 'react';
-import { Stack, Text } from 'tamagui';
+import { View, Text, StyleSheet } from 'react-native';
 
-export type BarChartProps = {
-  data?: { label: string; value: number; color?: string }[];
+interface BarData { label: string; value: number; color: string }
+
+interface BarChartProps {
+  data: BarData[];
   height?: number;
-  width?: number;
-  showLabels?: boolean;
-  showValues?: boolean;
-  animate?: boolean;
   style?: any;
+}
+
+export const BarChart: React.FC<BarChartProps> = ({ data, height = 160, style }) => {
+  const max = Math.max(...data.map(d => d.value));
+  return (
+    <View style={[{ height }, style]}>
+      <View style={styles.bars}>
+        {data.map((d, i) => (
+          <View key={i} style={styles.barCol}>
+            <Text style={styles.value}>{d.value}</Text>
+            <View style={[styles.bar, { height: `${(d.value / max) * 80}%`, backgroundColor: d.color }]} />
+            <Text style={styles.label}>{d.label}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
 };
 
-export function BarChart({ data = [], height = 200, style }: BarChartProps) {
-  const max = Math.max(...data.map(d => d.value), 1);
-  return (
-    <Stack height={height} style={style}>
-      <Stack flex={1} flexDirection="row" alignItems="flex-end" gap={8}>
-        {data.map((d, i) => (
-          <Stack key={i} flex={1} alignItems="center">
-            <Stack flex={1} justifyContent="flex-end">
-              <Stack width="80%" borderRadius={4} backgroundColor={d.color || '#2563EB'} height={`${(d.value / max) * 100}%`} minHeight={4} />
-            </Stack>
-            <Text color="#94A3B8" fontSize={10} marginTop={4} textAlign="center">{d.label}</Text>
-          </Stack>
-        ))}
-      </Stack>
-    </Stack>
-  );
-}
+const styles = StyleSheet.create({
+  bars: { flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around' },
+  barCol: { alignItems: 'center', flex: 1 },
+  bar: { width: 24, borderRadius: 4 },
+  label: { color: '#94A3B8', fontSize: 11, marginTop: 4 },
+  value: { color: '#F8FAFC', fontSize: 11, marginBottom: 4 },
+});

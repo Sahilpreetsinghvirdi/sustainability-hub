@@ -1,7 +1,5 @@
-// mobile/src/ui/index.ts
-// Re-export core Tamagui primitives for screens
-export { Stack, Text, XStack, YStack, View, styled } from 'tamagui';
-export { StyledButton as Button } from './Button';
+export { Stack, Text, XStack, YStack } from './Primitives';
+export { Button } from './Button';
 export { Card } from './Card';
 export { Input } from './Input';
 export { ProgressBar } from './ProgressBar';

@@ -1,38 +1,31 @@
-// mobile/src/ui/ProgressBar.tsx
 import React from 'react';
-import { Stack, Text } from 'tamagui';
+import { View, Text, StyleSheet } from 'react-native';
 
-export type ProgressBarProps = {
+interface ProgressBarProps {
   progress: number;
   color?: string;
-  variant?: string;
-  size?: string;
   showLabel?: boolean;
   label?: string;
   style?: any;
+  variant?: string;
+  size?: string;
+  [key: string]: any;
+}
+
+export const ProgressBar: React.FC<ProgressBarProps> = ({ progress, color = '#22C55E', showLabel, label, style, ...rest }) => {
+  const clamped = Math.max(0, Math.min(100, progress));
+  return (
+    <View style={style}>
+      {showLabel && <Text style={styles.label}>{label || `${clamped}%`}</Text>}
+      <View style={styles.track}>
+        <View style={[styles.fill, { width: `${clamped}%`, backgroundColor: color }]} />
+      </View>
+    </View>
+  );
 };
 
-export function ProgressBar({ progress, color = '#2563EB', variant, size = 'md', showLabel, label, style }: ProgressBarProps) {
-  const height = size === 'lg' ? 12 : 8;
-  const variantColors: Record<string, string> = {
-    default: '#2563EB',
-    success: '#22C55E',
-    warning: '#F59E0B',
-    danger: '#EF4444',
-  };
-  const barColor = variant && variantColors[variant] ? variantColors[variant] : color;
-
-  return (
-    <Stack style={style}>
-      {showLabel && label && (
-        <Stack flexDirection="row" justifyContent="space-between" marginBottom={4}>
-          <Text color="#94A3B8" fontSize={12}>{label}</Text>
-          <Text color="#94A3B8" fontSize={12}>{Math.round(progress)}%</Text>
-        </Stack>
-      )}
-      <Stack backgroundColor="#1E293B" borderRadius={100} overflow="hidden" height={height}>
-        <Stack backgroundColor={barColor} borderRadius={100} width={`${Math.min(100, Math.max(0, progress))}%`} height={height} />
-      </Stack>
-    </Stack>
-  );
-}
+const styles = StyleSheet.create({
+  label: { color: '#F8FAFC', fontSize: 12, marginBottom: 4 },
+  track: { height: 8, backgroundColor: '#334155', borderRadius: 4, overflow: 'hidden' },
+  fill: { height: '100%', borderRadius: 4 },
+});

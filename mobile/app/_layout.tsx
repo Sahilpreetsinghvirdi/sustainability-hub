@@ -1,4 +1,3 @@
-// mobile/app/_layout.tsx
 import { Stack } from 'expo-router';
 import { Providers } from '@/store/providers';
 
@@ -12,6 +11,16 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="carbon/manual" />
+        <Stack.Screen name="carbon/review" />
+        <Stack.Screen name="energy/audit" />
+        <Stack.Screen name="energy/manual" />
+        <Stack.Screen name="energy/review" />
+        <Stack.Screen name="energy/appliances" />
+        <Stack.Screen name="food-waste/log" />
+        <Stack.Screen name="food-waste/detail" />
+        <Stack.Screen name="settings/profile" />
+        <Stack.Screen name="settings/household" />
       </Stack>
     </Providers>
   );

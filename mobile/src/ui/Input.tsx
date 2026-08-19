@@ -1,44 +1,55 @@
-// mobile/src/ui/Input.tsx
 import React from 'react';
-import { TextInput as RNTextInput, StyleSheet } from 'react-native';
-import { Stack, Text } from 'tamagui';
+import { TextInput, Text, View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
 
-export type InputProps = {
+interface InputProps {
   label?: string;
-  error?: string;
   placeholder?: string;
-  value?: string;
-  onChangeText?: (text: string) => void;
+  value: string;
+  onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
-  multiline?: boolean;
-  numberOfLines?: number;
-  leftIcon?: React.ReactNode;
-  type?: string;
-  helperText?: string;
-  required?: boolean;
+  error?: string;
   containerStyle?: any;
   style?: any;
-};
+  leftIcon?: React.ReactNode;
+  rightComponent?: React.ReactNode;
+  [key: string]: any;
+}
 
-export function Input({ label, error, placeholder, value, onChangeText, secureTextEntry, multiline, numberOfLines, leftIcon, helperText, containerStyle, style }: InputProps) {
+export const Input: React.FC<InputProps> = ({ label, placeholder, value, onChangeText, secureTextEntry, error, containerStyle, style, leftIcon, rightComponent, ...rest }) => {
   return (
-    <Stack style={containerStyle}>
-      {label && <Text color="#94A3B8" fontSize={14} marginBottom={6} fontWeight="500">{label}</Text>}
-      <Stack flexDirection="row" alignItems="center" backgroundColor="#0F172A" borderWidth={1} borderColor={error ? '#EF4444' : '#334155'} borderRadius={10}>
-        {leftIcon && <Stack paddingLeft={12}>{leftIcon}</Stack>}
-        <RNTextInput
-          style={[{ flex: 1, color: '#FFFFFF', fontSize: 16, paddingHorizontal: 14, paddingVertical: 12 }, style]}
+    <View style={containerStyle}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <View style={styles.inputRow}>
+        {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
+        <TextInput
+          style={[styles.input, leftIcon && { paddingLeft: 40 }, rightComponent && { paddingRight: 40 }, error && styles.inputError, style]}
           placeholder={placeholder}
           placeholderTextColor="#64748B"
           value={value}
           onChangeText={onChangeText}
           secureTextEntry={secureTextEntry}
-          multiline={multiline}
-          numberOfLines={numberOfLines}
         />
-      </Stack>
-      {error && <Text color="#EF4444" fontSize={12} marginTop={4}>{error}</Text>}
-      {helperText && !error && <Text color="#64748B" fontSize={12} marginTop={4}>{helperText}</Text>}
-    </Stack>
+        {rightComponent && <View style={styles.iconRight}>{rightComponent}</View>}
+      </View>
+      {error && <Text style={styles.error}>{error}</Text>}
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  label: { color: '#F8FAFC', fontSize: 14, fontWeight: '600', marginBottom: 6 },
+  inputRow: { position: 'relative', justifyContent: 'center' },
+  input: {
+    backgroundColor: '#1E293B',
+    borderWidth: 1,
+    borderColor: '#334155',
+    borderRadius: 8,
+    padding: 12,
+    color: '#F8FAFC',
+    fontSize: 16,
+  },
+  inputError: { borderColor: '#EF4444' },
+  error: { color: '#EF4444', fontSize: 12, marginTop: 4 },
+  iconLeft: { position: 'absolute', left: 12, zIndex: 1 },
+  iconRight: { position: 'absolute', right: 12, zIndex: 1 },
+});

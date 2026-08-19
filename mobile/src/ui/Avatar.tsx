@@ -1,47 +1,43 @@
-// mobile/src/ui/Avatar.tsx
 import React from 'react';
-import { Stack, Text } from 'tamagui';
-import { Image } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 
-export type AvatarProps = {
-  src?: string;
-  name?: string;
-  source?: { uri: string };
-  size?: number | string;
-  status?: string;
+interface AvatarProps {
+  name: string;
+  size?: number;
+  status?: 'online' | 'busy' | 'away' | 'offline';
   style?: any;
+}
+
+const statusColors: Record<string, string> = {
+  online: '#22C55E',
+  busy: '#EF4444',
+  away: '#F59E0B',
+  offline: '#64748B',
 };
 
-const sizeMap: Record<string, number> = { xs: 24, sm: 32, md: 40, lg: 56, xl: 72 };
+const getColor = (name: string) => {
+  const colors = ['#22C55E', '#0EA5E9', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  return colors[Math.abs(hash) % colors.length];
+};
 
-export function Avatar({ src, name, source, size = 40, status, style }: AvatarProps) {
-  const s = typeof size === 'string' ? (sizeMap[size] || 40) : size;
-  const uri = src || source?.uri;
-  const initials = name ? name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?';
-  const statusColors: Record<string, string> = { online: '#22C55E', busy: '#EF4444', away: '#F59E0B', offline: '#64748B' };
-
+export const Avatar: React.FC<AvatarProps> = ({ name, size = 40, status, style }) => {
+  const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   return (
-    <Stack style={[{ width: s, height: s, borderRadius: s / 2 }, style]}>
-      {uri ? (
-        <Image source={{ uri }} style={{ width: s, height: s, borderRadius: s / 2 }} />
-      ) : (
-        <Stack width={s} height={s} borderRadius={s / 2} backgroundColor="#2563EB" alignItems="center" justifyContent="center">
-          <Text color="#FFFFFF" fontWeight="600" fontSize={s * 0.4}>{initials}</Text>
-        </Stack>
-      )}
+    <View style={[{ width: size, height: size, borderRadius: size / 2 }, style]}>
+      <View style={[styles.circle, { width: size, height: size, borderRadius: size / 2, backgroundColor: getColor(name) }]}>
+        <Text style={[styles.initials, { fontSize: size * 0.4 }]}>{initials}</Text>
+      </View>
       {status && (
-        <Stack
-          position="absolute"
-          bottom={0}
-          right={0}
-          width={s * 0.25}
-          height={s * 0.25}
-          borderRadius={s * 0.125}
-          backgroundColor={statusColors[status] || '#64748B'}
-          borderWidth={2}
-          borderColor="#1E293B"
-        />
+        <View style={[styles.dot, { backgroundColor: statusColors[status], width: size * 0.3, height: size * 0.3, borderRadius: size * 0.15, borderWidth: size * 0.05 }]} />
       )}
-    </Stack>
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  circle: { alignItems: 'center', justifyContent: 'center' },
+  initials: { color: '#FFFFFF', fontWeight: '700' },
+  dot: { position: 'absolute', bottom: 0, right: 0, borderColor: '#0A1628' },
+});
