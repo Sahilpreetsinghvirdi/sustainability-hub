@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Sustainability Hub",
+    "slug": "sustainability-hub",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "sustainability-hub",
+    "splash": {
+      "image": "./src/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A1628"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sustainabilityhub.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Scan receipts and food waste to track your carbon footprint",
+        "NSPhotoLibraryUsageDescription": "Import bill images and food photos for tracking",
+        "NSFaceIDUsageDescription": "Authenticate with Face ID"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#0A1628"
+      },
+      "package": "com.sustainabilityhub.app",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-camera",
+      "expo-image-picker",
+      "expo-barcode-scanner",
+      "expo-file-system",
+      "expo-sharing",
+      "expo-document-picker",
+      "expo-sqlite"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
