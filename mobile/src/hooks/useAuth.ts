@@ -100,6 +100,17 @@ export function useAuth() {
     updateUser(updates);
   }, [updateUser]);
 
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
+    try {
+      await authService.changePassword(currentPassword, newPassword);
+      Alert.alert('Success', 'Password changed successfully');
+    } catch (err: any) {
+      const message = err.response?.data?.error?.message || 'Password change failed';
+      Alert.alert('Error', message);
+      throw err;
+    }
+  }, []);
+
   return {
     user,
     tokens,
@@ -111,5 +122,6 @@ export function useAuth() {
     logout: handleLogout,
     refreshUser,
     updateProfile,
+    changePassword,
   };
 }

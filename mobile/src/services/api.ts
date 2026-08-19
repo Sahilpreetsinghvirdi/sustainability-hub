@@ -169,6 +169,10 @@ class AuthService {
   async resetPassword(token: string, newPassword: string) {
     return api.post('/auth/reset-password', { token, new_password: newPassword });
   }
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return api.post('/auth/change-password', { current_password: currentPassword, new_password: newPassword });
+  }
 }
 
 class CarbonService {
