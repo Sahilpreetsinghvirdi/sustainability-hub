@@ -63,9 +63,17 @@ class ReceiptScanListResponse(BaseModel):
     page_size: int
 
 
+# Alias for endpoint compatibility
+ReceiptScanList = ReceiptScanListResponse
+
+
 class CarbonFactorsResponse(BaseModel):
     category: str
     kg_co2e_per_unit: Decimal
     unit: str
     source: str
     confidence: str
+
+
+# Alias for endpoint compatibility
+CarbonFactorResponse = CarbonFactorsResponse

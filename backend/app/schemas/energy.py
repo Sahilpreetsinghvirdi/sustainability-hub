@@ -97,3 +97,18 @@ class EnergyAuditResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class EnergyBillList(BaseModel):
+    bills: List[EnergyBillResponse]
+    total: int
+    page: int
+    per_page: int
+
+
+class EnergyRecommendationResponse(BaseModel):
+    title: str
+    description: str
+    priority: str
+    estimated_savings_usd_year: float
+    difficulty: str

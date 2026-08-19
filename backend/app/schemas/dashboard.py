@@ -52,3 +52,7 @@ class DashboardResponse(BaseModel):
     goals: List[GoalProgress]
     recent_activity: List[dict]
     updated_at: datetime
+
+
+# Alias for endpoint compatibility
+DashboardSummary = DashboardResponse

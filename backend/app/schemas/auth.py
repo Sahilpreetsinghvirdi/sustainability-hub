@@ -59,3 +59,10 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# Aliases for endpoint compatibility
+Token = TokenPair
+TokenRefresh = RefreshRequest
+UserRegister = RegisterRequest
+UserLogin = LoginRequest

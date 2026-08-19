@@ -41,6 +41,10 @@ class FoodWasteLogListResponse(BaseModel):
     page_size: int
 
 
+# Alias for endpoint compatibility
+FoodWasteLogList = FoodWasteLogListResponse
+
+
 class FoodWasteStreakResponse(BaseModel):
     current_streak_days: int
     longest_streak_days: int

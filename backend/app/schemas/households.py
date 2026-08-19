@@ -43,3 +43,7 @@ class HouseholdResponse(BaseModel):
 class InviteMemberRequest(BaseModel):
     email: EmailStr
     role: str = "member"
+
+
+# Alias for endpoint compatibility
+HouseholdInvite = InviteMemberRequest

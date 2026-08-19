@@ -38,3 +38,17 @@ class ConflictResolution(BaseModel):
     conflict_id: str
     resolution: str  # "client", "server", "merge"
     merged_data: Optional[dict] = None
+
+
+class SyncConflict(BaseModel):
+    id: str
+    table: str
+    resolution: str  # "client", "server", "merge"
+    server_data: dict
+    client_data: dict
+
+
+class SyncStatus(BaseModel):
+    last_sync_at: Optional[datetime] = None
+    pending_changes: int
+    last_sync_device_id: Optional[str] = None
