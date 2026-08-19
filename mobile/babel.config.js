@@ -20,6 +20,7 @@ module.exports = function(api) {
           '@/constants': './src/constants',
         },
       }],
+      ['@tamagui/babel-plugin', { components: ['tamagui'], config: './tamagui.config.ts' }],
       'react-native-reanimated/plugin',
     ],
   };
