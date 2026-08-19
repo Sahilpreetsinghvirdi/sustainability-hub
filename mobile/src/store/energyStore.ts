@@ -129,7 +129,7 @@ export const useEnergyStore = create<EnergyState>((set, get) => ({
       return bill;
     } catch (error) {
       set({ isLoading: false, error: 'Failed to create bill' });
-      throw error.
+      throw error;
     }
   },
 
