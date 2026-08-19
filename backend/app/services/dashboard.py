@@ -2,12 +2,14 @@
 from datetime import datetime, timedelta, date
 from decimal import Decimal
 from typing import List, Optional
+from uuid import UUID
 
 from sqlalchemy import select, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import (
     ReceiptScan,
+    ReceiptItem,
     EnergyBill,
     FoodWasteLog,
     FoodWasteStreak,
@@ -215,6 +217,3 @@ class DashboardService:
             {"id": "waste_free_week", "title": "Waste-Free Week", "description": "7 days of zero food waste", "unlocked": False, "icon": "star"},
         ]
         return {"achievements": achievements}
-
-# Need to import ReceiptItem for the query
-from app.db.models import ReceiptItem
