@@ -3,8 +3,9 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { TamaguiProvider } from '@tamagui/core';
 import { MMKV } from 'react-native-mmkv';
+import { config } from './tamagui.config';
 import { AuthProvider } from './authStore';
 import { CarbonStoreProvider } from './carbonStore';
 import { EnergyStoreProvider } from './energyStore';
@@ -16,8 +17,8 @@ import { SettingsProvider } from './settingsStore';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       retry: 2,
       refetchOnWindowFocus: false,
     },
@@ -31,32 +32,30 @@ const persister = createSyncStoragePersister({
     setItem: (key, value) => mmkvStorage.set(key, value),
     removeItem: (key) => mmkvStorage.delete(key),
   },
-  maxAge: 1000 * 60 * 60 * 24, // 24 hours
+  maxAge: 1000 * 60 * 60 * 24,
 });
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persister={persister}
-        persistOptions={{ maxAge: 1000 * 60 * 60 * 24 }}
-      >
-        <AuthProvider>
-          <SettingsProvider>
-            <SyncProvider>
-              <CarbonStoreProvider>
-                <EnergyStoreProvider>
-                  <FoodWasteStoreProvider>
-                    <DashboardStoreProvider>
-                      {children}
-                    </DashboardStoreProvider>
-                  </FoodWasteStoreProvider>
-                </EnergyStoreProvider>
-              </CarbonStoreProvider>
-            </SyncProvider>
-          </SettingsProvider>
-        </AuthProvider>
+      <PersistQueryClientProvider client={queryClient} persister={persister} persistOptions={{ maxAge: 1000 * 60 * 60 * 24 }}>
+        <TamaguiProvider config={config}>
+          <AuthProvider>
+            <SettingsProvider>
+              <SyncProvider>
+                <CarbonStoreProvider>
+                  <EnergyStoreProvider>
+                    <FoodWasteStoreProvider>
+                      <DashboardStoreProvider>
+                        {children}
+                      </DashboardStoreProvider>
+                    </FoodWasteStoreProvider>
+                  </EnergyStoreProvider>
+                </CarbonStoreProvider>
+              </SyncProvider>
+            </SettingsProvider>
+          </AuthProvider>
+        </TamaguiProvider>
       </PersistQueryClientProvider>
     </QueryClientProvider>
   );
