@@ -5,7 +5,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { TamaguiProvider } from '@tamagui/core';
 import { MMKV } from 'react-native-mmkv';
-import { config } from './tamagui.config';
+import { config } from '@tamagui/config';
 import { AuthProvider } from './authStore';
 import { CarbonStoreProvider } from './carbonStore';
 import { EnergyStoreProvider } from './energyStore';
