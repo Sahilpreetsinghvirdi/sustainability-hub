@@ -36,9 +36,7 @@
       "expo-image-picker",
       "expo-barcode-scanner",
       "expo-file-system",
-      "expo-sharing",
-      "expo-document-picker",
-      "expo-sqlite"
+      "expo-document-picker"
     ],
     "experiments": {
       "typedRoutes": true

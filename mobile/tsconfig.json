@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "lib": ["ES2020"],
+    "lib": [
+      "ES2020"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
@@ -15,21 +17,61 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@/components/*": ["src/components/*"],
-      "@/screens/*": ["src/screens/*"],
-      "@/hooks/*": ["src/hooks/*"],
-      "@/services/*": ["src/services/*"],
-      "@/store/*": ["src/store/*"],
-      "@/utils/*": ["src/utils/*"],
-      "@/types/*": ["src/types/*"],
-      "@/assets/*": ["src/assets/*"],
-      "@/navigation/*": ["src/navigation/*"],
-      "@/constants/*": ["src/constants/*"],
-      "@shared/*": ["../shared/types/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "@/components/*": [
+        "src/components/*"
+      ],
+      "@/screens/*": [
+        "src/screens/*"
+      ],
+      "@/hooks/*": [
+        "src/hooks/*"
+      ],
+      "@/services/*": [
+        "src/services/*"
+      ],
+      "@/store/*": [
+        "src/store/*"
+      ],
+      "@/utils/*": [
+        "src/utils/*"
+      ],
+      "@/types/*": [
+        "src/types/*"
+      ],
+      "@/assets/*": [
+        "src/assets/*"
+      ],
+      "@/navigation/*": [
+        "src/navigation/*"
+      ],
+      "@/constants/*": [
+        "src/constants/*"
+      ],
+      "@shared/*": [
+        "../shared/types/*"
+      ]
     },
-    "types": ["react", "react-native", "jest", "@types/jest"]
+    "types": [
+      "react",
+      "react-native",
+      "jest",
+      "@types/jest"
+    ]
   },
-  "include": ["src/**/*", "app/**/*", "*.config.*"],
-  "exclude": ["node_modules", "dist", ".expo"]
+  "include": [
+    "src/**/*",
+    "app/**/*",
+    "*.config.*",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".expo"
+  ],
+  "extends": "expo/tsconfig.base"
 }
