@@ -20,6 +20,7 @@ module.exports = function(api) {
           '@/constants': './src/constants',
         },
       }],
+      'react-native-worklets/plugin',
       'react-native-reanimated/plugin',
     ],
   };
