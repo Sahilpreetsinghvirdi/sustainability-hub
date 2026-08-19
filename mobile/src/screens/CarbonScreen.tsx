@@ -1,17 +1,15 @@
 // mobile/src/screens/CarbonScreen.tsx
 import React, { useState } from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { ScrollView, RefreshControl, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Stack, Text, Button, Card, Badge, ProgressBar } from '@/ui';
 import { useCarbon } from '@/hooks/useCarbon';
-import { Card, Button, Badge, ProgressBar } from '@/components';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
-import { formatCarbon, formatCurrency, formatDate, getCategoryColor } from '@/utils/formatters';
-import { Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
-import { Camera, ImagePicker } from 'expo-camera';
-import * as ImagePickerLib from 'expo-image-picker';
+import { formatCurrency, formatCarbon, formatDate } from '@/utils/formatters';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 export const CarbonScreen: React.FC = () => {
-  const { scans, isLoading, isScanning, scanProgress, fetchScans, scanReceipt, manualEntry } = useCarbon();
+  const { scans, isLoading, isScanning, scanProgress, fetchScans, scanReceipt } = useCarbon();
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -22,10 +20,10 @@ export const CarbonScreen: React.FC = () => {
 
   const handleScanPress = async () => {
     try {
-      const permission = await ImagePickerLib.requestMediaLibraryPermissionsAsync();
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) return;
 
-      const result = await ImagePickerLib.launchImageLibraryAsync({
+      const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [4, 3],
@@ -38,15 +36,16 @@ export const CarbonScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Scan failed:', error);
+      Alert.alert('Error', 'Failed to scan receipt');
     }
   };
 
   const handleCameraPress = async () => {
     try {
-      const permission = await ImagePickerLib.requestCameraPermissionsAsync();
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
       if (!permission.granted) return;
 
-      const result = await ImagePickerLib.launchCameraAsync({
+      const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
@@ -58,366 +57,170 @@ export const CarbonScreen: React.FC = () => {
       }
     } catch (error) {
       console.error('Camera failed:', error);
+      Alert.alert('Error', 'Failed to capture photo');
     }
   };
 
-  const handleManualPress = () => {
-    router.push('/carbon/manual');
-  };
+  const handleManualPress = () => router.push('/carbon/manual');
 
   const totalCarbon = scans
     .filter(s => s.status === 'completed')
     .reduce((sum, s) => sum + s.total_carbon_kg, 0);
 
+  const completedScans = scans.filter(s => s.status === 'completed').length;
+
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-      }
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
       contentContainerStyle={styles.content}
     >
       {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>🛒 Carbon Tracker</Text>
-          <Text style={styles.subtitle}>Track your purchase footprint</Text>
-        </View>
-      </View>
+      <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="xl">
+        <Stack>
+          <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
+            <Stack width={40} height={40} borderRadius="md" backgroundColor="$primary20" alignItems="center" justifyContent="center">
+              <Ionicons name="leaf" size={24} color="$primary" />
+            </Stack>
+            <Text fontSize="$7" fontWeight="800" color="$color">Carbon Tracker</Text>
+          </Stack>
+        </Stack>
+      </Stack>
 
       {/* Summary Card */}
-      <Card style={styles.summaryCard}>
-        <View style={styles.summaryHeader}>
-          <View style={styles.summaryIcon}>
-            <Ionicons name="leaf-outline" size={28} color={colors.primary[500]} />
-          </View>
-          <View>
-            <Text style={styles.summaryLabel}>This Month</Text>
-            <Text style={styles.summaryValue}>{formatCarbon(totalCarbon)}</Text>
-          </View>
-          <ProgressBar
-            progress={Math.min(100, (totalCarbon / 200) * 100)}
-            variant={totalCarbon > 180 ? 'danger' : totalCarbon > 140 ? 'warning' : 'success'}
-            size="md"
-            showLabel
-            label="Budget: 200 kg CO₂e"
-          />
-        </View>
+      <Card variant="elevated" padding="lg" marginBottom="lg">
+        <Stack flexDirection="row" alignItems="center" gap="4">
+          <Stack width={56} height={56} borderRadius="lg" backgroundColor="$primary20" alignItems="center" justifyContent="center">
+            <Ionicons name="analytics" size={28} color="$primary" />
+          </Stack>
+          <Stack flex={1}>
+            <Text fontSize="$2" color="$colorFocus" textTransform="uppercase" letterSpacing={1}>This Month</Text>
+            <Text fontSize="$8" fontWeight="800" color="$color" marginTop="1">{formatCarbon(totalCarbon)}</Text>
+            <ProgressBar
+              progress={Math.min(100, (totalCarbon / 200) * 100)}
+              variant={totalCarbon > 180 ? 'danger' : totalCarbon > 140 ? 'warning' : 'success'}
+              size="sm"
+              showLabel
+              label="Budget: 200 kg CO₂e"
+              style={{ marginTop: 3 }}
+            />
+          </Stack>
+        </Stack>
       </Card>
 
+      {/* Quick Stats */}
+      <Stack flexDirection="row" gap="3" marginBottom="lg">
+        <StatCard label="Scans" value={scans.length} icon={<Ionicons name="document-text" size={20} />} color="$secondary" />
+        <StatCard label="Completed" value={completedScans} icon={<Ionicons name="checkmark-circle" size={20} />} color="$success" />
+        <StatCard label="Avg/Scan" value={scans.length ? formatCarbon(totalCarbon / scans.length) : '0 kg'} icon={<Ionicons name="calculator" size={20} />} color="$warning" />
+      </Stack>
+
       {/* Action Buttons */}
-      <View style={styles.actionsGrid}>
-        <ActionButton
-          title="Scan Receipt"
-          subtitle="Auto-extract items"
-          icon={<Ionicons name="camera-outline" size={28} color={colors.neutral[0]} />}
-          onPress={handleCameraPress}
-          bgColor={colors.primary[500]}
-        />
-        <ActionButton
-          title="Import Photo"
-          subtitle="From gallery"
-          icon={<Ionicons name="image-outline" size={28} color={colors.neutral[0]} />}
-          onPress={handleScanPress}
-          bgColor={colors.secondary[500]}
-        />
-        <ActionButton
-          title="Manual Entry"
-          subtitle="Add items manually"
-          icon={<Ionicons name="pencil-outline" size={28} color={colors.neutral[0]} />}
-          onPress={handleManualPress}
-          bgColor={colors.neutral[700]}
-        />
-      </View>
+      <Stack flexDirection="row" gap="3" marginBottom="lg">
+        <ActionButton title="Scan Receipt" subtitle="Camera" icon={<Ionicons name="camera" size={22} />} onPress={handleCameraPress} variant="primary" />
+        <ActionButton title="Import Photo" subtitle="Gallery" icon={<Ionicons name="image" size={22} />} onPress={handleScanPress} variant="secondary" />
+        <ActionButton title="Manual Entry" subtitle="Type items" icon={<Ionicons name="pencil" size={22} />} onPress={handleManualPress} variant="outline" />
+      </Stack>
 
       {/* Scanning Progress */}
       {isScanning && (
-        <Card style={styles.scanningCard}>
-          <View style={styles.scanningContent}>
-            <Ionicons name="sync" size={32} color={colors.primary[500]} style={styles.spinning} />
-            <View style={styles.scanningText}>
-              <Text style={styles.scanningTitle}>Processing Receipt...</Text>
-              <Text style={styles.scanningSubtitle}>
-                {scanProgress > 0 ? `${scanProgress}% complete` : 'Extracting text & matching items'}
-              </Text>
-            </View>
-            <ProgressBar progress={scanProgress} variant="primary" size="md" />
-          </View>
+        <Card variant="default" padding="md" marginBottom="lg" borderColor="$primary" borderWidth={2}>
+          <Stack flexDirection="row" alignItems="center" gap="3">
+            <Ionicons name="sync" size={28} color="$primary" />
+            <Stack flex={1}>
+              <Text fontSize="$4" fontWeight="600" color="$color">Processing Receipt...</Text>
+              <Text fontSize="$2" color="$colorFocus">{scanProgress > 0 ? `${scanProgress}% complete` : 'Extracting text & matching items'}</Text>
+            </Stack>
+            <ProgressBar progress={scanProgress} variant="primary" size="md" style={{ width: 100 }} />
+          </Stack>
         </Card>
       )}
 
       {/* Scans List */}
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Recent Scans</Text>
-        {scans.length > 0 && (
-          <Text style={styles.scanCount}>{scans.length} total</Text>
-        )}
-      </View>
+      <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
+        <Text fontSize="$5" fontWeight="700" color="$color">Recent Scans</Text>
+        {scans.length > 0 && <Badge variant="outline" size="sm">{scans.length} total</Badge>}
+      </Stack>
 
       {scans.length === 0 ? (
-        <Card style={styles.emptyCard}>
-          <Ionicons name="receipt-outline" size={48} color={colors.text.tertiary} />
-          <Text style={styles.emptyTitle}>No scans yet</Text>
-          <Text style={styles.emptySubtitle}>Start tracking your carbon footprint</Text>
-          <Button title="Scan First Receipt" onPress={handleCameraPress} style={styles.emptyButton} />
+        <Card variant="filled" padding="xl" alignItems="center" style={styles.emptyCard}>
+          <Ionicons name="receipt" size={56} color="$colorFocus" />
+          <Text fontSize="$5" fontWeight="600" color="$color" marginTop="3" marginBottom="1">No scans yet</Text>
+          <Text fontSize="$3" color="$colorFocus" textAlign="center" marginBottom="4">Start tracking your carbon footprint</Text>
+          <Button variant="primary" onPress={handleCameraPress}>Scan First Receipt</Button>
         </Card>
       ) : (
-        <FlatList
-          data={scans}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => <ScanCard scan={item} />}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-          ListEmptyComponent={() => null}
-        />
+        <Stack gap="2">
+          {scans.map((scan, index) => (
+            <ScanCard key={scan.id} scan={scan} index={index} />
+          ))}
+        </Stack>
       )}
     </ScrollView>
   );
 };
 
-const ActionButton: React.FC<{
-  title: string;
-  subtitle: string;
-  icon: React.ReactNode;
-  onPress: () => void;
-  bgColor: string;
-}> = ({ title, subtitle, icon, onPress, bgColor }) => (
-  <TouchableOpacity onPress={onPress} style={[styles.actionButton, { backgroundColor: bgColor }]}>
-    <View style={styles.actionIcon}>{icon}</View>
-    <View style={styles.actionText}>
-      <Text style={styles.actionTitle}>{title}</Text>
-      <Text style={styles.actionSubtitle}>{subtitle}</Text>
-    </View>
-    <Ionicons name="chevron-forward-outline" size={20} color={colors.neutral[0]} />
-  </TouchableOpacity>
+const StatCard = ({ label, value, icon, color }: any) => (
+  <Stack flex={1} style={styles.statCard}>
+    <Stack width={36} height={36} borderRadius="md" backgroundColor={color + '20'} alignItems="center" justifyContent="center" marginBottom="2">
+      {icon}
+    </Stack>
+    <Text fontSize="$5" fontWeight="700" color="$color">{value}</Text>
+    <Text fontSize="$1" color="$colorFocus">{label}</Text>
+  </Stack>
 );
 
-const ScanCard: React.FC<{ scan: any }> = ({ scan }) => (
-  <TouchableOpacity style={styles.scanCard} onPress={() => router.push(`/carbon/scan/${scan.id}`)}>
-    <View style={styles.scanMain}>
-      <View style={styles.scanInfo}>
-        <View style={styles.scanHeader}>
-          <Text style={styles.scanStore}>{scan.store_name || 'Unknown Store'}</Text>
-          <Badge
-            variant={scan.status === 'completed' ? 'success' : scan.status === 'processing' ? 'warning' : 'danger'}
-            size="sm"
-          >
-            {scan.status}
-          </Badge>
-        </View>
-        <Text style={styles.scanDate}>{formatDate(scan.scanned_at)}</Text>
-        <View style={styles.scanMeta}>
-          <Text style={styles.scanItems}>{scan.items?.length || 0} items</Text>
-          <Text style={styles.scanAmount}>{formatCurrency(scan.total_amount)}</Text>
-        </View>
-      </View>
-      <View style={styles.scanCarbon}>
-        <Text style={styles.scanCarbonValue}>{formatCarbon(scan.total_carbon_kg)}</Text>
-        <Text style={styles.scanCarbonLabel}>CO₂e</Text>
-      </View>
-    </View>
-    <Ionicons name="chevron-forward-outline" size={20} color={colors.text.tertiary} />
-  </TouchableOpacity>
+const ActionButton = ({ title, subtitle, icon, onPress, variant }: any) => (
+  <Button
+    variant={variant}
+    onPress={onPress}
+    style={{ flex: 1 }}
+    leftIcon={icon}
+  >
+    <Stack>
+      <Text fontSize="$3" fontWeight="600">{title}</Text>
+      <Text fontSize="$1" opacity={0.8}>{subtitle}</Text>
+    </Stack>
+  </Button>
 );
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xxl,
-    gap: spacing.lg,
-  },
-  header: {
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-  title: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-  },
-  subtitle: {
-    fontSize: typography.fontSize.md,
-    color: colors.text.tertiary,
-    marginTop: spacing.xs,
-  },
-  summaryCard: {},
-  summaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  summaryIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
-    backgroundColor: 'rgba(34, 197, 94, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  summaryLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-  },
-  summaryValue: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
-    gap: spacing.md,
-    minHeight: 80,
-  },
-  actionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.md,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionText: {
-    flex: 1,
-  },
-  actionTitle: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.neutral[0],
-  },
-  actionSubtitle: {
-    fontSize: typography.fontSize.xs,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: 2,
-  },
-  scanningCard: {
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-    borderColor: colors.primary[500],
-    borderWidth: 1,
-  },
-  scanningContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  spinning: {
-    // Animation would be added via Animated
-  },
-  scanningText: {
-    flex: 1,
-  },
-  scanningTitle: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-  },
-  scanningSubtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginTop: spacing.xs,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-  },
-  scanCount: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-  },
-  emptyCard: {
-    alignItems: 'center',
-    padding: spacing.xxl,
-    gap: spacing.md,
-  },
-  emptyTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-  },
-  emptySubtitle: {
-    fontSize: typography.fontSize.md,
-    color: colors.text.tertiary,
-    textAlign: 'center',
-  },
-  emptyButton: {
-    marginTop: spacing.md,
-  },
-  scanCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  scanMain: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flex: 1,
-    gap: spacing.md,
-  },
-  scanInfo: {
-    flex: 1,
-  },
-  scanHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  scanStore: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-  },
-  scanDate: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-  },
-  scanMeta: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.xs,
-  },
-  scanItems: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-  },
-  scanAmount: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-  },
-  scanCarbon: {
-    alignItems: 'flex-end',
-  },
-  scanCarbonValue: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.primary[500],
-  },
-  scanCarbonLabel: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: colors.border.light,
-    marginHorizontal: spacing.md,
-  },
-});
+const ScanCard = ({ scan, index }: any) => (
+  <Card variant="default" padding="md" style={styles.scanCard}>
+    <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
+      <Stack flexDirection="row" alignItems="center" gap="3" flex={1}>
+        <Stack width={44} height={44} borderRadius="lg" backgroundColor="$primary20" alignItems="center" justifyContent="center">
+          <Ionicons name="receipt" size={20} color="$primary" />
+        </Stack>
+        <Stack>
+          <Stack flexDirection="row" alignItems="center" gap="2">
+            <Text fontSize="$3" fontWeight="600" color="$color">{scan.store_name || 'Unknown Store'}</Text>
+            <Badge
+              variant={
+                scan.status === 'completed' ? 'success' :
+                scan.status === 'processing' ? 'warning' :
+                scan.status === 'failed' ? 'danger' : 'default'
+              }
+              size="xs"
+            >
+              {scan.status}
+            </Badge>
+          </Stack>
+          <Text fontSize="$1" color="$colorFocus">{formatDate(scan.scanned_at)}</Text>
+        </Stack>
+      </Stack>
+      <Stack alignItems="flex-end" gap="1">
+        <Text fontSize="$5" fontWeight="700" color="$primary">{formatCarbon(scan.total_carbon_kg)}</Text>
+        <Text fontSize="$1" color="$colorFocus">{formatCurrency(scan.total_amount)}</Text>
+        <Ionicons name="chevron-forward" size={20} color="$colorFocus" />
+      </Stack>
+    </Stack>
+  </Card>
+);
+
+const styles = {
+  container: { flex: 1, backgroundColor: '$background' },
+  content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
+  statCard: { padding: 16, borderRadius: 16, backgroundColor: '$backgroundStrong' },
+  scanCard: {},
+  emptyCard: { gap: 16 },
+};

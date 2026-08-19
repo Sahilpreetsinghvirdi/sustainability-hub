@@ -1,14 +1,13 @@
 // mobile/src/screens/SettingsScreen.tsx
 import React from 'react';
-import { View, ScrollView, Text, StyleSheet, Switch, TouchableOpacity, Alert } from 'react-native';
+import { ScrollView, Alert, Switch } from 'react-native';
+import { Stack, Text, Button, Card, Badge, Avatar } from '@/ui';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useAuthStore } from '@/store/authStore';
 import { useSyncStore } from '@/store/syncStore';
-import { Card, Button, Badge } from '@/components';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
+import { config } from '@/constants/config';
 import { Ionicons, MaterialIcons, Entypo, FontAwesome5 } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { config } from '@/constants/config';
 
 export const SettingsScreen: React.FC = () => {
   const {
@@ -54,45 +53,46 @@ export const SettingsScreen: React.FC = () => {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Profile Header */}
-      <Card style={styles.profileCard}>
-        <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.name?.charAt(0).toUpperCase() || 'U'}</Text>
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{user?.name || 'User'}</Text>
-            <Text style={styles.profileEmail}>{user?.email || 'email@example.com'}</Text>
-          </View>
-        </View>
-        <View style={styles.profileStats}>
+      <Card variant="elevated" padding="lg" style={styles.profileCard}>
+        <Stack flexDirection="row" alignItems="center" gap="4" marginBottom="lg">
+          <Avatar size="xl" name={user?.name || 'User'} source={user?.avatar ? { uri: user.avatar } : undefined} status="online" />
+          <Stack flex={1}>
+            <Text fontSize="$6" fontWeight="800" color="$color">{user?.name || 'User'}</Text>
+            <Text fontSize="$2" color="$colorFocus">{user?.email || 'email@example.com'}</Text>
+          </Stack>
+        </Stack>
+        <Stack flexDirection="row" justifyContent="space-around" paddingTop="lg" borderTopWidth={1} borderTopColor="$border">
           <StatItem label="Carbon" value="187 kg" />
           <StatItem label="Energy" value="423 kWh" />
           <StatItem label="Waste" value="4.2 kg" />
-        </View>
+        </Stack>
       </Card>
 
       {/* Preferences */}
-      <Section title="Preferences">
+      <Section title="Targets & Preferences">
         <Card>
           <SettingRow
             title="Monthly Carbon Budget"
             subtitle="Target kg CO₂e per month"
             value={`${preferences.carbon_budget_monthly_kg} kg`}
-            onPress={() => showNumberInput('Carbon Budget', 'carbon_budget_monthly_kg', preferences.carbon_budget_monthly_kg, setPreferences)}
+            icon={<Ionicons name="leaf" size={22} color="$primary" />}
+            onPress={() => showNumberInput('Carbon Budget', 'carbon_budget_monthly_kg', preferences.carbon_budget_monthly_kg)}
           />
           <Divider />
           <SettingRow
             title="Monthly Energy Target"
             subtitle="Target kWh per month"
             value={`${preferences.energy_target_kwh_monthly} kWh`}
-            onPress={() => showNumberInput('Energy Target', 'energy_target_kwh_monthly', preferences.energy_target_kwh_monthly, setPreferences)}
+            icon={<Ionicons name="flash" size={22} color="$warning" />}
+            onPress={() => showNumberInput('Energy Target', 'energy_target_kwh_monthly', preferences.energy_target_kwh_monthly)}
           />
           <Divider />
           <SettingRow
             title="Monthly Food Waste Target"
             subtitle="Target kg of avoidable waste"
             value={`${preferences.food_waste_target_kg_monthly} kg`}
-            onPress={() => showNumberInput('Waste Target', 'food_waste_target_kg_monthly', preferences.food_waste_target_kg_monthly, setPreferences)}
+            icon={<Ionicons name="restaurant" size={22} color="$error" />}
+            onPress={() => showNumberInput('Waste Target', 'food_waste_target_kg_monthly', preferences.food_waste_target_kg_monthly)}
           />
         </Card>
       </Section>
@@ -104,26 +104,29 @@ export const SettingsScreen: React.FC = () => {
             title="Theme"
             subtitle="Choose app appearance"
             value={theme.charAt(0).toUpperCase() + theme.slice(1)}
-            onPress={() => showThemePicker()}
+            icon={<MaterialIcons name="palette" size={22} color="$secondary" />}
+            onPress={showThemePicker}
           />
           <Divider />
           <SettingRow
             title="Units"
             subtitle="Measurement system"
-            value={units === 'metric' ? 'Metric (kg, kWh)' : 'Imperial (lbs, kWh)'}
+            value={units === 'metric' ? 'Metric (kg, kWh, °C)' : 'Imperial (lbs, kWh, °F)'}
+            icon={<Ionicons name="swap-horizontal" size={22} color="$secondary" />}
             onPress={() => setUnits(units === 'metric' ? 'imperial' : 'metric')}
           />
         </Card>
       </Section>
 
       {/* Notifications */}
-      <Section title="Notifications">
+      <Section title="Notifications & Security">
         <Card>
           <SettingToggle
             title="Push Notifications"
             subtitle="Receive reminders and insights"
             value={notificationsEnabled}
             onChange={setNotificationsEnabled}
+            icon={<Ionicons name="notifications" size={22} color="$primary" />}
           />
           <Divider />
           <SettingToggle
@@ -131,6 +134,7 @@ export const SettingsScreen: React.FC = () => {
             subtitle="Use Face ID / Fingerprint"
             value={biometricEnabled}
             onChange={setBiometricEnabled}
+            icon={<MaterialIcons name="fingerprint" size={22} color="$secondary" />}
           />
         </Card>
       </Section>
@@ -143,13 +147,15 @@ export const SettingsScreen: React.FC = () => {
             subtitle="Automatically sync with cloud"
             value={autoSyncEnabled}
             onChange={setAutoSyncEnabled}
+            icon={<Ionicons name="sync" size={22} color="$primary" />}
           />
           <Divider />
           <SettingRow
             title="Sync Frequency"
             subtitle="How often to sync"
             value={`${syncFrequency} minutes`}
-            onPress={() => showSyncFrequencyPicker()}
+            icon={<Ionicons name="timer" size={22} color="$warning" />}
+            onPress={showSyncFrequencyPicker}
           />
           <Divider />
           <SettingToggle
@@ -157,13 +163,15 @@ export const SettingsScreen: React.FC = () => {
             subtitle="Reduce data usage on mobile"
             value={dataSaverMode}
             onChange={setDataSaverMode}
+            icon={<Ionicons name="wifi" size={22} color="$secondary" />}
           />
           <Divider />
           <SettingRow
             title="Last Sync"
-            subtitle={lastSyncAt ? formatSyncTime(lastSyncAt) : 'Never'}
+            subtitle={lastSyncAt ? formatSyncTime(lastSyncAt) : 'Never synced'}
             value="Tap to sync now"
-            onPress={() => fetchStatus()}
+            icon={<Ionicons name="cloud-download" size={22} color="$secondary" />}
+            onPress={fetchStatus}
           />
         </Card>
       </Section>
@@ -174,28 +182,28 @@ export const SettingsScreen: React.FC = () => {
           <SettingRow
             title="Edit Profile"
             subtitle="Name, email, password"
-            icon={<Ionicons name="person-outline" size={22} color={colors.primary[500]} />}
+            icon={<Ionicons name="person" size={22} color="$primary" />}
             onPress={() => router.push('/settings/profile')}
           />
           <Divider />
           <SettingRow
             title="Household"
             subtitle="Manage members and settings"
-            icon={<Ionicons name="people-outline" size={22} color={colors.secondary[500]} />}
+            icon={<Ionicons name="people" size={22} color="$secondary" />}
             onPress={() => router.push('/settings/household')}
           />
           <Divider />
           <SettingRow
             title="Export Data"
             subtitle="Download your data as CSV/JSON"
-            icon={<Ionicons name="download-outline" size={22} color={colors.warning} />}
+            icon={<Ionicons name="download" size={22} color="$warning" />}
             onPress={() => Alert.alert('Export', 'Feature coming soon')}
           />
           <Divider />
           <SettingRow
             title="Delete Account"
             subtitle="Permanently delete your account"
-            icon={<Ionicons name="trash-outline" size={22} color={colors.error} />}
+            icon={<Ionicons name="trash" size={22} color="$error" />}
             destructive
             onPress={handleDeleteAccount}
           />
@@ -207,26 +215,26 @@ export const SettingsScreen: React.FC = () => {
         <Card>
           <SettingRow
             title="Version"
-            subtitle={config.app.version}
-            value="Build " + config.app.buildNumber
+            subtitle={`${config.app.version} (Build ${config.app.buildNumber})`}
+            icon={<Ionicons name="information-circle" size={22} color="$secondary" />}
           />
           <Divider />
           <SettingRow
             title="Privacy Policy"
-            icon={<Ionicons name="document-text-outline" size={22} color={colors.text.tertiary} />}
+            icon={<Ionicons name="document-text" size={22} color="$secondary" />}
             onPress={() => Alert.alert('Privacy Policy', config.app.privacyUrl)}
           />
           <Divider />
           <SettingRow
             title="Terms of Service"
-            icon={<Ionicons name="document-text-outline" size={22} color={colors.text.tertiary} />}
+            icon={<Ionicons name="document-text" size={22} color="$secondary" />}
             onPress={() => Alert.alert('Terms of Service', config.app.termsUrl)}
           />
           <Divider />
           <SettingRow
             title="Contact Support"
             subtitle={config.app.supportEmail}
-            icon={<Ionicons name="mail-outline" size={22} color={colors.primary[500]} />}
+            icon={<Ionicons name="mail" size={22} color="$primary" />}
             onPress={() => Alert.alert('Support', config.app.supportEmail)}
           />
         </Card>
@@ -234,22 +242,26 @@ export const SettingsScreen: React.FC = () => {
 
       {/* Logout */}
       <View style={styles.logoutSection}>
-        <Button title="Logout" variant="danger" fullWidth onPress={handleLogout} />
+        <Button variant="danger" fullWidth onPress={handleLogout}>
+          <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
+            <Ionicons name="log-out" size={20} />
+            <Text>Logout</Text>
+          </Stack>
+        </Button>
       </View>
     </ScrollView>
   );
 };
 
-const showNumberInput = (title: string, key: string, currentValue: number, setter: (v: any) => void) => {
+const showNumberInput = (title: string, key: string, currentValue: number) => {
   Alert.alert(
     title,
-    'Enter new value',
+    `Current: ${currentValue}`,
     [
       { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'OK',
-        onPress: () => setter({ [key]: currentValue + 10 }), // Simplified
-      },
+      { text: '+10', onPress: () => useSettingsStore.getState().setPreferences({ [key]: currentValue + 10 }) },
+      { text: '+50', onPress: () => useSettingsStore.getState().setPreferences({ [key]: currentValue + 50 }) },
+      { text: 'Reset', onPress: () => useSettingsStore.getState().setPreferences({ [key]: key.includes('carbon') ? 200 : key.includes('energy') ? 400 : 3.5 }) },
     ]
   );
 };
@@ -279,179 +291,67 @@ const formatSyncTime = (isoString: string) => {
   return date.toLocaleString();
 };
 
-const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+const Section = ({ title, children }: any) => (
   <View style={styles.section}>
     <Text style={styles.sectionTitle}>{title}</Text>
     {children}
   </View>
 );
 
-const SettingRow: React.FC<{
-  title: string;
-  subtitle?: string;
-  value?: string;
-  icon?: React.ReactNode;
-  destructive?: boolean;
-  onPress: () => void;
-}> = ({ title, subtitle, value, icon, destructive, onPress }) => (
+const SettingRow = ({ title, subtitle, value, icon, destructive, onPress }: any) => (
   <TouchableOpacity onPress={onPress} style={styles.settingRow}>
-    {icon}
-    <View style={styles.settingText}>
+    {icon && <Stack marginRight={16}>{icon}</Stack>}
+    <Stack flex={1}>
       <Text style={[styles.settingTitle, destructive && styles.settingTitleDestructive]}>{title}</Text>
       {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
-    </View>
-    <View style={styles.settingValue}>
+    </Stack>
+    <Stack flexDirection="row" alignItems="center" gap="2">
       {value && <Text style={[styles.settingValueText, destructive && styles.settingValueDestructive]}>{value}</Text>}
-      <Ionicons name="chevron-forward-outline" size={20} color={colors.text.tertiary} />
-    </View>
+      <Ionicons name="chevron-forward" size={20} color="$colorFocus" />
+    </Stack>
   </TouchableOpacity>
 );
 
-const SettingToggle: React.FC<{
-  title: string;
-  subtitle?: string;
-  value: boolean;
-  onChange: (value: boolean) => void;
-}> = ({ title, subtitle, value, onChange }) => (
+const SettingToggle = ({ title, subtitle, value, onChange, icon }: any) => (
   <View style={styles.settingRow}>
-    <View style={styles.settingText}>
+    {icon && <Stack marginRight={16}>{icon}</Stack>}
+    <Stack flex={1}>
       <Text style={styles.settingTitle}>{title}</Text>
       {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
-    </View>
+    </Stack>
     <Switch
       value={value}
       onValueChange={onChange}
-      trackColor={{ false: colors.border.medium, true: colors.primary[500] }}
-      thumbColor={colors.neutral[0]}
+      trackColor={{ false: '$border', true: '$primary' }}
+      thumbColor="$background"
     />
   </View>
 );
 
-const Divider: React.FC = () => (
-  <View style={styles.divider} />
-);
+const Divider = () => <View style={styles.divider} />;
 
-const StatItem: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+const StatItem = ({ label, value }: any) => (
   <View style={styles.statItem}>
     <Text style={styles.statValue}>{value}</Text>
     <Text style={styles.statLabel}>{label}</Text>
   </View>
 );
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xxl,
-    gap: spacing.lg,
-  },
-  section: {
-    gap: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-  },
-  profileCard: {
-    backgroundColor: 'linear-gradient(135deg, #1E2D4D 0%, #0A1628 100%)',
-  },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary[500],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral[0],
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: typography.fontSize.xl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral[0],
-  },
-  profileEmail: {
-    fontSize: typography.fontSize.sm,
-    color: 'rgba(255,255,255,0.7)',
-    marginTop: spacing.xs,
-  },
-  profileStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.neutral[0],
-  },
-  statLabel: {
-    fontSize: typography.fontSize.xs,
-    color: 'rgba(255,255,255,0.6)',
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-  },
-  settingText: {
-    flex: 1,
-  },
-  settingTitle: {
-    fontSize: typography.fontSize.md,
-    color: colors.text.primary,
-    fontWeight: typography.fontWeight.medium,
-  },
-  settingTitleDestructive: {
-    color: colors.error,
-  },
-  settingSubtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginTop: spacing.xs,
-  },
-  settingValue: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  settingValueText: {
-    fontSize: typography.fontSize.md,
-    color: colors.text.tertiary,
-  },
-  settingValueDestructive: {
-    color: colors.error,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border.light,
-    marginHorizontal: spacing.md,
-  },
-  logoutSection: {
-    marginTop: spacing.lg,
-    paddingHorizontal: spacing.md,
-  },
-});
+const styles = {
+  container: { flex: 1, backgroundColor: '$background' },
+  content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
+  section: { gap: 16 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', color: '$color', marginBottom: 12 },
+  profileCard: { backgroundColor: '$primary05' },
+  settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16 },
+  settingTitle: { fontSize: 16, color: '$color', fontWeight: '500' },
+  settingTitleDestructive: { color: '$error' },
+  settingSubtitle: { fontSize: 13, color: '$colorFocus', marginTop: 4 },
+  settingValueText: { fontSize: 16, color: '$colorFocus' },
+  settingValueDestructive: { color: '$error' },
+  divider: { height: 1, backgroundColor: '$border', marginHorizontal: 16 },
+  logoutSection: { marginTop: 24, paddingHorizontal: 16 },
+  statItem: { alignItems: 'center' },
+  statValue: { fontSize: 16, fontWeight: '700', color: '$color' },
+  statLabel: { fontSize: 11, color: '$colorFocus' },
+};
