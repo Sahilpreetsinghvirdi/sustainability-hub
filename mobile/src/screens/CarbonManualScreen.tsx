@@ -1,4 +1,4 @@
-// mobile/src/screens/CarbonManualScreen.tsx
+﻿// mobile/src/screens/CarbonManualScreen.tsx
 import React, { useState } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import { Stack, Text, Button, Card, Badge, Input, ProgressBar } from '@/ui';
@@ -116,20 +116,20 @@ export const CarbonManualScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="$5" fontWeight="700" color="$color">Manual Entry</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Manual Entry</Text>
         <Stack width={40} />
       </Stack>
 
       {/* Store Info */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Store Information</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Store Information</Text>
         <Stack gap="4">
           <Input
             label="Store Name"
             placeholder="e.g., Whole Foods Market"
             value={storeName}
             onChangeText={setStoreName}
-            leftIcon={<Ionicons name="storefront" size={20} color="$colorFocus" />}
+            leftIcon={<Ionicons name="storefront" size={20} color="#CBD5E1" />}
           />
           <Stack flexDirection="row" gap="3">
             <Input
@@ -138,14 +138,14 @@ export const CarbonManualScreen: React.FC = () => {
               value={totalAmount}
               onChangeText={setTotalAmount}
               type="decimal"
-              leftIcon={<Ionicons name="cash" size={20} color="$colorFocus" />}
+              leftIcon={<Ionicons name="cash" size={20} color="#CBD5E1" />}
               style={{ flex: 1 }}
             />
             <Input
               label="Currency"
               value={currency}
               onChangeText={setCurrency}
-              leftIcon={<Ionicons name="currency-dollar" size={20} color="$colorFocus" />}
+              leftIcon={<Ionicons name="currency-dollar" size={20} color="#CBD5E1" />}
               style={{ width: 100 }}
             />
           </Stack>
@@ -155,7 +155,7 @@ export const CarbonManualScreen: React.FC = () => {
       {/* Items */}
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-          <Text fontSize="$4" fontWeight="600" color="$color">Items</Text>
+          <Text fontSize="16" fontWeight="600" color="#F8FAFC">Items</Text>
           <Button variant="ghost" size="sm" onPress={addItem}>
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name="add" size={16} />
@@ -180,19 +180,19 @@ export const CarbonManualScreen: React.FC = () => {
 
       {/* Summary */}
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.summaryCard}>
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Summary</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Summary</Text>
         <Stack gap="3">
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="$3" color="$colorFocus">Items</Text>
-            <Text fontSize="$3" fontWeight="600" color="$color">{items.length}</Text>
+            <Text fontSize="12" color="#CBD5E1">Items</Text>
+            <Text fontSize="12" fontWeight="600" color="#F8FAFC">{items.length}</Text>
           </Stack>
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="$3" color="$colorFocus">Est. Carbon</Text>
-            <Text fontSize="$3" fontWeight="600" color="$primary">{formatCarbon(totalCarbon)}</Text>
+            <Text fontSize="12" color="#CBD5E1">Est. Carbon</Text>
+            <Text fontSize="12" fontWeight="600" color="#22C55E">{formatCarbon(totalCarbon)}</Text>
           </Stack>
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="$3" color="$colorFocus">Total Price</Text>
-            <Text fontSize="$3" fontWeight="600" color="$color">{formatCurrency(totalPrice)}</Text>
+            <Text fontSize="12" color="#CBD5E1">Total Price</Text>
+            <Text fontSize="12" fontWeight="600" color="#F8FAFC">{formatCurrency(totalPrice)}</Text>
           </Stack>
         </Stack>
         <ProgressBar
@@ -200,7 +200,7 @@ export const CarbonManualScreen: React.FC = () => {
           variant={totalCarbon > 180 ? 'danger' : totalCarbon > 140 ? 'warning' : 'success'}
           size="md"
           showLabel
-          label="Monthly budget: 200 kg CO₂e"
+          label="Monthly budget: 200 kg COâ‚‚e"
         />
       </Card>
 
@@ -221,7 +221,7 @@ export const CarbonManualScreen: React.FC = () => {
 const ItemForm = ({ item, index, onUpdate, onRemove, canRemove }: any) => (
   <Card variant="default" padding="md" style={styles.itemForm}>
     <Stack flexDirection="row" alignItems="flex-start" gap="3">
-      <Text fontSize="$6" fontWeight="700" color="$colorFocus" style={{ marginTop: 8, width: 28 }}>{index + 1}.</Text>
+      <Text fontSize="24" fontWeight="700" color="#CBD5E1" style={{ marginTop: 8, width: 28 }}>{index + 1}.</Text>
       <Stack flex={1} gap="3">
         <Stack flexDirection="row" gap="2">
           <Input
@@ -257,15 +257,15 @@ const ItemForm = ({ item, index, onUpdate, onRemove, canRemove }: any) => (
             style={{ width: 100 }}
           />
           <Stack style={{ flex: 1 }}>
-            <Text fontSize="$2" color="$colorFocus" marginBottom="1">Category</Text>
+            <Text fontSize="8" color="#CBD5E1" marginBottom="1">Category</Text>
             <CategorySelector value={item.category} onChange={v => onUpdate(item.id, 'category', v)} />
           </Stack>
         </Stack>
         {canRemove && (
           <Button variant="ghost" size="xs" onPress={onRemove} style={{ marginTop: 8 }}>
             <Stack flexDirection="row" alignItems="center" gap="1">
-              <Ionicons name="trash" size={14} color="$error" />
-              <Text style={{ color: '$error' }}>Remove</Text>
+              <Ionicons name="trash" size={14} color="#EF4444" />
+              <Text style={{ color: '#EF4444' }}>Remove</Text>
             </Stack>
           </Button>
         )}
@@ -278,18 +278,18 @@ const CategorySelector = ({ value, onChange }: any) => (
   <Button variant="outline" fullWidth style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
     <Stack flexDirection="row" alignItems="center" justifyContent="space-between">
       <Stack flexDirection="row" alignItems="center" gap="2">
-        <Stack width={12} height={12} borderRadius="sm" backgroundColor={CATEGORIES.find(c => c.value === value)?.color || '$border'} />
-        <Text fontSize="$3" color="$color">{CATEGORIES.find(c => c.value === value)?.label || 'Select Category'}</Text>
+        <Stack width={12} height={12} borderRadius="sm" backgroundColor={CATEGORIES.find(c => c.value === value)?.color || '#334155'} />
+        <Text fontSize="12" color="#F8FAFC">{CATEGORIES.find(c => c.value === value)?.label || 'Select Category'}</Text>
       </Stack>
-      <Ionicons name="chevron-down" size={20} color="$colorFocus" />
+      <Ionicons name="chevron-down" size={20} color="#CBD5E1" />
     </Stack>
   </Button>
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '$background' },
+  container: { flex: 1, backgroundColor: '#0A1628' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  summaryCard: { backgroundColor: '$primary05' },
+  summaryCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
   itemForm: {},
   actions: { marginTop: 8 },
 };

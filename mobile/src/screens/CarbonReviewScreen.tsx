@@ -1,4 +1,4 @@
-// mobile/src/screens/CarbonReviewScreen.tsx
+﻿// mobile/src/screens/CarbonReviewScreen.tsx
 import React, { useState } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import { Stack, Text, Button, Card, Badge, ProgressBar, Input } from '@/ui';
@@ -59,23 +59,23 @@ export const CarbonReviewScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="$5" fontWeight="700" color="$color">Review Receipt</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Review Receipt</Text>
         <Stack width={40} />
       </Stack>
 
       {/* Store Info */}
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" alignItems="center" gap="4">
-          <Stack width={56} height={56} borderRadius="lg" backgroundColor="$primary20" alignItems="center" justifyContent="center">
-            <Ionicons name="storefront" size={28} color="$primary" />
+          <Stack width={56} height={56} borderRadius="lg" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
+            <Ionicons name="storefront" size={28} color="#22C55E" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="$5" fontWeight="700" color="$color">{scan.store_name || 'Unknown Store'}</Text>
-            <Text fontSize="$2" color="$colorFocus">{formatDate(scan.scanned_at)}</Text>
+            <Text fontSize="20" fontWeight="700" color="#F8FAFC">{scan.store_name || 'Unknown Store'}</Text>
+            <Text fontSize="8" color="#CBD5E1">{formatDate(scan.scanned_at)}</Text>
           </Stack>
           <Stack alignItems="flex-end">
-            <Text fontSize="$6" fontWeight="800" color="$primary">{formatCarbon(scan.total_carbon_kg)}</Text>
-            <Text fontSize="$2" color="$colorFocus">{formatCurrency(scan.total_amount)}</Text>
+            <Text fontSize="24" fontWeight="800" color="#22C55E">{formatCarbon(scan.total_carbon_kg)}</Text>
+            <Text fontSize="8" color="#CBD5E1">{formatCurrency(scan.total_amount)}</Text>
           </Stack>
         </Stack>
       </Card>
@@ -83,7 +83,7 @@ export const CarbonReviewScreen: React.FC = () => {
       {/* Progress */}
       <Card variant="default" padding="md" marginBottom="lg">
         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom="3">
-          <Text fontSize="$3" fontWeight="600" color="$color">Processing Progress</Text>
+          <Text fontSize="12" fontWeight="600" color="#F8FAFC">Processing Progress</Text>
           <Badge variant="success" size="sm">{completedItems}/{totalItems} items matched</Badge>
         </Stack>
         <ProgressBar
@@ -98,7 +98,7 @@ export const CarbonReviewScreen: React.FC = () => {
       {/* Items List */}
       <Stack marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-          <Text fontSize="$5" fontWeight="700" color="$color">Items ({totalItems})</Text>
+          <Text fontSize="20" fontWeight="700" color="#F8FAFC">Items ({totalItems})</Text>
           <Button variant="ghost" size="sm" onPress={() => router.push('/carbon/manual')}>
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name="add" size={16} />
@@ -126,7 +126,7 @@ export const CarbonReviewScreen: React.FC = () => {
 
       {/* Breakdown */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Carbon Breakdown</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Carbon Breakdown</Text>
         <Stack gap="2">
           {Object.entries(scan.items?.reduce((acc: any, item: any) => {
             acc[item.category] = (acc[item.category] || 0) + item.carbon_kg;
@@ -140,12 +140,12 @@ export const CarbonReviewScreen: React.FC = () => {
       {/* Insights */}
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.insightCard}>
         <Stack flexDirection="row" alignItems="flex-start" gap="3" marginBottom="lg">
-          <Stack width={40} height={40} borderRadius="lg" backgroundColor="$warning20" alignItems="center" justifyContent="center">
-            <Ionicons name="lightbulb" size={22} color="$warning" />
+          <Stack width={40} height={40} borderRadius="lg" backgroundColor="rgba(245,158,11,0.2)" alignItems="center" justifyContent="center">
+            <Ionicons name="lightbulb" size={22} color="#F59E0B" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="$4" fontWeight="600" color="$color">Smart Insight</Text>
-            <Text fontSize="$3" color="$colorFocus" marginTop="1">
+            <Text fontSize="16" fontWeight="600" color="#F8FAFC">Smart Insight</Text>
+            <Text fontSize="12" color="#CBD5E1" marginTop="1">
               {getInsight(scan)}
             </Text>
           </Stack>
@@ -169,8 +169,8 @@ export const CarbonReviewScreen: React.FC = () => {
 
 const LoadingScreen = () => (
   <Stack style={styles.loading}>
-    <Ionicons name="sync" size={48} color="$primary" />
-    <Text fontSize="$3" color="$colorFocus" marginTop="3">Loading receipt...</Text>
+    <Ionicons name="sync" size={48} color="#22C55E" />
+    <Text fontSize="12" color="#CBD5E1" marginTop="3">Loading receipt...</Text>
   </Stack>
 );
 
@@ -212,7 +212,7 @@ const getInsight = (scan: any) => {
   const percentage = ((carbon as number) / scan.total_carbon_kg) * 100;
 
   if (category === 'meat_beef' && percentage > 50) {
-    return `Beef makes up ${percentage.toFixed(0)}% of this receipt's carbon. Swapping for chicken could save ~${(carbon as number * 0.75).toFixed(1)} kg CO₂e.`;
+    return `Beef makes up ${percentage.toFixed(0)}% of this receipt's carbon. Swapping for chicken could save ~${(carbon as number * 0.75).toFixed(1)} kg COâ‚‚e.`;
   }
   if (category.startsWith('meat_') && percentage > 40) {
     return `Meat accounts for ${percentage.toFixed(0)}% of this receipt's footprint. Consider plant-based alternatives for future shops.`;
@@ -232,11 +232,11 @@ const ItemCard = ({ item, index, isEditing, onEdit, onSave, onCategoryChange, ed
   return (
     <Card variant="default" padding="md" style={styles.itemCard}>
       <Stack flexDirection="row" alignItems="center" gap="3">
-        <Text fontSize="$6" fontWeight="700" color="$colorFocus" style={{ width: 28 }}>{index + 1}.</Text>
+        <Text fontSize="24" fontWeight="700" color="#CBD5E1" style={{ width: 28 }}>{index + 1}.</Text>
         <Stack width={4} height="100%" borderRadius="full" backgroundColor={categoryColor} />
         <Stack flex={1} gap="1">
           <Stack flexDirection="row" alignItems="center" justifyContent="space-between">
-            <Text fontSize="$3" fontWeight="600" color="$color">{item.name}</Text>
+            <Text fontSize="12" fontWeight="600" color="#F8FAFC">{item.name}</Text>
             {isEditing ? (
               <Button variant="ghost" size="xs" onPress={onSave}>
                 <Ionicons name="checkmark" size={16} />
@@ -252,8 +252,8 @@ const ItemCard = ({ item, index, isEditing, onEdit, onSave, onCategoryChange, ed
           </Stack>
         </Stack>
         <Stack alignItems="flex-end" gap="1" style={{ minWidth: 80 }}>
-          <Text fontSize="$4" fontWeight="700" color="$primary">{formatCarbon(item.carbon_kg)}</Text>
-          <Text fontSize="$1" color="$colorFocus">{formatCurrency(item.price)}</Text>
+          <Text fontSize="16" fontWeight="700" color="#22C55E">{formatCarbon(item.carbon_kg)}</Text>
+          <Text fontSize="4" color="#CBD5E1">{formatCurrency(item.price)}</Text>
         </Stack>
       </Stack>
 
@@ -301,7 +301,7 @@ const CategoryBreakdownRow = ({ category, value, total }: any) => (
   <Stack flexDirection="row" alignItems="center" gap="3" style={styles.breakdownRow}>
     <Stack width={12} height={12} borderRadius="sm" backgroundColor={getCategoryColor(category)} />
     <Stack flex={1}>
-      <Text fontSize="$3" color="$color" fontWeight="500">
+      <Text fontSize="12" color="#F8FAFC" fontWeight="500">
         {category.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
       </Text>
       <ProgressBar
@@ -311,20 +311,20 @@ const CategoryBreakdownRow = ({ category, value, total }: any) => (
       />
     </Stack>
     <Stack alignItems="flex-end" style={{ minWidth: 70 }}>
-      <Text fontSize="$3" fontWeight="600" color="$color">{formatCarbon(value)}</Text>
-      <Text fontSize="$1" color="$colorFocus">{total > 0 ? `${((value / total) * 100).toFixed(1)}%` : '0%'}</Text>
+      <Text fontSize="12" fontWeight="600" color="#F8FAFC">{formatCarbon(value)}</Text>
+      <Text fontSize="4" color="#CBD5E1">{total > 0 ? `${((value / total) * 100).toFixed(1)}%` : '0%'}</Text>
     </Stack>
   </Stack>
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '$background' },
+  container: { flex: 1, backgroundColor: '#0A1628' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingTop: 100 },
   itemCard: {},
-  editFields: { paddingTop: 8, borderTopWidth: 1, borderTopColor: '$border', marginTop: 8 },
+  editFields: { paddingTop: 8, borderTopWidth: 1, borderTopColor: '#334155', marginTop: 8 },
   itemActions: { marginTop: 4 },
   breakdownRow: { paddingVertical: 4 },
-  insightCard: { backgroundColor: '$warning05' },
+  insightCard: { backgroundColor: 'rgba(245,158,11,0.05)' },
   actions: { marginTop: 8 },
 };

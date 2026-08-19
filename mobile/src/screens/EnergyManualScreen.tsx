@@ -1,4 +1,4 @@
-// mobile/src/screens/EnergyManualScreen.tsx
+﻿// mobile/src/screens/EnergyManualScreen.tsx
 import React, { useState } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import { Stack, Text, Button, Card, Input } from '@/ui';
@@ -55,31 +55,31 @@ export const EnergyManualScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="$5" fontWeight="700" color="$color">Manual Entry</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Manual Entry</Text>
         <Stack width={40} />
       </Stack>
 
       {/* Provider */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Utility Provider</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Utility Provider</Text>
         <Input
           placeholder="e.g., PG&E, ConEd, Duke Energy"
           value={provider}
           onChangeText={setProvider}
-          leftIcon={<Ionicons name="business" size={20} color="$colorFocus" />}
+          leftIcon={<Ionicons name="business" size={20} color="#CBD5E1" />}
         />
       </Card>
 
       {/* Billing Period */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Billing Period</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Billing Period</Text>
         <Stack flexDirection="row" gap="3">
           <Input
             label="Start Date"
             placeholder="YYYY-MM-DD"
             value={periodStart}
             onChangeText={setPeriodStart}
-            leftIcon={<Ionicons name="calendar" size={20} color="$colorFocus" />}
+            leftIcon={<Ionicons name="calendar" size={20} color="#CBD5E1" />}
             style={{ flex: 1 }}
           />
           <Input
@@ -87,7 +87,7 @@ export const EnergyManualScreen: React.FC = () => {
             placeholder="YYYY-MM-DD"
             value={periodEnd}
             onChangeText={setPeriodEnd}
-            leftIcon={<Ionicons name="calendar" size={20} color="$colorFocus" />}
+            leftIcon={<Ionicons name="calendar" size={20} color="#CBD5E1" />}
             style={{ flex: 1 }}
           />
         </Stack>
@@ -95,50 +95,50 @@ export const EnergyManualScreen: React.FC = () => {
 
       {/* Usage */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Energy Usage</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Energy Usage</Text>
         <Stack gap="4">
           <Stack>
             <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
-              <Stack width={12} height={12} borderRadius="sm" backgroundColor="$warning" />
-              <Text fontSize="$3" fontWeight="600" color="$color">Electricity</Text>
+              <Stack width={12} height={12} borderRadius="sm" backgroundColor="#F59E0B" />
+              <Text fontSize="12" fontWeight="600" color="#F8FAFC">Electricity</Text>
             </Stack>
             <Input
               placeholder="0"
               value={electricityKwh}
               onChangeText={setElectricityKwh}
               type="decimal"
-              leftIcon={<Ionicons name="flash" size={20} color="$warning" />}
-              rightComponent={<Text fontSize="$2" color="$colorFocus">kWh</Text>}
+              leftIcon={<Ionicons name="flash" size={20} color="#F59E0B" />}
+              rightComponent={<Text fontSize="8" color="#CBD5E1">kWh</Text>}
             />
           </Stack>
 
           <Stack>
             <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
-              <Stack width={12} height={12} borderRadius="sm" backgroundColor="$error" />
-              <Text fontSize="$3" fontWeight="600" color="$color">Natural Gas</Text>
+              <Stack width={12} height={12} borderRadius="sm" backgroundColor="#EF4444" />
+              <Text fontSize="12" fontWeight="600" color="#F8FAFC">Natural Gas</Text>
             </Stack>
             <Input
               placeholder="0"
               value={gasTherms}
               onChangeText={setGasTherms}
               type="decimal"
-              leftIcon={<MaterialIcons name="local-fire-department" size={20} color="$error" />}
-              rightComponent={<Text fontSize="$2" color="$colorFocus">therms</Text>}
+              leftIcon={<MaterialIcons name="local-fire-department" size={20} color="#EF4444" />}
+              rightComponent={<Text fontSize="8" color="#CBD5E1">therms</Text>}
             />
           </Stack>
 
           <Stack>
             <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
-              <Stack width={12} height={12} borderRadius="sm" backgroundColor="$secondary" />
-              <Text fontSize="$3" fontWeight="600" color="$color">Water</Text>
+              <Stack width={12} height={12} borderRadius="sm" backgroundColor="#0EA5E9" />
+              <Text fontSize="12" fontWeight="600" color="#F8FAFC">Water</Text>
             </Stack>
             <Input
               placeholder="0"
               value={waterGallons}
               onChangeText={setWaterGallons}
               type="decimal"
-              leftIcon={<Ionicons name="water" size={20} color="$secondary" />}
-              rightComponent={<Text fontSize="$2" color="$colorFocus">gallons</Text>}
+              leftIcon={<Ionicons name="water" size={20} color="#0EA5E9" />}
+              rightComponent={<Text fontSize="8" color="#CBD5E1">gallons</Text>}
             />
           </Stack>
         </Stack>
@@ -146,14 +146,14 @@ export const EnergyManualScreen: React.FC = () => {
 
       {/* Cost */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Total Cost</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Total Cost</Text>
         <Input
           placeholder="0.00"
           value={totalCost}
           onChangeText={setTotalCost}
           type="decimal"
-          leftIcon={<Ionicons name="cash" size={20} color="$colorFocus" />}
-          rightComponent={<Text fontSize="$2" color="$colorFocus">$</Text>}
+          leftIcon={<Ionicons name="cash" size={20} color="#CBD5E1" />}
+          rightComponent={<Text fontSize="8" color="#CBD5E1">$</Text>}
         />
       </Card>
 
@@ -161,14 +161,14 @@ export const EnergyManualScreen: React.FC = () => {
       {estimatedCarbon > 0 && (
         <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.estimateCard}>
           <Stack flexDirection="row" alignItems="center" gap="3">
-            <Stack width={48} height={48} borderRadius="lg" backgroundColor="$primary20" alignItems="center" justifyContent="center">
-              <Ionicons name="leaf" size={24} color="$primary" />
+            <Stack width={48} height={48} borderRadius="lg" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
+              <Ionicons name="leaf" size={24} color="#22C55E" />
             </Stack>
             <Stack flex={1}>
-              <Text fontSize="$4" fontWeight="600" color="$color">Est. Carbon Footprint</Text>
-              <Text fontSize="$2" color="$colorFocus">Based on US grid average (0.92 kgCO₂e/kWh)</Text>
+              <Text fontSize="16" fontWeight="600" color="#F8FAFC">Est. Carbon Footprint</Text>
+              <Text fontSize="8" color="#CBD5E1">Based on US grid average (0.92 kgCOâ‚‚e/kWh)</Text>
             </Stack>
-            <Text fontSize="$5" fontWeight="800" color="$primary">{estimatedCarbon.toFixed(1)} kg</Text>
+            <Text fontSize="20" fontWeight="800" color="#22C55E">{estimatedCarbon.toFixed(1)} kg</Text>
           </Stack>
         </Card>
       )}
@@ -188,8 +188,8 @@ export const EnergyManualScreen: React.FC = () => {
 };
 
 const styles = {
-  container: { flex: 1, backgroundColor: '$background' },
+  container: { flex: 1, backgroundColor: '#0A1628' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  estimateCard: { backgroundColor: '$primary05' },
+  estimateCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
   actions: { marginTop: 8 },
 };

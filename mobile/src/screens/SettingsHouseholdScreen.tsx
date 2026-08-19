@@ -1,4 +1,4 @@
-// mobile/src/screens/SettingsHouseholdScreen.tsx
+﻿// mobile/src/screens/SettingsHouseholdScreen.tsx
 import React, { useState } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import { Stack, Text, Button, Card, Input, Badge, Avatar } from '@/ui';
@@ -73,7 +73,7 @@ export const SettingsHouseholdScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="$5" fontWeight="700" color="$color">Household</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Household</Text>
         <Button variant="ghost" size="sm" onPress={() => setIsEditing(!isEditing)}>
           <Ionicons name={isEditing ? 'close' : 'pencil'} size={20} />
         </Button>
@@ -82,16 +82,16 @@ export const SettingsHouseholdScreen: React.FC = () => {
       {/* Household Info */}
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.householdCard}>
         <Stack flexDirection="row" alignItems="center" gap="3" marginBottom="lg">
-          <Stack width={56} height={56} borderRadius="lg" backgroundColor="$primary20" alignItems="center" justifyContent="center">
-            <Ionicons name="home" size={28} color="$primary" />
+          <Stack width={56} height={56} borderRadius="lg" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
+            <Ionicons name="home" size={28} color="#22C55E" />
           </Stack>
           <Stack flex={1}>
             {isEditing ? (
               <Input value={householdName} onChangeText={setHouseholdName} />
             ) : (
               <>
-                <Text fontSize="$5" fontWeight="700" color="$color">{household.name}</Text>
-                <Text fontSize="$2" color="$colorFocus">Created {new Date(household.created_at).toLocaleDateString()}</Text>
+                <Text fontSize="20" fontWeight="700" color="#F8FAFC">{household.name}</Text>
+                <Text fontSize="8" color="#CBD5E1">Created {new Date(household.created_at).toLocaleDateString()}</Text>
               </>
             )}
           </Stack>
@@ -104,29 +104,29 @@ export const SettingsHouseholdScreen: React.FC = () => {
 
         <Stack flexDirection="row" gap="3">
           <Stack flex={1} alignItems="center" style={styles.statItem}>
-            <Text fontSize="$5" fontWeight="800" color="$color">{household.size}</Text>
-            <Text fontSize="$2" color="$colorFocus">Members</Text>
+            <Text fontSize="20" fontWeight="800" color="#F8FAFC">{household.size}</Text>
+            <Text fontSize="8" color="#CBD5E1">Members</Text>
           </Stack>
           <Stack flex={1} alignItems="center" style={styles.statItem}>
-            <Text fontSize="$5" fontWeight="800" color="$warning">{household.total_scans}</Text>
-            <Text fontSize="$2" color="$colorFocus">Total Scans</Text>
+            <Text fontSize="20" fontWeight="800" color="#F59E0B">{household.total_scans}</Text>
+            <Text fontSize="8" color="#CBD5E1">Total Scans</Text>
           </Stack>
           <Stack flex={1} alignItems="center" style={styles.statItem}>
-            <Text fontSize="$5" fontWeight="800" color="$primary">{household.avg_carbon_per_person}</Text>
-            <Text fontSize="$2" color="$colorFocus">kgCO₂e/person</Text>
+            <Text fontSize="20" fontWeight="800" color="#22C55E">{household.avg_carbon_per_person}</Text>
+            <Text fontSize="8" color="#CBD5E1">kgCOâ‚‚e/person</Text>
           </Stack>
         </Stack>
       </Card>
 
       {/* Settings */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Household Settings</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Household Settings</Text>
 
         <Stack gap="4">
           {isEditing && (
             <>
               <Stack>
-                <Text fontSize="$3" fontWeight="600" color="$color" marginBottom="1">Household Size</Text>
+                <Text fontSize="12" fontWeight="600" color="#F8FAFC" marginBottom="1">Household Size</Text>
                 <Stack flexDirection="row" gap="2">
                   {HOUSEHOLD_SIZES.map(size => (
                     <Button
@@ -147,11 +147,11 @@ export const SettingsHouseholdScreen: React.FC = () => {
                 placeholder="12345"
                 value={zipCode}
                 onChangeText={setZipCode}
-                leftIcon={<Ionicons name="location" size={20} color="$colorFocus" />}
+                leftIcon={<Ionicons name="location" size={20} color="#CBD5E1" />}
               />
 
               <Stack>
-                <Text fontSize="$3" fontWeight="600" color="$color" marginBottom="1">Home Type</Text>
+                <Text fontSize="12" fontWeight="600" color="#F8FAFC" marginBottom="1">Home Type</Text>
                 <Stack flexDirection="row" gap="2">
                   {homeTypes.map(type => (
                     <Button
@@ -172,16 +172,16 @@ export const SettingsHouseholdScreen: React.FC = () => {
           {!isEditing && (
             <Stack gap="3">
               <Stack flexDirection="row" justifyContent="space-between">
-                <Text fontSize="$3" color="$colorFocus">Size</Text>
-                <Text fontSize="$3" fontWeight="600" color="$color">{household.size} people</Text>
+                <Text fontSize="12" color="#CBD5E1">Size</Text>
+                <Text fontSize="12" fontWeight="600" color="#F8FAFC">{household.size} people</Text>
               </Stack>
               <Stack flexDirection="row" justifyContent="space-between">
-                <Text fontSize="$3" color="$colorFocus">ZIP Code</Text>
-                <Text fontSize="$3" fontWeight="600" color="$color">{household.zip_code || 'Not set'}</Text>
+                <Text fontSize="12" color="#CBD5E1">ZIP Code</Text>
+                <Text fontSize="12" fontWeight="600" color="#F8FAFC">{household.zip_code || 'Not set'}</Text>
               </Stack>
               <Stack flexDirection="row" justifyContent="space-between">
-                <Text fontSize="$3" color="$colorFocus">Home Type</Text>
-                <Text fontSize="$3" fontWeight="600" color="$color">{household.home_type}</Text>
+                <Text fontSize="12" color="#CBD5E1">Home Type</Text>
+                <Text fontSize="12" fontWeight="600" color="#F8FAFC">{household.home_type}</Text>
               </Stack>
             </Stack>
           )}
@@ -200,7 +200,7 @@ export const SettingsHouseholdScreen: React.FC = () => {
       {/* Members */}
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-          <Text fontSize="$4" fontWeight="600" color="$color">Members</Text>
+          <Text fontSize="16" fontWeight="600" color="#F8FAFC">Members</Text>
           <Button variant="ghost" size="sm">
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name="add" size={16} />
@@ -212,19 +212,19 @@ export const SettingsHouseholdScreen: React.FC = () => {
         <Stack gap="3">
           {household.members.map((member: any) => (
             <Stack key={member.id} flexDirection="row" alignItems="center" gap="3" style={styles.memberItem}>
-              <Avatar size="md" backgroundColor="$primary">
+              <Avatar size="md" backgroundColor="#22C55E">
                 {member.avatar}
               </Avatar>
               <Stack flex={1}>
-                <Text fontSize="$3" fontWeight="600" color="$color">{member.name}</Text>
-                <Text fontSize="$2" color="$colorFocus">{member.email}</Text>
+                <Text fontSize="12" fontWeight="600" color="#F8FAFC">{member.name}</Text>
+                <Text fontSize="8" color="#CBD5E1">{member.email}</Text>
               </Stack>
               <Badge variant={member.role === 'owner' ? 'primary' : 'outline'} size="sm">
                 {member.role}
               </Badge>
               {member.role !== 'owner' && (
                 <Button variant="ghost" size="xs" onPress={() => handleRemoveMember(member.id)}>
-                  <Ionicons name="close-circle" size={20} color="$error" />
+                  <Ionicons name="close-circle" size={20} color="#EF4444" />
                 </Button>
               )}
             </Stack>
@@ -242,26 +242,26 @@ export const SettingsHouseholdScreen: React.FC = () => {
       {/* Danger Zone */}
       <Card variant="default" padding="lg" marginBottom="lg" style={styles.dangerCard}>
         <Stack flexDirection="row" alignItems="center" gap="3" marginBottom="lg">
-          <Stack width={40} height={40} borderRadius="lg" backgroundColor="$error20" alignItems="center" justifyContent="center">
-            <Ionicons name="warning" size={22} color="$error" />
+          <Stack width={40} height={40} borderRadius="lg" backgroundColor="rgba(239,68,68,0.2)" alignItems="center" justifyContent="center">
+            <Ionicons name="warning" size={22} color="#EF4444" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="$4" fontWeight="600" color="$error">Danger Zone</Text>
-            <Text fontSize="$2" color="$colorFocus">Irreversible actions</Text>
+            <Text fontSize="16" fontWeight="600" color="#EF4444">Danger Zone</Text>
+            <Text fontSize="8" color="#CBD5E1">Irreversible actions</Text>
           </Stack>
         </Stack>
 
         <Stack gap="3">
           <Button variant="outline" fullWidth onPress={() => Alert.alert('Leave Household', 'Are you sure?')} style={styles.dangerButton}>
             <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
-              <Ionicons name="exit" size={20} color="$error" />
-              <Text style={{ color: '$error' }}>Leave Household</Text>
+              <Ionicons name="exit" size={20} color="#EF4444" />
+              <Text style={{ color: '#EF4444' }}>Leave Household</Text>
             </Stack>
           </Button>
           <Button variant="outline" fullWidth onPress={() => Alert.alert('Delete Household', 'This cannot be undone')} style={styles.dangerButton}>
             <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
-              <Ionicons name="trash" size={20} color="$error" />
-              <Text style={{ color: '$error' }}>Delete Household</Text>
+              <Ionicons name="trash" size={20} color="#EF4444" />
+              <Text style={{ color: '#EF4444' }}>Delete Household</Text>
             </Stack>
           </Button>
         </Stack>
@@ -271,11 +271,11 @@ export const SettingsHouseholdScreen: React.FC = () => {
 };
 
 const styles = {
-  container: { flex: 1, backgroundColor: '$background' },
+  container: { flex: 1, backgroundColor: '#0A1628' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  householdCard: { backgroundColor: '$primary05' },
-  statItem: { padding: 12, borderRadius: 12, backgroundColor: '$backgroundStrong' },
-  memberItem: { padding: 8, borderRadius: 8, backgroundColor: '$backgroundStrong' },
-  dangerCard: { backgroundColor: '$error05' },
-  dangerButton: { borderColor: '$error' },
+  householdCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
+  statItem: { padding: 12, borderRadius: 12, backgroundColor: '#1E2D4D' },
+  memberItem: { padding: 8, borderRadius: 8, backgroundColor: '#1E2D4D' },
+  dangerCard: { backgroundColor: 'rgba(239,68,68,0.05)' },
+  dangerButton: { borderColor: '#EF4444' },
 };

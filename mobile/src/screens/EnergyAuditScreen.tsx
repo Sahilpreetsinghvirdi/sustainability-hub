@@ -1,4 +1,4 @@
-// mobile/src/screens/EnergyAuditScreen.tsx
+﻿// mobile/src/screens/EnergyAuditScreen.tsx
 import React from 'react';
 import { ScrollView } from 'react-native';
 import { Stack, Text, Button, Card, Badge, ProgressBar } from '@/ui';
@@ -51,8 +51,8 @@ const RECOMMENDATIONS = [
 ];
 
 const IMPROVEMENTS = [
-  { label: 'Current Rating', score: 45, color: '$error' },
-  { label: 'After Fixes', score: 78, color: '$success' },
+  { label: 'Current Rating', score: 45, color: '#EF4444' },
+  { label: 'After Fixes', score: 78, color: '#22C55E' },
 ];
 
 export const EnergyAuditScreen: React.FC = () => {
@@ -69,47 +69,47 @@ export const EnergyAuditScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="$5" fontWeight="700" color="$color">Energy Audit</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Energy Audit</Text>
         <Stack width={40} />
       </Stack>
 
       {/* Score Card */}
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.scoreCard}>
         <Stack flexDirection="row" alignItems="center" gap="3" marginBottom="lg">
-          <Stack width={64} height={64} borderRadius="full" backgroundColor="$primary20" alignItems="center" justifyContent="center">
-            <Ionicons name="speedometer" size={32} color="$primary" />
+          <Stack width={64} height={64} borderRadius="full" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
+            <Ionicons name="speedometer" size={32} color="#22C55E" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="$2" color="$colorFocus">HOME ENERGY SCORE</Text>
-            <Text fontSize="$8" fontWeight="800" color="$primary">{currentScore}<Text fontSize="$4">/100</Text></Text>
+            <Text fontSize="8" color="#CBD5E1">HOME ENERGY SCORE</Text>
+            <Text fontSize="32" fontWeight="800" color="#22C55E">{currentScore}<Text fontSize="16">/100</Text></Text>
           </Stack>
           <Badge variant="warning" size="lg">Needs Work</Badge>
         </Stack>
         <ProgressBar progress={currentScore} variant="warning" size="lg" />
         <Stack flexDirection="row" justifyContent="space-between" marginTop="2">
-          <Text fontSize="$1" color="$colorFocus">Inefficient</Text>
-          <Text fontSize="$1" color="$colorFocus">Efficient</Text>
+          <Text fontSize="4" color="#CBD5E1">Inefficient</Text>
+          <Text fontSize="4" color="#CBD5E1">Efficient</Text>
         </Stack>
       </Card>
 
       {/* Potential Savings */}
       <Card variant="default" padding="lg" marginBottom="lg" style={styles.savingsCard}>
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Potential Annual Savings</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Potential Annual Savings</Text>
         <Stack flexDirection="row" gap="3">
           <Stack flex={1} alignItems="center" style={styles.savingsItem}>
-            <Ionicons name="cash" size={28} color="$success" />
-            <Text fontSize="$5" fontWeight="800" color="$success" marginTop="2">{formatCurrency(totalSavings)}</Text>
-            <Text fontSize="$2" color="$colorFocus">Money Saved</Text>
+            <Ionicons name="cash" size={28} color="#22C55E" />
+            <Text fontSize="20" fontWeight="800" color="#22C55E" marginTop="2">{formatCurrency(totalSavings)}</Text>
+            <Text fontSize="8" color="#CBD5E1">Money Saved</Text>
           </Stack>
           <Stack flex={1} alignItems="center" style={styles.savingsItem}>
-            <Ionicons name="leaf" size={28} color="$primary" />
-            <Text fontSize="$5" fontWeight="800" color="$primary" marginTop="2">{formatCarbon(totalCarbonSaved)}</Text>
-            <Text fontSize="$2" color="$colorFocus">CO₂e Reduced</Text>
+            <Ionicons name="leaf" size={28} color="#22C55E" />
+            <Text fontSize="20" fontWeight="800" color="#22C55E" marginTop="2">{formatCarbon(totalCarbonSaved)}</Text>
+            <Text fontSize="8" color="#CBD5E1">COâ‚‚e Reduced</Text>
           </Stack>
           <Stack flex={1} alignItems="center" style={styles.savingsItem}>
-            <Ionicons name="time" size={28} color="$warning" />
-            <Text fontSize="$5" fontWeight="800" color="$warning" marginTop="2">{RECOMMENDATIONS.length}</Text>
-            <Text fontSize="$2" color="$colorFocus">Actions</Text>
+            <Ionicons name="time" size={28} color="#F59E0B" />
+            <Text fontSize="20" fontWeight="800" color="#F59E0B" marginTop="2">{RECOMMENDATIONS.length}</Text>
+            <Text fontSize="8" color="#CBD5E1">Actions</Text>
           </Stack>
         </Stack>
       </Card>
@@ -117,7 +117,7 @@ export const EnergyAuditScreen: React.FC = () => {
       {/* Recommendations */}
       <Stack marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-          <Text fontSize="$5" fontWeight="700" color="$color">Recommendations</Text>
+          <Text fontSize="20" fontWeight="700" color="#F8FAFC">Recommendations</Text>
           <Badge variant="outline" size="sm">{RECOMMENDATIONS.length} items</Badge>
         </Stack>
         <Stack gap="3">
@@ -129,7 +129,7 @@ export const EnergyAuditScreen: React.FC = () => {
 
       {/* Energy Score Breakdown */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Score Breakdown</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Score Breakdown</Text>
         <Stack gap="3">
           <ScoreItem label="Heating & Cooling" score={52} maxScore={100} />
           <ScoreItem label="Water Heating" score={30} maxScore={100} />
@@ -161,9 +161,9 @@ export const EnergyAuditScreen: React.FC = () => {
 
 const RecommendationCard = ({ recommendation }: any) => {
   const priorityColors: Record<string, string> = {
-    high: '$error',
-    medium: '$warning',
-    low: '$success',
+    high: '#EF4444',
+    medium: '#F59E0B',
+    low: '#22C55E',
   };
   const categoryIcons: Record<string, any> = {
     heating_cooling: { icon: 'thermometer', component: Ionicons, color: '#EF4444' },
@@ -181,24 +181,24 @@ const RecommendationCard = ({ recommendation }: any) => {
         </Stack>
         <Stack flex={1}>
           <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
-            <Text fontSize="$3" fontWeight="600" color="$color">{recommendation.title}</Text>
+            <Text fontSize="12" fontWeight="600" color="#F8FAFC">{recommendation.title}</Text>
             <Badge variant={priorityColors[recommendation.priority] as any} size="sm">
               {recommendation.priority}
             </Badge>
           </Stack>
-          <Text fontSize="$2" color="$colorFocus" marginBottom="2">{recommendation.description}</Text>
+          <Text fontSize="8" color="#CBD5E1" marginBottom="2">{recommendation.description}</Text>
           <Stack flexDirection="row" gap="4">
             <Stack flexDirection="row" alignItems="center" gap="1">
-              <Ionicons name="cash" size={14} color="$success" />
-              <Text fontSize="$2" fontWeight="600" color="$success">{formatCurrency(recommendation.savings)}/yr</Text>
+              <Ionicons name="cash" size={14} color="#22C55E" />
+              <Text fontSize="8" fontWeight="600" color="#22C55E">{formatCurrency(recommendation.savings)}/yr</Text>
             </Stack>
             <Stack flexDirection="row" alignItems="center" gap="1">
-              <Ionicons name="leaf" size={14} color="$primary" />
-              <Text fontSize="$2" fontWeight="600" color="$primary">{formatCarbon(recommendation.carbonSaved)}</Text>
+              <Ionicons name="leaf" size={14} color="#22C55E" />
+              <Text fontSize="8" fontWeight="600" color="#22C55E">{formatCarbon(recommendation.carbonSaved)}</Text>
             </Stack>
             <Stack flexDirection="row" alignItems="center" gap="1">
-              <Ionicons name="time" size={14} color="$warning" />
-              <Text fontSize="$2" fontWeight="600" color="$warning">{recommendation.roi}</Text>
+              <Ionicons name="time" size={14} color="#F59E0B" />
+              <Text fontSize="8" fontWeight="600" color="#F59E0B">{recommendation.roi}</Text>
             </Stack>
           </Stack>
         </Stack>
@@ -217,8 +217,8 @@ const ScoreItem = ({ label, score, maxScore }: any) => {
   return (
     <Stack>
       <Stack flexDirection="row" justifyContent="space-between" marginBottom="1">
-        <Text fontSize="$3" fontWeight="600" color="$color">{label}</Text>
-        <Text fontSize="$3" fontWeight="700" color={percentage >= 75 ? '$success' : percentage >= 50 ? '$warning' : '$error'}>
+        <Text fontSize="12" fontWeight="600" color="#F8FAFC">{label}</Text>
+        <Text fontSize="12" fontWeight="700" color={percentage >= 75 ? '#22C55E' : percentage >= 50 ? '#F59E0B' : '#EF4444'}>
           {score}/{maxScore}
         </Text>
       </Stack>
@@ -228,11 +228,11 @@ const ScoreItem = ({ label, score, maxScore }: any) => {
 };
 
 const styles = {
-  container: { flex: 1, backgroundColor: '$background' },
+  container: { flex: 1, backgroundColor: '#0A1628' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  scoreCard: { backgroundColor: '$primary05' },
-  savingsCard: { backgroundColor: '$success05' },
-  savingsItem: { padding: 12, borderRadius: 12, backgroundColor: '$backgroundStrong' },
+  scoreCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
+  savingsCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
+  savingsItem: { padding: 12, borderRadius: 12, backgroundColor: '#1E2D4D' },
   recommendationCard: {},
   actions: { marginTop: 8 },
 };

@@ -1,4 +1,4 @@
-// mobile/src/screens/FoodWasteLogScreen.tsx
+﻿// mobile/src/screens/FoodWasteLogScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -135,7 +135,7 @@ export const FoodWasteLogScreen: React.FC = () => {
       {/* Progress Header */}
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.progressCard}>
         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom="md">
-          <Text fontSize="$4" fontWeight="600" color="$color">Log Food Waste</Text>
+          <Text fontSize="16" fontWeight="600" color="#F8FAFC">Log Food Waste</Text>
           <Badge variant="outline" size="sm">Step {step} of 4</Badge>
         </Stack>
         <Stack flexDirection="row" gap="2">
@@ -150,16 +150,16 @@ export const FoodWasteLogScreen: React.FC = () => {
                 width={32}
                 height={32}
                 borderRadius="full"
-                backgroundColor={step > item.step ? '$success' : step === item.step ? '$primary' : '$border'}
+                backgroundColor={step > item.step ? '#22C55E' : step === item.step ? '#22C55E' : '#334155'}
                 alignItems="center"
                 justifyContent="center"
                 marginBottom="1"
               >
-                <Text fontSize="$2" fontWeight="700" color={step >= item.step ? '$successText' : step === item.step ? '$primaryText' : '$colorFocus'}>
+                <Text fontSize="8" fontWeight="700" color={step >= item.step ? '#34D399' : step === item.step ? '#FFFFFF' : '#CBD5E1'}>
                   {index + 1}
                 </Text>
               </Stack>
-              <Text fontSize="$1" color={step >= item.step ? '$success' : step === item.step ? '$primary' : '$colorFocus'} textAlign="center">
+              <Text fontSize="4" color={step >= item.step ? '#22C55E' : step === item.step ? '#22C55E' : '#CBD5E1'} textAlign="center">
                 {item.label}
               </Text>
             </Stack>
@@ -206,9 +206,9 @@ export const FoodWasteLogScreen: React.FC = () => {
       {isAnalyzing && (
         <Stack style={styles.analyzingOverlay}>
           <Card variant="elevated" padding="lg" style={styles.analyzingCard}>
-            <Ionicons name="sync" size={48} color="$primary" />
-            <Text fontSize="$4" fontWeight="600" color="$color" marginTop="3" marginBottom="1">Analyzing Photos...</Text>
-            <Text fontSize="$2" color="$colorFocus">{analysisProgress > 0 ? `${analysisProgress}%` : 'Identifying food & waste'}</Text>
+            <Ionicons name="sync" size={48} color="#22C55E" />
+            <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginTop="3" marginBottom="1">Analyzing Photos...</Text>
+            <Text fontSize="8" color="#CBD5E1">{analysisProgress > 0 ? `${analysisProgress}%` : 'Identifying food & waste'}</Text>
             <ProgressBar progress={analysisProgress} variant="primary" size="lg" style={{ marginTop: 8 }} />
           </Card>
         </Stack>
@@ -219,7 +219,7 @@ export const FoodWasteLogScreen: React.FC = () => {
 
 const MealTypeStep = ({ onSelect }: any) => (
   <Stack gap="3">
-    <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="md">What meal was this?</Text>
+    <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="md">What meal was this?</Text>
     <Stack flexDirection="row" flexWrap="wrap" gap="3">
       {MEAL_TYPES.map(type => (
         <TouchableOpacity
@@ -238,7 +238,7 @@ const MealTypeStep = ({ onSelect }: any) => (
           >
             <type.component name={type.icon} size={28} color={type.color} />
           </Stack>
-          <Text fontSize="$3" fontWeight="600" color="$color">{type.label}</Text>
+          <Text fontSize="12" fontWeight="600" color="#F8FAFC">{type.label}</Text>
         </TouchableOpacity>
       ))}
     </Stack>
@@ -251,11 +251,11 @@ const PhotoStep = ({ title, subtitle, image, onPick, type, mealType, showZeroWas
   if (image === 'zero-waste') {
     return (
       <Stack gap="lg" alignItems="center" style={styles.zeroWasteCard}>
-        <Stack width={120} height={120} borderRadius="full" backgroundColor="$success20" alignItems="center" justifyContent="center">
-          <Entypo name="star" size={50} color="$success" />
+        <Stack width={120} height={120} borderRadius="full" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
+          <Entypo name="star" size={50} color="#22C55E" />
         </Stack>
-        <Text fontSize="$5" fontWeight="700" color="$color">Zero Waste! 🎉</Text>
-        <Text fontSize="$3" color="$colorFocus" textAlign="center">You finished everything on your plate. Amazing!</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Zero Waste! ðŸŽ‰</Text>
+        <Text fontSize="12" color="#CBD5E1" textAlign="center">You finished everything on your plate. Amazing!</Text>
         <Button variant="primary" fullWidth onPress={onSubmit}>
           <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
             <Entypo name="star" size={20} />
@@ -273,8 +273,8 @@ const PhotoStep = ({ title, subtitle, image, onPick, type, mealType, showZeroWas
         <Stack width={56} height={56} borderRadius="lg" backgroundColor={mealTypeConfig.color + '20'} alignItems="center" justifyContent="center" marginBottom="3">
           <mealTypeConfig.component name={mealTypeConfig.icon} size={28} color={mealTypeConfig.color} />
         </Stack>
-        <Text fontSize="$4" fontWeight="600" color="$color">{title}</Text>
-        <Text fontSize="$2" color="$colorFocus" textAlign="center">{subtitle}</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC">{title}</Text>
+        <Text fontSize="8" color="#CBD5E1" textAlign="center">{subtitle}</Text>
       </Card>
 
       {image ? (
@@ -306,11 +306,11 @@ const PhotoStep = ({ title, subtitle, image, onPick, type, mealType, showZeroWas
         </Card>
       ) : (
         <Card variant="outlined" padding="xl" alignItems="center" style={styles.cameraCard}>
-          <Stack width={80} height={80} borderRadius="full" backgroundColor="$primary10" alignItems="center" justifyContent="center" marginBottom="4">
-            <Ionicons name="camera" size={40} color="$primary" />
+          <Stack width={80} height={80} borderRadius="full" backgroundColor="rgba(34,197,94,0.1)" alignItems="center" justifyContent="center" marginBottom="4">
+            <Ionicons name="camera" size={40} color="#22C55E" />
           </Stack>
-          <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="1">No Photo Yet</Text>
-          <Text fontSize="$2" color="$colorFocus" textAlign="center" marginBottom="6">Tap to add photo</Text>
+          <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="1">No Photo Yet</Text>
+          <Text fontSize="8" color="#CBD5E1" textAlign="center" marginBottom="6">Tap to add photo</Text>
           <Stack flexDirection="row" gap="3">
             <Button variant="secondary" onPress={() => onPick(type)}>
               <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
@@ -344,7 +344,7 @@ const ReviewStep = ({ mealType, mealImage, wasteImage, onBack, onSubmit, submitt
 
   return (
     <Stack gap="lg">
-      <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="md">Review Your Log</Text>
+      <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="md">Review Your Log</Text>
 
       <Card variant="default" padding="0" overflow="hidden" style={styles.reviewImages}>
         <Stack flexDirection="row">
@@ -353,25 +353,25 @@ const ReviewStep = ({ mealType, mealImage, wasteImage, onBack, onSubmit, submitt
             <Stack style={styles.reviewImageLabel}>
               <Stack flexDirection="row" alignItems="center" gap="1">
                 <Stack width={8} height={8} borderRadius="full" backgroundColor={mealTypeConfig.color} />
-                <Text fontSize="$2" fontWeight="600" color="$color">{mealTypeConfig.label}</Text>
+                <Text fontSize="8" fontWeight="600" color="#F8FAFC">{mealTypeConfig.label}</Text>
               </Stack>
-              <Text fontSize="$1" color="$colorFocus">Meal Photo</Text>
+              <Text fontSize="4" color="#CBD5E1">Meal Photo</Text>
             </Stack>
           </Stack>
-          <Stack width={1} backgroundColor="$border" />
+          <Stack width={1} backgroundColor="#334155" />
           <Stack flex={1} style={styles.reviewImageSlot}>
             {wasteImage === 'zero-waste' ? (
-              <Stack style={[styles.reviewImage, { alignItems: 'center', justifyContent: 'center', backgroundColor: '$success05' }]}>
-                <Entypo name="star" size={60} color="$success" />
-                <Text fontSize="$3" fontWeight="600" color="$success" marginTop="3">Zero Waste!</Text>
-                <Text fontSize="$1" color="$colorFocus">No waste photo needed</Text>
+              <Stack style={[styles.reviewImage, { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(34,197,94,0.05)' }]}>
+                <Entypo name="star" size={60} color="#22C55E" />
+                <Text fontSize="12" fontWeight="600" color="#22C55E" marginTop="3">Zero Waste!</Text>
+                <Text fontSize="4" color="#CBD5E1">No waste photo needed</Text>
               </Stack>
             ) : (
               <>
                 <Image source={{ uri: wasteImage }} style={styles.reviewImage} resizeMode="cover" />
                 <Stack style={styles.reviewImageLabel}>
-                  <Text fontSize="$2" fontWeight="600" color="$error" marginBottom="1">Waste Photo</Text>
-                  <Text fontSize="$1" color="$colorFocus">Leftovers & Scraps</Text>
+                  <Text fontSize="8" fontWeight="600" color="#EF4444" marginBottom="1">Waste Photo</Text>
+                  <Text fontSize="4" color="#CBD5E1">Leftovers & Scraps</Text>
                 </Stack>
               </>
             )}
@@ -380,13 +380,13 @@ const ReviewStep = ({ mealType, mealImage, wasteImage, onBack, onSubmit, submitt
       </Card>
 
       <Card variant="elevated" padding="lg" style={styles.estimateCard}>
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Estimated Impact</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Estimated Impact</Text>
         <Stack flexDirection="row" gap="4">
-          <EstimateItem label="Avoidable Waste" value="~200g" color="$error" icon={<Ionicons name="trash" size={22} />} />
-          <EstimateItem label="Cost" value="~$2.50" color="$warning" icon={<Ionicons name="cash" size={22} />} />
-          <EstimateItem label="CO₂e" value="~1.2 kg" color="$primary" icon={<Ionicons name="leaf" size={22} />} />
+          <EstimateItem label="Avoidable Waste" value="~200g" color="#EF4444" icon={<Ionicons name="trash" size={22} />} />
+          <EstimateItem label="Cost" value="~8.50" color="#F59E0B" icon={<Ionicons name="cash" size={22} />} />
+          <EstimateItem label="COâ‚‚e" value="~1.2 kg" color="#22C55E" icon={<Ionicons name="leaf" size={22} />} />
         </Stack>
-        <Text fontSize="$1" color="$colorFocus" marginTop="4" textAlign="center">Estimates based on AI analysis</Text>
+        <Text fontSize="4" color="#CBD5E1" marginTop="4" textAlign="center">Estimates based on AI analysis</Text>
       </Card>
 
       <Stack gap="3" style={styles.actions}>
@@ -412,29 +412,29 @@ const EstimateItem = ({ label, value, color, icon }: any) => (
     <Stack width={36} height={36} borderRadius="md" backgroundColor={color + '20'} alignItems="center" justifyContent="center">
       {icon}
     </Stack>
-    <Text fontSize="$4" fontWeight="700" color={color}>{value}</Text>
-    <Text fontSize="$1" color="$colorFocus">{label}</Text>
+    <Text fontSize="16" fontWeight="700" color={color}>{value}</Text>
+    <Text fontSize="4" color="#CBD5E1">{label}</Text>
   </Stack>
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '$background' },
+  container: { flex: 1, backgroundColor: '#0A1628' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  progressCard: { backgroundColor: '$primary05' },
+  progressCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
   progressStep: { alignItems: 'center' },
-  mealTypeButton: { flex: 1, minWidth: 70, padding: 16, borderRadius: 16, backgroundColor: '$backgroundStrong', alignItems: 'center' },
+  mealTypeButton: { flex: 1, minWidth: 70, padding: 16, borderRadius: 16, backgroundColor: '#1E2D4D', alignItems: 'center' },
   zeroWasteCard: { padding: 32 },
   imagePreview: { overflow: 'hidden' },
   imageContainer: { position: 'relative' },
   previewImage: { width: '100%', height: 200 },
   imageOverlay: { position: 'absolute', top: 12, right: 12 },
-  imageActions: { flexDirection: 'row', gap: 12, padding: 16, borderTopWidth: 1, borderTopColor: '$border' },
+  imageActions: { flexDirection: 'row', gap: 12, padding: 16, borderTopWidth: 1, borderTopColor: '#334155' },
   cameraCard: { minHeight: 280 },
   reviewImages: { overflow: 'hidden' },
   reviewImageSlot: { position: 'relative' },
   reviewImage: { width: '100%', height: 140 },
   reviewImageLabel: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 12, backgroundColor: 'rgba(0,0,0,0.7)' },
-  estimateCard: { backgroundColor: '$primary05' },
+  estimateCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
   actions: { marginTop: 8 },
   analyzingOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', padding: 16, backgroundColor: 'rgba(0,0,0,0.5)' },
   analyzingCard: { width: '90%', maxWidth: 320 },

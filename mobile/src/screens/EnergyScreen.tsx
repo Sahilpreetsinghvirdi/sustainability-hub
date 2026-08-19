@@ -1,4 +1,4 @@
-// mobile/src/screens/EnergyScreen.tsx
+﻿// mobile/src/screens/EnergyScreen.tsx
 import React, { useState } from 'react';
 import { ScrollView, RefreshControl, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -81,10 +81,10 @@ export const EnergyScreen: React.FC = () => {
       <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="xl">
         <Stack>
           <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
-            <Stack width={40} height={40} borderRadius="md" backgroundColor="$warning20" alignItems="center" justifyContent="center">
-              <Ionicons name="flash" size={24} color="$warning" />
+            <Stack width={40} height={40} borderRadius="md" backgroundColor="rgba(245,158,11,0.2)" alignItems="center" justifyContent="center">
+              <Ionicons name="flash" size={24} color="#F59E0B" />
             </Stack>
-            <Text fontSize="$7" fontWeight="800" color="$color">Energy Tracker</Text>
+            <Text fontSize="28" fontWeight="800" color="#F8FAFC">Energy Tracker</Text>
           </Stack>
         </Stack>
       </Stack>
@@ -96,21 +96,21 @@ export const EnergyScreen: React.FC = () => {
           value={`${avgMonthly.toFixed(0)} kWh`}
           subtitle={formatCurrency(bills.length ? totalCost / bills.length : 0)} + '/mo'
           icon={<Ionicons name="flash" size={22} />}
-          color="$warning"
+          color="#F59E0B"
         />
         <SummaryCard
           title="Total Cost"
           value={formatCurrency(totalCost)}
           subtitle={`${bills.length} bills`}
           icon={<Ionicons name="cash" size={22} />}
-          color="$success"
+          color="#22C55E"
         />
         <SummaryCard
           title="Appliances"
           value={`${appliances.length}`}
           subtitle={recommendations.length > 0 ? `${recommendations.length} tips` : 'Add appliances'}
           icon={<MaterialIcons name="devices" size={22} />}
-          color="$secondary"
+          color="#0EA5E9"
         />
       </Stack>
 
@@ -124,12 +124,12 @@ export const EnergyScreen: React.FC = () => {
       {/* Quick Audit */}
       <Card variant="elevated" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" alignItems="center" gap="4">
-          <Stack width={56} height={56} borderRadius="lg" backgroundColor="$primary20" alignItems="center" justifyContent="center">
-            <MaterialIcons name="analytics" size={28} color="$primary" />
+          <Stack width={56} height={56} borderRadius="lg" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
+            <MaterialIcons name="analytics" size={28} color="#22C55E" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="$4" fontWeight="600" color="$color">Home Energy Audit</Text>
-            <Text fontSize="$2" color="$colorFocus">Get personalized savings recommendations</Text>
+            <Text fontSize="16" fontWeight="600" color="#F8FAFC">Home Energy Audit</Text>
+            <Text fontSize="8" color="#CBD5E1">Get personalized savings recommendations</Text>
           </Stack>
           <Button variant="primary" onPress={async () => { await generateAudit(); router.push('/energy/audit'); }}>
             <Stack flexDirection="row" alignItems="center" gap="2">
@@ -144,7 +144,7 @@ export const EnergyScreen: React.FC = () => {
       {recommendations.length > 0 && (
         <Stack marginBottom="lg">
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-            <Text fontSize="$5" fontWeight="700" color="$color">Top Recommendations</Text>
+            <Text fontSize="20" fontWeight="700" color="#F8FAFC">Top Recommendations</Text>
             <Button variant="ghost" size="sm">View All</Button>
           </Stack>
           <Stack gap="2">
@@ -157,14 +157,14 @@ export const EnergyScreen: React.FC = () => {
 
       {/* Bills List */}
       <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-        <Text fontSize="$5" fontWeight="700" color="$color">Recent Bills</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Recent Bills</Text>
       </Stack>
 
       {bills.length === 0 ? (
         <Card variant="filled" padding="xl" alignItems="center" style={styles.emptyCard}>
-          <Ionicons name="document-text" size={56} color="$colorFocus" />
-          <Text fontSize="$5" fontWeight="600" color="$color" marginTop="3" marginBottom="1">No bills yet</Text>
-          <Text fontSize="$3" color="$colorFocus" textAlign="center" marginBottom="4">Scan your first utility bill</Text>
+          <Ionicons name="document-text" size={56} color="#CBD5E1" />
+          <Text fontSize="20" fontWeight="600" color="#F8FAFC" marginTop="3" marginBottom="1">No bills yet</Text>
+          <Text fontSize="12" color="#CBD5E1" textAlign="center" marginBottom="4">Scan your first utility bill</Text>
           <Button variant="primary" onPress={handleScanPress}>Scan Bill</Button>
         </Card>
       ) : (
@@ -181,17 +181,17 @@ const SummaryCard = ({ title, value, subtitle, icon, color }: any) => (
     <Stack width={44} height={44} borderRadius="lg" backgroundColor={color + '20'} alignItems="center" justifyContent="center" marginBottom="2">
       {icon}
     </Stack>
-    <Text fontSize="$2" color="$colorFocus" textTransform="uppercase" letterSpacing={1}>{title}</Text>
-    <Text fontSize="$6" fontWeight="800" color="$color" marginTop="1">{value}</Text>
-    <Text fontSize="$1" color="$colorFocus">{subtitle}</Text>
+    <Text fontSize="8" color="#CBD5E1" textTransform="uppercase" letterSpacing={1}>{title}</Text>
+    <Text fontSize="24" fontWeight="800" color="#F8FAFC" marginTop="1">{value}</Text>
+    <Text fontSize="4" color="#CBD5E1">{subtitle}</Text>
   </Stack>
 );
 
 const ActionButton = ({ title, subtitle, icon, onPress, variant }: any) => (
   <Button variant={variant} onPress={onPress} style={{ flex: 1 }} leftIcon={icon}>
     <Stack>
-      <Text fontSize="$3" fontWeight="600">{title}</Text>
-      <Text fontSize="$1" opacity={0.8}>{subtitle}</Text>
+      <Text fontSize="12" fontWeight="600">{title}</Text>
+      <Text fontSize="4" opacity={0.8}>{subtitle}</Text>
     </Stack>
   </Button>
 );
@@ -200,18 +200,18 @@ const RecommendationCard = ({ rec }: any) => (
   <Card variant="default" padding="md" style={styles.recCard}>
     <Stack flexDirection="row" alignItems="flex-start" gap="3">
       <Stack width={4} height="100%" borderRadius="full" backgroundColor={
-        rec.priority === 'high' ? '$error' :
-        rec.priority === 'medium' ? '$warning' : '$info'
+        rec.priority === 'high' ? '#EF4444' :
+        rec.priority === 'medium' ? '#F59E0B' : '#3B82F6'
       } />
       <Stack flex={1}>
-        <Text fontSize="$3" fontWeight="600" color="$color">{rec.title}</Text>
-        <Text fontSize="$2" color="$colorFocus" marginTop="1">{rec.description}</Text>
+        <Text fontSize="12" fontWeight="600" color="#F8FAFC">{rec.title}</Text>
+        <Text fontSize="8" color="#CBD5E1" marginTop="1">{rec.description}</Text>
         <Stack flexDirection="row" gap="2" marginTop="3">
           <Badge variant="outline" size="xs">Save ${rec.estimated_savings_usd_year?.toFixed(0)}/yr</Badge>
           <Badge variant="outline" size="xs">{rec.difficulty}</Badge>
         </Stack>
       </Stack>
-      <Ionicons name="chevron-forward" size={20} color="$colorFocus" />
+      <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
     </Stack>
   </Card>
 );
@@ -220,33 +220,33 @@ const BillCard = ({ bill }: any) => (
   <Card variant="default" padding="md" style={styles.billCard}>
     <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
       <Stack flexDirection="row" alignItems="center" gap="3" flex={1}>
-        <Stack width={44} height={44} borderRadius="lg" backgroundColor="$warning20" alignItems="center" justifyContent="center">
-          <Ionicons name="document-text" size={20} color="$warning" />
+        <Stack width={44} height={44} borderRadius="lg" backgroundColor="rgba(245,158,11,0.2)" alignItems="center" justifyContent="center">
+          <Ionicons name="document-text" size={20} color="#F59E0B" />
         </Stack>
         <Stack>
           <Stack flexDirection="row" alignItems="center" gap="2">
-            <Text fontSize="$3" fontWeight="600" color="$color">{bill.utility_provider || 'Utility'}</Text>
+            <Text fontSize="12" fontWeight="600" color="#F8FAFC">{bill.utility_provider || 'Utility'}</Text>
             <Badge variant="outline" size="xs">{formatDate(bill.billing_period_start)} - {formatDate(bill.billing_period_end)}</Badge>
           </Stack>
           <Stack flexDirection="row" gap="3" marginTop="1">
-            <Text fontSize="$2" color="$colorFocus">{formatEnergy(bill.electricity_kwh)}</Text>
-            {bill.gas_therms > 0 && <Text fontSize="$2" color="$colorFocus">{bill.gas_therms.toFixed(1)} therms</Text>}
+            <Text fontSize="8" color="#CBD5E1">{formatEnergy(bill.electricity_kwh)}</Text>
+            {bill.gas_therms > 0 && <Text fontSize="8" color="#CBD5E1">{bill.gas_therms.toFixed(1)} therms</Text>}
           </Stack>
         </Stack>
       </Stack>
       <Stack alignItems="flex-end">
-        <Text fontSize="$5" fontWeight="700" color="$color">{formatCurrency(bill.total_cost)}</Text>
-        <Text fontSize="$1" color="$colorFocus">Total</Text>
-        <Ionicons name="chevron-forward" size={20} color="$colorFocus" />
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">{formatCurrency(bill.total_cost)}</Text>
+        <Text fontSize="4" color="#CBD5E1">Total</Text>
+        <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
       </Stack>
     </Stack>
   </Card>
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '$background' },
+  container: { flex: 1, backgroundColor: '#0A1628' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  summaryCard: { padding: 16, borderRadius: 16, backgroundColor: '$backgroundStrong' },
+  summaryCard: { padding: 16, borderRadius: 16, backgroundColor: '#1E2D4D' },
   recCard: {},
   billCard: {},
   emptyCard: { gap: 16 },

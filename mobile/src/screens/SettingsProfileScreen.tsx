@@ -1,4 +1,4 @@
-// mobile/src/screens/SettingsProfileScreen.tsx
+﻿// mobile/src/screens/SettingsProfileScreen.tsx
 import React, { useState } from 'react';
 import { ScrollView, Alert } from 'react-native';
 import { Stack, Text, Button, Card, Input, Avatar, Badge } from '@/ui';
@@ -71,17 +71,17 @@ export const SettingsProfileScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="$5" fontWeight="700" color="$color">Profile</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Profile</Text>
         <Stack width={40} />
       </Stack>
 
       {/* Avatar Section */}
       <Card variant="elevated" padding="lg" alignItems="center" marginBottom="lg">
-        <Avatar size="3xl" backgroundColor="$primary">
+        <Avatar size="3xl" backgroundColor="#22C55E">
           {user?.name?.charAt(0) || 'U'}
         </Avatar>
-        <Text fontSize="$5" fontWeight="700" color="$color" marginTop="3">{user?.name || 'User'}</Text>
-        <Text fontSize="$3" color="$colorFocus">{user?.email || 'user@example.com'}</Text>
+        <Text fontSize="20" fontWeight="700" color="#F8FAFC" marginTop="3">{user?.name || 'User'}</Text>
+        <Text fontSize="12" color="#CBD5E1">{user?.email || 'user@example.com'}</Text>
         <Badge variant="success" size="sm" marginTop="2">
           {user?.is_active ? 'Active Account' : 'Inactive'}
         </Badge>
@@ -96,7 +96,7 @@ export const SettingsProfileScreen: React.FC = () => {
       {/* Personal Info */}
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-          <Text fontSize="$4" fontWeight="600" color="$color">Personal Information</Text>
+          <Text fontSize="16" fontWeight="600" color="#F8FAFC">Personal Information</Text>
           <Button variant="ghost" size="sm" onPress={() => setIsEditing(!isEditing)}>
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name={isEditing ? 'close' : 'pencil'} size={16} />
@@ -111,7 +111,7 @@ export const SettingsProfileScreen: React.FC = () => {
             value={name}
             onChangeText={setName}
             editable={isEditing}
-            leftIcon={<Ionicons name="person" size={20} color="$colorFocus" />}
+            leftIcon={<Ionicons name="person" size={20} color="#CBD5E1" />}
           />
           <Input
             label="Email"
@@ -119,14 +119,14 @@ export const SettingsProfileScreen: React.FC = () => {
             onChangeText={setEmail}
             editable={isEditing}
             type="email"
-            leftIcon={<Ionicons name="mail" size={20} color="$colorFocus" />}
+            leftIcon={<Ionicons name="mail" size={20} color="#CBD5E1" />}
           />
           <Input
             label="Timezone"
             value={timezone}
             onChangeText={setTimezone}
             editable={isEditing}
-            leftIcon={<Ionicons name="globe" size={20} color="$colorFocus" />}
+            leftIcon={<Ionicons name="globe" size={20} color="#CBD5E1" />}
           />
         </Stack>
 
@@ -143,7 +143,7 @@ export const SettingsProfileScreen: React.FC = () => {
       {/* Change Password */}
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-          <Text fontSize="$4" fontWeight="600" color="$color">Change Password</Text>
+          <Text fontSize="16" fontWeight="600" color="#F8FAFC">Change Password</Text>
           <Button variant="ghost" size="sm" onPress={() => setIsChangingPassword(!isChangingPassword)}>
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name={isChangingPassword ? 'close' : 'key'} size={16} />
@@ -160,7 +160,7 @@ export const SettingsProfileScreen: React.FC = () => {
               onChangeText={setCurrentPassword}
               type="password"
               secureTextEntry
-              leftIcon={<Ionicons name="lock-closed" size={20} color="$colorFocus" />}
+              leftIcon={<Ionicons name="lock-closed" size={20} color="#CBD5E1" />}
             />
             <Input
               label="New Password"
@@ -168,7 +168,7 @@ export const SettingsProfileScreen: React.FC = () => {
               onChangeText={setNewPassword}
               type="password"
               secureTextEntry
-              leftIcon={<Ionicons name="key" size={20} color="$colorFocus" />}
+              leftIcon={<Ionicons name="key" size={20} color="#CBD5E1" />}
             />
             <Input
               label="Confirm Password"
@@ -176,7 +176,7 @@ export const SettingsProfileScreen: React.FC = () => {
               onChangeText={setConfirmPassword}
               type="password"
               secureTextEntry
-              leftIcon={<Ionicons name="key" size={20} color="$colorFocus" />}
+              leftIcon={<Ionicons name="key" size={20} color="#CBD5E1" />}
             />
             <Button variant="primary" fullWidth loading={submitting} onPress={handleChangePassword}>
               <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
@@ -190,23 +190,23 @@ export const SettingsProfileScreen: React.FC = () => {
 
       {/* Account Stats */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="$4" fontWeight="600" color="$color" marginBottom="lg">Account Statistics</Text>
+        <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Account Statistics</Text>
         <Stack gap="3">
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="$3" color="$colorFocus">Member Since</Text>
-            <Text fontSize="$3" fontWeight="600" color="$color">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</Text>
+            <Text fontSize="12" color="#CBD5E1">Member Since</Text>
+            <Text fontSize="12" fontWeight="600" color="#F8FAFC">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</Text>
           </Stack>
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="$3" color="$colorFocus">Total Scans</Text>
-            <Text fontSize="$3" fontWeight="600" color="$color">{user?.total_scans || 0}</Text>
+            <Text fontSize="12" color="#CBD5E1">Total Scans</Text>
+            <Text fontSize="12" fontWeight="600" color="#F8FAFC">{user?.total_scans || 0}</Text>
           </Stack>
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="$3" color="$colorFocus">Carbon Saved</Text>
-            <Text fontSize="$3" fontWeight="600" color="$primary">{user?.carbon_saved || 0} kg</Text>
+            <Text fontSize="12" color="#CBD5E1">Carbon Saved</Text>
+            <Text fontSize="12" fontWeight="600" color="#22C55E">{user?.carbon_saved || 0} kg</Text>
           </Stack>
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="$3" color="$colorFocus">Streak</Text>
-            <Text fontSize="$3" fontWeight="600" color="$warning">{user?.current_streak || 0} days</Text>
+            <Text fontSize="12" color="#CBD5E1">Streak</Text>
+            <Text fontSize="12" fontWeight="600" color="#F59E0B">{user?.current_streak || 0} days</Text>
           </Stack>
         </Stack>
       </Card>
@@ -215,6 +215,6 @@ export const SettingsProfileScreen: React.FC = () => {
 };
 
 const styles = {
-  container: { flex: 1, backgroundColor: '$background' },
+  container: { flex: 1, backgroundColor: '#0A1628' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
 };
