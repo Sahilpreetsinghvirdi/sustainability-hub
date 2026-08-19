@@ -81,7 +81,7 @@ export const useCarbonStore = create<CarbonState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await carbonService.getScans(params);
-      set({ scans: response.items, isLoading: false });
+      set({ scans: response.scans, isLoading: false });
     } catch (error) {
       set({ error: 'Failed to fetch scans', isLoading: false });
     }

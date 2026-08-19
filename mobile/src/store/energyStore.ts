@@ -74,7 +74,7 @@ export const useEnergyStore = create<EnergyState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await energyService.getBills(params);
-      set({ bills: response.items, isLoading: false });
+      set({ bills: response.bills, isLoading: false });
     } catch (error) {
       set({ error: 'Failed to fetch bills', isLoading: false });
     }

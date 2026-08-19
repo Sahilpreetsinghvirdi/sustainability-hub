@@ -63,7 +63,7 @@ export const useFoodWasteStore = create<FoodWasteState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await foodWasteService.getLogs(params);
-      set({ logs: response.items, isLoading: false });
+      set({ logs: response.logs, isLoading: false });
     } catch (error) {
       set({ error: 'Failed to fetch logs', isLoading: false });
     }
