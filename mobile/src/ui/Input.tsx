@@ -1,71 +1,44 @@
 // mobile/src/ui/Input.tsx
-import { styled, TextInput, Stack, Text } from '@tamagui/core';
+import React from 'react';
+import { TextInput as RNTextInput, StyleSheet } from 'react-native';
+import { Stack, Text } from 'tamagui';
 
-export const InputFrame = styled(Stack, {
-  flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: '$backgroundStrong',
-  borderWidth: 1,
-  borderColor: '$border',
-  borderRadius: '$md',
-  paddingHorizontal: '$4',
-  variants: {
-    hasError: { true: { borderColor: '$error', borderWidth: 2 } },
-    disabled: { true: { opacity: 0.6, backgroundColor: '$backgroundHover' } },
-    focused: { true: { borderColor: '$borderFocus', borderWidth: 2 } },
-  },
-}) as typeof Stack;
-
-export const InputLabel = styled(Text, {
-  fontSize: '$2',
-  fontWeight: '500',
-  color: '$color',
-  marginBottom: '$1',
-  variants: { required: { true: { color: '$error' } } },
-}) as typeof Text;
-
-export const InputField = styled(TextInput, {
-  flex: 1,
-  fontSize: '$3',
-  color: '$color',
-  paddingVertical: '$3',
-  minHeight: 48,
-  variants: {
-    multiline: { true: { minHeight: 100, paddingTop: '$4', paddingBottom: '$4', textAlignVertical: 'top' } },
-    withLeftIcon: { true: { paddingLeft: 0 } },
-    withRightIcon: { true: { paddingRight: 0 } },
-  },
-}) as typeof TextInput;
-
-export const InputHelper = styled(Text, {
-  fontSize: '$1',
-  marginTop: '$1',
-  marginLeft: '$1',
-  variants: { error: { true: { color: '$error' }, false: { color: '$colorFocus' } } },
-}) as typeof Text;
-
-export const InputIcon = styled(Stack, { marginHorizontal: '$2' }) as typeof Stack;
-
-export interface InputProps {
+export type InputProps = {
   label?: string;
-  placeholder?: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  onBlur?: () => void;
   error?: string;
-  helperText?: string;
-  disabled?: boolean;
-  required?: boolean;
-  type?: 'text' | 'email' | 'password' | 'number' | 'decimal' | 'phone';
+  placeholder?: string;
+  value?: string;
+  onChangeText?: (text: string) => void;
+  secureTextEntry?: boolean;
   multiline?: boolean;
   numberOfLines?: number;
   leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  secureTextEntry?: boolean;
-  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-  autoCompleteType?: string;
-  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad' | 'decimal-pad';
-  returnKeyType?: 'done' | 'next' | 'go' | 'search' | 'send';
-  onSubmitEditing?: () => void;
-  testID?: string;
+  type?: string;
+  helperText?: string;
+  required?: boolean;
+  containerStyle?: any;
+  style?: any;
+};
+
+export function Input({ label, error, placeholder, value, onChangeText, secureTextEntry, multiline, numberOfLines, leftIcon, helperText, containerStyle, style }: InputProps) {
+  return (
+    <Stack style={containerStyle}>
+      {label && <Text color="#94A3B8" fontSize={14} marginBottom={6} fontWeight="500">{label}</Text>}
+      <Stack flexDirection="row" alignItems="center" backgroundColor="#0F172A" borderWidth={1} borderColor={error ? '#EF4444' : '#334155'} borderRadius={10}>
+        {leftIcon && <Stack paddingLeft={12}>{leftIcon}</Stack>}
+        <RNTextInput
+          style={[{ flex: 1, color: '#FFFFFF', fontSize: 16, paddingHorizontal: 14, paddingVertical: 12 }, style]}
+          placeholder={placeholder}
+          placeholderTextColor="#64748B"
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={secureTextEntry}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+        />
+      </Stack>
+      {error && <Text color="#EF4444" fontSize={12} marginTop={4}>{error}</Text>}
+      {helperText && !error && <Text color="#64748B" fontSize={12} marginTop={4}>{helperText}</Text>}
+    </Stack>
+  );
 }

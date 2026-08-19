@@ -1,63 +1,41 @@
 // mobile/src/ui/Badge.tsx
-import { styled, Stack, Text } from '@tamagui/core';
+import React from 'react';
+import { Stack, Text } from 'tamagui';
 
-export const Badge = styled(Stack, {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '$full',
-  paddingHorizontal: '$3',
-  variants: {
-    variant: {
-      default: { backgroundColor: '$border', color: '$color' },
-      success: { backgroundColor: '$successTransparent15', color: '$success' },
-      warning: { backgroundColor: '$warningTransparent15', color: '$warning' },
-      danger: { backgroundColor: '$errorTransparent15', color: '$error' },
-      info: { backgroundColor: '$secondaryTransparent15', color: '$secondary' },
-      outline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '$border', color: '$colorFocus' },
-    },
-    size: {
-      sm: { paddingVertical: 2, minHeight: 20 },
-      md: { paddingVertical: 4, minHeight: 24 },
-      lg: { paddingVertical: 6, minHeight: 28 },
-    },
-    dot: {
-      true: { flexDirection: 'row', gap: '$1', paddingHorizontal: '$3' },
-    },
-  },
-  defaultVariants: { variant: 'default', size: 'md' },
-}) as typeof Stack;
-
-export const BadgeDot = styled(Stack, {
-  width: 6,
-  height: 6,
-  borderRadius: '$full',
-  backgroundColor: 'currentColor',
-}) as typeof Stack;
-
-export const BadgeText = styled(Text, {
-  fontWeight: '500',
-  variants: {
-    size: {
-      sm: { fontSize: '$1' },
-      md: { fontSize: '$2' },
-      lg: { fontSize: '$3' },
-    },
-    variant: {
-      default: { color: '$color' },
-      success: { color: '$success' },
-      warning: { color: '$warning' },
-      danger: { color: '$error' },
-      info: { color: '$secondary' },
-      outline: { color: '$colorFocus' },
-    },
-  },
-  defaultVariants: { size: 'md', variant: 'default' },
-}) as typeof Text;
-
-export interface BadgeProps {
-  children: React.ReactNode;
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
+export type BadgeProps = {
+  children?: React.ReactNode;
+  variant?: string;
+  size?: string;
   dot?: boolean;
+  style?: any;
+};
+
+const badgeColors: Record<string, { bg: string; text: string }> = {
+  default: { bg: '#334155', text: '#94A3B8' },
+  success: { bg: '#065F46', text: '#34D399' },
+  warning: { bg: '#78350F', text: '#FBBF24' },
+  error: { bg: '#7F1D1D', text: '#FCA5A5' },
+  info: { bg: '#1E3A5F', text: '#60A5FA' },
+  outline: { bg: 'transparent', text: '#94A3B8' },
+};
+
+export function Badge({ children, variant = 'default', size = 'sm', dot, style }: BadgeProps) {
+  const c = badgeColors[variant] || badgeColors.default;
+  const px = size === 'sm' ? 8 : 12;
+  const py = size === 'sm' ? 2 : 4;
+  return (
+    <Stack
+      backgroundColor={c.bg}
+      borderRadius={6}
+      paddingHorizontal={px}
+      paddingVertical={py}
+      flexDirection="row"
+      alignItems="center"
+      gap={4}
+      style={style}
+    >
+      {dot && <Stack width={6} height={6} borderRadius={3} backgroundColor={c.text} />}
+      <Text color={c.text} fontSize={size === 'sm' ? 11 : 13} fontWeight="600">{children as string}</Text>
+    </Stack>
+  );
 }

@@ -1,11 +1,13 @@
 // mobile/src/ui/index.ts
-export * from './Button';
-export * from './Card';
-export * from './Input';
-export * from './ProgressBar';
-export * from './Badge';
-export * from './Avatar';
-export * from './Modal';
-export * from './charts/Sparkline';
-export * from './charts/BarChart';
-export * from './charts/PieChart';
+// Re-export core Tamagui primitives for screens
+export { Stack, Text, XStack, YStack, View, styled } from 'tamagui';
+export { StyledButton as Button } from './Button';
+export { Card } from './Card';
+export { Input } from './Input';
+export { ProgressBar } from './ProgressBar';
+export { Badge } from './Badge';
+export { Avatar } from './Avatar';
+export { Modal } from './Modal';
+export { Sparkline } from './charts/Sparkline';
+export { BarChart } from './charts/BarChart';
+export { PieChart } from './charts/PieChart';

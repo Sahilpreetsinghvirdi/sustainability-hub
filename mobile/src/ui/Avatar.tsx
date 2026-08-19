@@ -1,66 +1,47 @@
 // mobile/src/ui/Avatar.tsx
-import { styled, Stack, Text, Image } from '@tamagui/core';
+import React from 'react';
+import { Stack, Text } from 'tamagui';
+import { Image } from 'react-native';
 
-const sizeMap = { xs: 24, sm: 32, md: 40, lg: 56, xl: 80 } as const;
-const fontSizeMap = { xs: 10, sm: 12, md: 14, lg: 20, xl: 28 } as const;
-
-export const Avatar = styled(Stack, {
-  alignItems: 'center',
-  justifyContent: 'center',
-  position: 'relative',
-  overflow: 'hidden',
-  variants: {
-    size: {
-      xs: { width: 24, height: 24 },
-      sm: { width: 32, height: 32 },
-      md: { width: 40, height: 40 },
-      lg: { width: 56, height: 56 },
-      xl: { width: 80, height: 80 },
-    },
-    shape: { circle: { borderRadius: '$full' }, square: { borderRadius: '$md' } },
-  },
-  defaultVariants: { size: 'md', shape: 'circle' },
-}) as typeof Stack;
-
-export const AvatarImage = styled(Image, {
-  variants: {
-    size: {
-      xs: { width: 24, height: 24 },
-      sm: { width: 32, height: 32 },
-      md: { width: 40, height: 40 },
-      lg: { width: 56, height: 56 },
-      xl: { width: 80, height: 80 },
-    },
-    shape: { circle: { borderRadius: '$full' }, square: { borderRadius: '$md' } },
-  },
-  defaultVariants: { size: 'md', shape: 'circle' },
-}) as typeof Image;
-
-export const AvatarInitials = styled(Text, {
-  fontWeight: '600',
-  color: '$colorInverted',
-  variants: {
-    size: { xs: { fontSize: 10 }, sm: { fontSize: 12 }, md: { fontSize: 14 }, lg: { fontSize: 20 }, xl: { fontSize: 28 } },
-  },
-}) as typeof Text;
-
-export const AvatarStatus = styled(Stack, {
-  position: 'absolute',
-  bottom: 0,
-  right: 0,
-  borderRadius: '$full',
-  borderWidth: 2,
-  padding: 1,
-  variants: {
-    size: { xs: { width: 8, height: 8 }, sm: { width: 10, height: 10 }, md: { width: 12, height: 12 }, lg: { width: 16, height: 16 }, xl: { width: 20, height: 20 } },
-    status: { online: { backgroundColor: '$success' }, busy: { backgroundColor: '$error' }, away: { backgroundColor: '$warning' }, offline: { backgroundColor: '$colorDisabled' } },
-  },
-}) as typeof Stack;
-
-export interface AvatarProps {
-  source?: { uri: string } | number;
+export type AvatarProps = {
+  src?: string;
   name?: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  shape?: 'circle' | 'square';
-  status?: 'online' | 'offline' | 'busy' | 'away';
+  source?: { uri: string };
+  size?: number | string;
+  status?: string;
+  style?: any;
+};
+
+const sizeMap: Record<string, number> = { xs: 24, sm: 32, md: 40, lg: 56, xl: 72 };
+
+export function Avatar({ src, name, source, size = 40, status, style }: AvatarProps) {
+  const s = typeof size === 'string' ? (sizeMap[size] || 40) : size;
+  const uri = src || source?.uri;
+  const initials = name ? name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?';
+  const statusColors: Record<string, string> = { online: '#22C55E', busy: '#EF4444', away: '#F59E0B', offline: '#64748B' };
+
+  return (
+    <Stack style={[{ width: s, height: s, borderRadius: s / 2 }, style]}>
+      {uri ? (
+        <Image source={{ uri }} style={{ width: s, height: s, borderRadius: s / 2 }} />
+      ) : (
+        <Stack width={s} height={s} borderRadius={s / 2} backgroundColor="#2563EB" alignItems="center" justifyContent="center">
+          <Text color="#FFFFFF" fontWeight="600" fontSize={s * 0.4}>{initials}</Text>
+        </Stack>
+      )}
+      {status && (
+        <Stack
+          position="absolute"
+          bottom={0}
+          right={0}
+          width={s * 0.25}
+          height={s * 0.25}
+          borderRadius={s * 0.125}
+          backgroundColor={statusColors[status] || '#64748B'}
+          borderWidth={2}
+          borderColor="#1E293B"
+        />
+      )}
+    </Stack>
+  );
 }

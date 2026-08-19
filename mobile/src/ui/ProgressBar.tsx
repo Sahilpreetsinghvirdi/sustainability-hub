@@ -1,49 +1,38 @@
 // mobile/src/ui/ProgressBar.tsx
-import { styled, Stack, Animated } from '@tamagui/core';
+import React from 'react';
+import { Stack, Text } from 'tamagui';
 
-export const ProgressTrack = styled(Stack, {
-  backgroundColor: '$background',
-  overflow: 'hidden',
-  variants: {
-    size: {
-      sm: { height: 4, borderRadius: '$1' },
-      md: { height: 8, borderRadius: '$2' },
-      lg: { height: 12, borderRadius: '$3' },
-    },
-  },
-  defaultVariants: { size: 'md' },
-}) as typeof Stack;
+export type ProgressBarProps = {
+  progress: number;
+  color?: string;
+  variant?: string;
+  size?: string;
+  showLabel?: boolean;
+  label?: string;
+  style?: any;
+};
 
-export const ProgressFill = styled(Animated.View, {
-  height: '100%',
-  borderRadius: '$inherit',
-  variants: {
-    variant: {
-      default: { backgroundColor: '$primary' },
-      success: { backgroundColor: '$success' },
-      warning: { backgroundColor: '$warning' },
-      danger: { backgroundColor: '$error' },
-      gradient: { backgroundColor: '$primary' },
-    },
-  },
-  defaultVariants: { variant: 'default' },
-}) as typeof Animated.View;
+export function ProgressBar({ progress, color = '#2563EB', variant, size = 'md', showLabel, label, style }: ProgressBarProps) {
+  const height = size === 'lg' ? 12 : 8;
+  const variantColors: Record<string, string> = {
+    default: '#2563EB',
+    success: '#22C55E',
+    warning: '#F59E0B',
+    danger: '#EF4444',
+  };
+  const barColor = variant && variantColors[variant] ? variantColors[variant] : color;
 
-export const ProgressLabel = styled(Stack, {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '$1',
-}) as typeof Stack;
-
-export const ProgressLabelText = styled(Stack, {
-  fontSize: '$2',
-  fontWeight: '500',
-  color: '$color',
-}) as typeof Stack;
-
-export const ProgressLabelValue = styled(Stack, {
-  fontSize: '$2',
-  fontWeight: '600',
-  color: '$colorFocus',
-}) as typeof Stack;
+  return (
+    <Stack style={style}>
+      {showLabel && label && (
+        <Stack flexDirection="row" justifyContent="space-between" marginBottom={4}>
+          <Text color="#94A3B8" fontSize={12}>{label}</Text>
+          <Text color="#94A3B8" fontSize={12}>{Math.round(progress)}%</Text>
+        </Stack>
+      )}
+      <Stack backgroundColor="#1E293B" borderRadius={100} overflow="hidden" height={height}>
+        <Stack backgroundColor={barColor} borderRadius={100} width={`${Math.min(100, Math.max(0, progress))}%`} height={height} />
+      </Stack>
+    </Stack>
+  );
+}

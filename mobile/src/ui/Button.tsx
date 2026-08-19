@@ -1,25 +1,18 @@
 // mobile/src/ui/Button.tsx
-import { styled, Button as TamaguiButton, ButtonProps as TamaguiButtonProps } from '@tamagui/core';
+import { styled, Button } from 'tamagui';
 
-export const Button = styled(TamaguiButton, {
+export const StyledButton = styled(Button, {
   variants: {
     variant: {
       primary: {
         backgroundColor: '$primary',
         color: '$primaryText',
         borderRadius: '$md',
-        ':hover': { backgroundColor: '$primaryHover' },
-        ':active': { backgroundColor: '$primaryPress' },
-        ':focus': { boxShadow: '0 0 0 2px $primaryFocus' },
-        ':disabled': { backgroundColor: '$primaryDisabled', opacity: 0.6 },
       },
       secondary: {
         backgroundColor: '$secondary',
         color: '$secondaryText',
         borderRadius: '$md',
-        ':hover': { backgroundColor: '$secondaryHover' },
-        ':active': { backgroundColor: '$secondaryPress' },
-        ':focus': { boxShadow: '0 0 0 2px $secondaryFocus' },
       },
       outline: {
         backgroundColor: 'transparent',
@@ -27,31 +20,22 @@ export const Button = styled(TamaguiButton, {
         borderColor: '$primary',
         color: '$primary',
         borderRadius: '$md',
-        ':hover': { backgroundColor: '$primaryHover', color: '$primaryText' },
-        ':active': { backgroundColor: '$primaryPress' },
-        ':focus': { boxShadow: '0 0 0 2px $primaryFocus' },
       },
       ghost: {
         backgroundColor: 'transparent',
         color: '$primary',
         borderRadius: '$md',
-        ':hover': { backgroundColor: '$backgroundHover' },
-        ':active': { backgroundColor: '$backgroundPress' },
-        ':focus': { boxShadow: '0 0 0 2px $primaryFocus' },
       },
       danger: {
         backgroundColor: '$error',
         color: '$errorText',
         borderRadius: '$md',
-        ':hover': { backgroundColor: '$errorHover' },
-        ':active': { backgroundColor: '$errorPress' },
-        ':focus': { boxShadow: '0 0 0 2px $errorFocus' },
       },
     },
     size: {
-      sm: { height: 36, paddingHorizontal: '$4', fontSize: '$2', borderRadius: '$sm' },
-      md: { height: 48, paddingHorizontal: '$6', fontSize: '$3', borderRadius: '$md' },
-      lg: { height: 56, paddingHorizontal: '$8', fontSize: '$4', borderRadius: '$lg' },
+      sm: { height: 36, paddingHorizontal: 16, fontSize: 14 },
+      md: { height: 48, paddingHorizontal: 24, fontSize: 16 },
+      lg: { height: 56, paddingHorizontal: 32, fontSize: 18 },
     },
     fullWidth: {
       true: { width: '100%' },
@@ -64,11 +48,4 @@ export const Button = styled(TamaguiButton, {
     variant: 'primary',
     size: 'md',
   },
-}) as typeof TamaguiButton;
-
-export type ButtonProps = TamaguiButtonProps & {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
-  fullWidth?: boolean;
-  loading?: boolean;
-};
+});

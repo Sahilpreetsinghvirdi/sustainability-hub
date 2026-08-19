@@ -1,58 +1,33 @@
 // mobile/src/ui/Card.tsx
-import { styled, Stack, StackProps } from '@tamagui/core';
+import React from 'react';
+import { Stack, styled } from 'tamagui';
 
 export const Card = styled(Stack, {
-  backgroundColor: '$backgroundStrong',
-  borderRadius: '$lg',
+  backgroundColor: '#1E293B',
+  borderRadius: 12,
   borderWidth: 1,
-  borderColor: '$border',
+  borderColor: '#334155',
+  padding: 16,
+
   variants: {
     variant: {
-      default: { backgroundColor: '$backgroundStrong', borderWidth: 1, borderColor: '$border' },
-      elevated: { backgroundColor: '$backgroundStrong', elevation: 4, shadowColor: '$shadowColor', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 },
-      outlined: { backgroundColor: 'transparent', borderWidth: 2, borderColor: '$borderHover' },
-      filled: { backgroundColor: '$backgroundHover', borderWidth: 0 },
-    },
-    padding: {
-      none: { padding: 0 },
-      sm: { padding: '$3' },
-      md: { padding: '$4' },
-      lg: { padding: '$6' },
-    },
-    hoverable: {
-      true: {
-        ':hover': { backgroundColor: '$backgroundPress', borderColor: '$borderHover' },
-        ':active': { backgroundColor: '$backgroundPress' },
+      default: {},
+      elevated: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
+      },
+      outlined: {
+        borderWidth: 2,
+        borderColor: '#475569',
+        backgroundColor: 'transparent',
+      },
+      filled: {
+        backgroundColor: '#0F172A',
+        borderWidth: 0,
       },
     },
-  },
-  defaultVariants: { variant: 'default', padding: 'md' },
-}) as typeof Stack;
-
-export interface CardProps extends StackProps {
-  variant?: 'default' | 'elevated' | 'outlined' | 'filled';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
-  hoverable?: boolean;
-}
-
-export const CardHeader = styled(Stack, {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  paddingBottom: '$3',
-  marginBottom: '$3',
-  borderBottomWidth: 1,
-  borderBottomColor: '$border',
-}) as typeof Stack;
-
-export const CardTitle = styled(Stack, {
-  fontSize: '$5',
-  fontWeight: '600',
-  color: '$color',
-}) as typeof Stack;
-
-export const CardSubtitle = styled(Stack, {
-  fontSize: '$2',
-  color: '$colorFocus',
-  marginTop: '$1',
-}) as typeof Stack;
+  } as any,
+});
