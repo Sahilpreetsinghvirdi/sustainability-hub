@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0A1628;
+  color: #F8FAFC;
+  overflow: hidden;
+}
+
+*::-webkit-scrollbar { width: 6px; }
+*::-webkit-scrollbar-track { background: #1E293B; }
+*::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+*::-webkit-scrollbar-thumb:hover { background: #64748B; }
+
+input, select, textarea {
+  background-color: #1E293B;
+  border: 1px solid #334155;
+  color: #F8FAFC;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #22C55E;
+}
+
+.btn-primary {
+  @apply bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+.btn-secondary {
+  @apply bg-secondary text-white font-semibold px-4 py-2 rounded-lg hover:bg-secondary-dark transition-colors;
+}
+.btn-outline {
+  @apply border-2 border-primary text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors;
+}
+.btn-ghost {
+  @apply text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/10 transition-colors;
+}
+.btn-danger {
+  @apply bg-error text-white font-semibold px-4 py-2 rounded-lg hover:bg-red-600 transition-colors;
+}
+
+.card {
+  @apply bg-dark-600 border border-dark-500 rounded-xl p-4;
+}
+.card-elevated {
+  @apply card shadow-lg shadow-black/30;
+}
+.card-outlined {
+  @apply border-2 border-dark-400 bg-transparent rounded-xl p-4;
+}
