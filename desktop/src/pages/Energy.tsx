@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Zap, Plus, DollarSign, TrendingDown, Lightbulb, Wrench, ArrowRight } from 'lucide-react';
+import { Zap, Plus, DollarSign, TrendingDown, Lightbulb, Wrench, ArrowRight, X, Upload } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 const monthlyData = [
@@ -11,7 +11,266 @@ const monthlyData = [
   { month: 'Jun', electricity: 280, gas: 10, water: 38 },
 ];
 
-const appliances = [
+interface BillForm {
+  provider: string;
+  period: string;
+  electricity: string;
+  gas: string;
+  water: string;
+  cost: string;
+}
+
+function AddBillModal({ onClose, onSave }: { onClose: () => void; onSave: (bill: BillForm) => void }) {
+  const [form, setForm] = useState<BillForm>({ provider: '', period: '', electricity: '', gas: '', water: '', cost: '' });
+  const update = (k: keyof BillForm, v: string) => setForm({ ...form, [k]: v });
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-dark-700 rounded-2xl w-full max-w-lg border border-dark-500" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-dark-500">
+          <h2 className="text-lg font-bold">Add Energy Bill</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dark-500"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="text-xs text-dark-300 mb-1 block">Utility Provider</label><input className="w-full" placeholder="e.g. Hydro One" value={form.provider} onChange={(e) => update('provider', e.target.value)} /></div>
+            <div><label className="text-xs text-dark-300 mb-1 block">Billing Period</label><input className="w-full" type="month" value={form.period} onChange={(e) => update('period', e.target.value)} /></div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div><label className="text-xs text-dark-300 mb-1 block">Electricity (kWh)</label><input className="w-full" type="number" placeholder="0" value={form.electricity} onChange={(e) => update('electricity', e.target.value)} /></div>
+            <div><label className="text-xs text-dark-300 mb-1 block">Gas (therms)</label><input className="w-full" type="number" placeholder="0" value={form.gas} onChange={(e) => update('gas', e.target.value)} /></div>
+            <div><label className="text-xs text-dark-300 mb-1 block">Water (gal)</label><input className="w-full" type="number" placeholder="0" value={form.water} onChange={(e) => update('water', e.target.value)} /></div>
+          </div>
+          <div><label className="text-xs text-dark-300 mb-1 block">Total Cost ($)</label><input className="w-full" type="number" step="0.01" placeholder="0.00" value={form.cost} onChange={(e) => update('cost', e.target.value)} /></div>
+        </div>
+        <div className="flex gap-3 p-5 border-t border-dark-500">
+          <button onClick={onClose} className="btn-outline flex-1">Cancel</button>
+          <button onClick={() => { if (form.provider) onSave(form); }} className="btn-primary flex-1">Save Bill</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScanBillModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) {
+  const [dragOver, setDragOver] = useState(false);
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-dark-700 rounded-2xl w-full max-w-md border border-dark-500" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-dark-500">
+          <h2 className="text-lg font-bold">Scan Energy Bill</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dark-500"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${dragOver ? 'border-primary bg-primary/10' : 'border-dark-400 hover:border-dark-300'}`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { e.preventDefault(); setDragOver(false); onConfirm(); }}
+            onClick={onConfirm}
+          >
+            <Upload className="w-10 h-10 text-dark-300 mx-auto mb-3" />
+            <p className="text-sm font-medium">Drop a bill image or PDF here</p>
+            <p className="text-xs text-dark-300 mt-1">or click to browse files</p>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {['Camera', 'Gallery', 'PDF'].map((src) => (
+              <button key={src} onClick={onConfirm} className="btn-outline text-xs py-2">{src}</button>
+            ))}
+          </div>
+        </div>
+        <div className="flex gap-3 p-5 border-t border-dark-500">
+          <button onClick={onClose} className="btn-outline flex-1">Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddApplianceModal({ onClose, onSave }: { onClose: () => void; onSave: (name: string, wattage: number, hours: number, type: string) => void }) {
+  const [name, setName] = useState('');
+  const [wattage, setWattage] = useState('');
+  const [hours, setHours] = useState('');
+  const [type, setType] = useState('Kitchen');
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-dark-700 rounded-2xl w-full max-w-md border border-dark-500" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-dark-500">
+          <h2 className="text-lg font-bold">Add Appliance</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dark-500"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div><label className="text-xs text-dark-300 mb-1 block">Appliance Name</label><input className="w-full" placeholder="e.g. Washing Machine" value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className="text-xs text-dark-300 mb-1 block">Wattage (W)</label><input className="w-full" type="number" placeholder="0" value={wattage} onChange={(e) => setWattage(e.target.value)} /></div>
+            <div><label className="text-xs text-dark-300 mb-1 block">Hours/Day</label><input className="w-full" type="number" step="0.5" placeholder="0" value={hours} onChange={(e) => setHours(e.target.value)} /></div>
+          </div>
+          <div><label className="text-xs text-dark-300 mb-1 block">Type</label>
+            <div className="flex gap-2">
+              {['Kitchen', 'Laundry', 'HVAC', 'Living Room', 'Office'].map(t => (
+                <button key={t} onClick={() => setType(t)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${type === t ? 'bg-primary text-white' : 'bg-dark-600 text-dark-200 hover:bg-dark-500'}`}>{t}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-3 p-5 border-t border-dark-500">
+          <button onClick={onClose} className="btn-outline flex-1">Cancel</button>
+          <button onClick={() => { if (name) onSave(name, parseFloat(wattage) || 0, parseFloat(hours) || 0, type); }} className="btn-primary flex-1">Add Appliance</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function EnergyPage() {
+  const [tab, setTab] = useState<'overview' | 'appliances' | 'audit'>('overview');
+  const [showAddBill, setShowAddBill] = useState(false);
+  const [showScanBill, setShowScanBill] = useState(false);
+  const [showAddAppliance, setShowAddAppliance] = useState(false);
+  const [appliances, setAppliances] = useState(initialAppliances);
+  const [bills, setBills] = useState<{ month: string; electricity: number; gas: number; water: number }[]>(monthlyData);
+
+  const handleSaveBill = (form: BillForm) => {
+    const newBill = {
+      month: form.period || new Date().toISOString().slice(0, 7),
+      electricity: parseFloat(form.electricity) || 0,
+      gas: parseFloat(form.gas) || 0,
+      water: parseFloat(form.water) || 0,
+    };
+    setBills([newBill, ...bills]);
+    setShowAddBill(false);
+  };
+
+  const handleScanConfirm = () => {
+    const newBill = {
+      month: new Date().toISOString().slice(0, 7),
+      electricity: Math.floor(Math.random() * 200 + 250),
+      gas: Math.floor(Math.random() * 30 + 10),
+      water: Math.floor(Math.random() * 15 + 20),
+    };
+    setBills([newBill, ...bills]);
+    setShowScanBill(false);
+  };
+
+  const handleAddAppliance = (name: string, wattage: number, hours: number, type: string) => {
+    setAppliances([...appliances, { name, type, wattage, hours, efficiency: 75, energyStar: wattage < 500 }]);
+    setShowAddAppliance(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {showAddBill && <AddBillModal onClose={() => setShowAddBill(false)} onSave={handleSaveBill} />}
+      {showScanBill && <ScanBillModal onClose={() => setShowScanBill(false)} onConfirm={handleScanConfirm} />}
+      {showAddAppliance && <AddApplianceModal onClose={() => setShowAddAppliance(false)} onSave={handleAddAppliance} />}
+
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Energy Monitor</h1>
+          <p className="text-dark-200 text-sm mt-1">Track your home energy usage</p>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => setShowScanBill(true)} className="btn-primary flex items-center gap-2">
+            <Zap className="w-4 h-4" /> Scan Bill
+          </button>
+          <button onClick={() => setShowAddBill(true)} className="btn-outline flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Add Bill
+          </button>
+        </div>
+      </div>
+
+      <div className="flex gap-1 bg-dark-700 rounded-lg p-1 w-fit">
+        {(['overview', 'appliances', 'audit'] as const).map((t) => (
+          <button key={t} onClick={() => setTab(t)} className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${tab === t ? 'bg-primary text-white' : 'text-dark-200 hover:text-dark-50'}`}>
+            {t.charAt(0).toUpperCase() + t.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {tab === 'overview' && (
+        <>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="card-elevated"><p className="text-dark-200 text-xs">Avg Monthly</p><p className="text-2xl font-bold text-warning mt-1">{(bills.reduce((s, b) => s + b.electricity, 0) / bills.length).toFixed(0)} kWh</p></div>
+            <div className="card-elevated"><p className="text-dark-200 text-xs">This Month</p><p className="text-2xl font-bold text-dark-50 mt-1">{bills[0]?.electricity || 0} kWh</p></div>
+            <div className="card-elevated"><p className="text-dark-200 text-xs">Appliances</p><p className="text-2xl font-bold text-secondary mt-1">{appliances.length}</p></div>
+          </div>
+          <div className="card">
+            <h3 className="text-sm font-semibold text-dark-100 mb-3">Monthly Usage</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={bills}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <XAxis dataKey="month" stroke="#64748B" fontSize={11} />
+                <YAxis stroke="#64748B" fontSize={11} />
+                <Tooltip contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }} />
+                <Bar dataKey="electricity" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="gas" fill="#EF4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </>
+      )}
+
+      {tab === 'appliances' && (
+        <div className="card">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-dark-100">Your Appliances</h3>
+            <button onClick={() => setShowAddAppliance(true)} className="btn-primary text-xs flex items-center gap-1"><Plus className="w-3 h-3" /> Add</button>
+          </div>
+          <div className="space-y-2">
+            {appliances.map((a, i) => (
+              <div key={i} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${a.efficiency > 80 ? 'bg-primary/20' : a.efficiency > 60 ? 'bg-warning/20' : 'bg-error/20'}`}>
+                    <Zap className={`w-4 h-4 ${a.efficiency > 80 ? 'text-primary' : a.efficiency > 60 ? 'text-warning' : 'text-error'}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{a.name}</p>
+                    <p className="text-xs text-dark-300">{a.type} · {a.wattage}W · {a.hours}h/day</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium">{(a.wattage * a.hours * 30 / 1000).toFixed(0)} kWh/mo</p>
+                  <p className="text-xs text-dark-300">~${((a.wattage * a.hours * 30 / 1000) * 0.12).toFixed(0)}/mo</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab === 'audit' && (
+        <div className="space-y-4">
+          <div className="card-elevated">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-primary/20 rounded-xl flex items-center justify-center">
+                <Lightbulb className="w-7 h-7 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold">Energy Efficiency Score</p>
+                <p className="text-3xl font-bold text-primary mt-1">68<span className="text-lg text-dark-300">/100</span></p>
+              </div>
+            </div>
+          </div>
+          {recommendations.map((rec, i) => (
+            <div key={i} className="card flex items-start gap-4">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${rec.priority === 'high' ? 'bg-error/20' : rec.priority === 'medium' ? 'bg-warning/20' : 'bg-primary/20'}`}>
+                <rec.icon className={`w-5 h-5 ${rec.priority === 'high' ? 'text-error' : rec.priority === 'medium' ? 'text-warning' : 'text-primary'}`} />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold">{rec.title}</p>
+                  <span className="text-xs text-primary font-medium">{rec.savings}</span>
+                </div>
+                <p className="text-xs text-dark-200 mt-1">{rec.desc}</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-dark-300 mt-1" />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const initialAppliances = [
   { name: 'Refrigerator', type: 'Kitchen', wattage: 150, hours: 24, efficiency: 85, energyStar: true },
   { name: 'Washing Machine', type: 'Laundry', wattage: 500, hours: 1, efficiency: 72, energyStar: false },
   { name: 'Air Conditioner', type: 'HVAC', wattage: 3500, hours: 8, efficiency: 65, energyStar: false },
@@ -24,147 +283,3 @@ const recommendations = [
   { title: 'Service AC unit', savings: '$200/yr', priority: 'medium', icon: Wrench, desc: 'Your 12-year-old AC is running inefficiently' },
   { title: 'Weather-strip windows', savings: '$85/yr', priority: 'low', icon: Wrench, desc: 'Seal drafty windows to reduce heating/cooling loss' },
 ];
-
-export default function EnergyPage() {
-  const [tab, setTab] = useState<'overview' | 'appliances' | 'audit'>('overview');
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Energy Monitor</h1>
-          <p className="text-dark-200 text-sm mt-1">Track electricity, gas, and water usage</p>
-        </div>
-        <button className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Add Bill
-        </button>
-      </div>
-
-      <div className="flex gap-1 bg-dark-700 rounded-lg p-1 w-fit">
-        {(['overview', 'appliances', 'audit'] as const).map((t) => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${tab === t ? 'bg-primary text-white' : 'text-dark-200 hover:text-dark-50'}`}>
-            {t.charAt(0).toUpperCase() + t.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {tab === 'overview' && (
-        <>
-          <div className="grid grid-cols-4 gap-4">
-            <div className="card-elevated">
-              <p className="text-dark-200 text-xs">Electricity</p>
-              <p className="text-xl font-bold text-warning mt-1">280 kWh</p>
-              <p className="text-xs text-primary mt-1">↓ 8% vs last month</p>
-            </div>
-            <div className="card-elevated">
-              <p className="text-dark-200 text-xs">Natural Gas</p>
-              <p className="text-xl font-bold text-error mt-1">10 therms</p>
-              <p className="text-xs text-primary mt-1">↓ 33% vs last month</p>
-            </div>
-            <div className="card-elevated">
-              <p className="text-dark-200 text-xs">Water</p>
-              <p className="text-xl font-bold text-secondary mt-1">3,800 gal</p>
-              <p className="text-xs text-error mt-1">↑ 9% vs last month</p>
-            </div>
-            <div className="card-elevated">
-              <p className="text-dark-200 text-xs">Total Cost</p>
-              <p className="text-xl font-bold text-dark-50 mt-1">$142</p>
-              <p className="text-xs text-primary mt-1">↓ 12% vs last month</p>
-            </div>
-          </div>
-          <div className="card">
-            <h3 className="text-sm font-semibold text-dark-100 mb-3">Monthly Usage</h3>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="month" stroke="#64748B" fontSize={11} />
-                <YAxis stroke="#64748B" fontSize={11} />
-                <Tooltip contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="electricity" fill="#F59E0B" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="gas" fill="#EF4444" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="water" fill="#0EA5E9" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </>
-      )}
-
-      {tab === 'appliances' && (
-        <div className="card">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-dark-100">Appliances ({appliances.length})</h3>
-            <button className="btn-outline text-sm flex items-center gap-1"><Plus className="w-3 h-3" /> Add</button>
-          </div>
-          <div className="space-y-3">
-            {appliances.map((a, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${a.efficiency >= 80 ? 'bg-primary/20' : a.efficiency >= 65 ? 'bg-warning/20' : 'bg-error/20'}`}>
-                    <Zap className={`w-5 h-5 ${a.efficiency >= 80 ? 'text-primary' : a.efficiency >= 65 ? 'text-warning' : 'text-error'}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{a.name}</p>
-                    <p className="text-xs text-dark-300">{a.type} · {a.wattage}W · {a.hours}h/day</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  {a.energyStar && <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Energy Star</span>}
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{a.efficiency}%</p>
-                    <p className="text-xs text-dark-300">efficiency</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {tab === 'audit' && (
-        <div className="space-y-4">
-          <div className="card-elevated">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
-                <Zap className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs text-dark-300">HOME ENERGY SCORE</p>
-                <p className="text-3xl font-bold text-primary">62<span className="text-lg text-dark-300">/100</span></p>
-              </div>
-            </div>
-            <div className="h-2 bg-dark-500 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-error via-warning to-primary rounded-full" style={{ width: '62%' }} />
-            </div>
-            <div className="flex justify-between text-xs text-dark-300 mt-1">
-              <span>Inefficient</span>
-              <span>Efficient</span>
-            </div>
-          </div>
-          <div className="card">
-            <h3 className="text-sm font-semibold text-dark-100 mb-3">Recommendations</h3>
-            <div className="space-y-3">
-              {recommendations.map((r, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${r.priority === 'high' ? 'bg-error/20' : r.priority === 'medium' ? 'bg-warning/20' : 'bg-dark-400'}`}>
-                      <r.icon className={`w-5 h-5 ${r.priority === 'high' ? 'text-error' : r.priority === 'medium' ? 'text-warning' : 'text-dark-200'}`} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{r.title}</p>
-                      <p className="text-xs text-dark-300">{r.desc}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-primary">{r.savings}</span>
-                    <ArrowRight className="w-4 h-4 text-dark-300" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
