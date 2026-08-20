@@ -1,28 +1,161 @@
-import { useState } from 'react';
-import { Zap, Plus, DollarSign, TrendingDown, Lightbulb, Wrench, ArrowRight, X, Upload } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Zap, Plus, TrendingDown, Lightbulb, Wrench, ArrowRight, X, Upload, CheckCircle2, Loader2, Image as ImageIcon, Camera } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { analyzeBill } from '../lib/aiAnalysis';
 
-const monthlyData = [
-  { month: 'Jan', electricity: 380, gas: 42, water: 28 },
-  { month: 'Feb', electricity: 365, gas: 38, water: 26 },
-  { month: 'Mar', electricity: 340, gas: 30, water: 30 },
-  { month: 'Apr', electricity: 310, gas: 22, water: 32 },
-  { month: 'May', electricity: 290, gas: 15, water: 35 },
-  { month: 'Jun', electricity: 280, gas: 10, water: 38 },
-];
-
-interface BillForm {
+interface Bill {
+  id: string;
+  month: string;
   provider: string;
-  period: string;
-  electricity: string;
-  gas: string;
-  water: string;
-  cost: string;
+  electricity: number;
+  gas: number;
+  water: number;
+  cost: number;
+  imagePreview?: string;
 }
 
-function AddBillModal({ onClose, onSave }: { onClose: () => void; onSave: (bill: BillForm) => void }) {
-  const [form, setForm] = useState<BillForm>({ provider: '', period: '', electricity: '', gas: '', water: '', cost: '' });
-  const update = (k: keyof BillForm, v: string) => setForm({ ...form, [k]: v });
+interface Appliance {
+  name: string;
+  type: string;
+  wattage: number;
+  hours: number;
+  efficiency: number;
+  energyStar: boolean;
+}
+
+function ScanBillModal({ onClose, onSave }: { onClose: () => void; onSave: (bill: Bill) => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [step, setStep] = useState<'upload' | 'analyzing' | 'results'>('upload');
+  const [preview, setPreview] = useState('');
+  const [progress, setProgress] = useState(0);
+  const [result, setResult] = useState<Bill | null>(null);
+
+  const handleFile = async (file: File) => {
+    setPreview(URL.createObjectURL(file));
+    setStep('analyzing');
+    const stages = [400, 600, 500, 400, 300];
+    let p = 0;
+    for (const d of stages) { await new Promise(r => setTimeout(r, d)); p += 20; setProgress(p); }
+    const bill = await analyzeBill(file);
+    const newBill: Bill = { id: String(Date.now()), month: bill.period, provider: bill.provider, electricity: bill.electricity, gas: bill.gas, water: bill.water, cost: bill.cost, imagePreview: bill.imagePreview };
+    setResult(newBill);
+    setStep('results');
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) handleFile(file);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-dark-700 rounded-2xl w-full max-w-lg max-h-[85vh] overflow-auto border border-dark-500" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-5 border-b border-dark-500">
+          <h2 className="text-lg font-bold">Scan Energy Bill</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dark-500"><X className="w-5 h-5" /></button>
+        </div>
+
+        {step === 'upload' && (
+          <div className="p-5 space-y-4">
+            <div
+              className="border-2 border-dashed border-dark-400 hover:border-primary rounded-xl p-8 text-center transition-all cursor-pointer"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDrop}
+              onClick={() => fileRef.current?.click()}
+            >
+              <Upload className="w-10 h-10 text-dark-300 mx-auto mb-3" />
+              <p className="text-sm font-medium">Drop a bill image or PDF here</p>
+              <p className="text-xs text-dark-300 mt-1">AI will extract usage data automatically</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={() => fileRef.current?.click()} className="btn-primary text-xs py-2.5 flex items-center justify-center gap-1.5">
+                <Camera className="w-3.5 h-3.5" /> Camera
+              </button>
+              <button onClick={() => fileRef.current?.click()} className="btn-outline text-xs py-2.5 flex items-center justify-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5" /> Browse
+              </button>
+              <button onClick={() => fileRef.current?.click()} className="btn-outline text-xs py-2.5 flex items-center justify-center gap-1.5">
+                PDF
+              </button>
+            </div>
+            <input ref={fileRef} type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+          </div>
+        )}
+
+        {step === 'analyzing' && (
+          <div className="p-5 space-y-4">
+            {preview && <img src={preview} className="w-full h-40 object-cover rounded-lg" alt="Bill" />}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                <div className="flex-1">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-dark-200">Processing bill...</span>
+                    <span className="text-primary">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-dark-600 rounded-full h-1.5">
+                    <div className="bg-primary h-1.5 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-1.5 text-xs text-dark-300">
+                <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Document loaded</div>
+                {progress >= 20 && <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary" /> OCR text extraction</div>}
+                {progress >= 40 && <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Usage data identified</div>}
+                {progress >= 60 && <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Cost breakdown parsed</div>}
+                {progress >= 80 && <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Carbon estimate computed</div>}
+                {progress >= 100 && <div className="flex items-center gap-2"><CheckCircle2 className="w-3.5 h-3.5 text-primary" /> Analysis complete</div>}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 'results' && result && (
+          <div className="p-5 space-y-4">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-primary">Bill Analyzed</p>
+                <p className="text-xs text-dark-200">{result.provider} · {result.month}</p>
+              </div>
+            </div>
+            {result.imagePreview && <img src={result.imagePreview} className="w-full h-28 object-cover rounded-lg" alt="Bill" />}
+            <div className="grid grid-cols-4 gap-2">
+              <div className="bg-dark-600 rounded-lg p-2 text-center">
+                <p className="text-lg font-bold text-warning">{result.electricity}</p>
+                <p className="text-xs text-dark-300">kWh</p>
+              </div>
+              <div className="bg-dark-600 rounded-lg p-2 text-center">
+                <p className="text-lg font-bold text-error">{result.gas}</p>
+                <p className="text-xs text-dark-300">therms</p>
+              </div>
+              <div className="bg-dark-600 rounded-lg p-2 text-center">
+                <p className="text-lg font-bold text-blue-400">{result.water}</p>
+                <p className="text-xs text-dark-300">gal</p>
+              </div>
+              <div className="bg-dark-600 rounded-lg p-2 text-center">
+                <p className="text-lg font-bold text-secondary">${result.cost}</p>
+                <p className="text-xs text-dark-300">total</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-3 p-5 border-t border-dark-500">
+          <button onClick={onClose} className="btn-outline flex-1">Cancel</button>
+          {step === 'results' && result && (
+            <button onClick={() => { onSave(result); onClose(); }} className="btn-primary flex-1">Save Bill</button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddBillModal({ onClose, onSave }: { onClose: () => void; onSave: (form: { provider: string; period: string; electricity: string; gas: string; water: string; cost: string }) => void }) {
+  const [form, setForm] = useState({ provider: '', period: '', electricity: '', gas: '', water: '', cost: '' });
+  const update = (k: string, v: string) => setForm({ ...form, [k]: v });
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-dark-700 rounded-2xl w-full max-w-lg border border-dark-500" onClick={(e) => e.stopPropagation()}>
@@ -32,8 +165,8 @@ function AddBillModal({ onClose, onSave }: { onClose: () => void; onSave: (bill:
         </div>
         <div className="p-5 space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="text-xs text-dark-300 mb-1 block">Utility Provider</label><input className="w-full" placeholder="e.g. Hydro One" value={form.provider} onChange={(e) => update('provider', e.target.value)} /></div>
-            <div><label className="text-xs text-dark-300 mb-1 block">Billing Period</label><input className="w-full" type="month" value={form.period} onChange={(e) => update('period', e.target.value)} /></div>
+            <div><label className="text-xs text-dark-300 mb-1 block">Provider</label><input className="w-full" placeholder="e.g. Hydro One" value={form.provider} onChange={(e) => update('provider', e.target.value)} /></div>
+            <div><label className="text-xs text-dark-300 mb-1 block">Period</label><input className="w-full" type="month" value={form.period} onChange={(e) => update('period', e.target.value)} /></div>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div><label className="text-xs text-dark-300 mb-1 block">Electricity (kWh)</label><input className="w-full" type="number" placeholder="0" value={form.electricity} onChange={(e) => update('electricity', e.target.value)} /></div>
@@ -45,41 +178,6 @@ function AddBillModal({ onClose, onSave }: { onClose: () => void; onSave: (bill:
         <div className="flex gap-3 p-5 border-t border-dark-500">
           <button onClick={onClose} className="btn-outline flex-1">Cancel</button>
           <button onClick={() => { if (form.provider) onSave(form); }} className="btn-primary flex-1">Save Bill</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ScanBillModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) {
-  const [dragOver, setDragOver] = useState(false);
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-dark-700 rounded-2xl w-full max-w-md border border-dark-500" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-dark-500">
-          <h2 className="text-lg font-bold">Scan Energy Bill</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-dark-500"><X className="w-5 h-5" /></button>
-        </div>
-        <div className="p-5 space-y-4">
-          <div
-            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer ${dragOver ? 'border-primary bg-primary/10' : 'border-dark-400 hover:border-dark-300'}`}
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => { e.preventDefault(); setDragOver(false); onConfirm(); }}
-            onClick={onConfirm}
-          >
-            <Upload className="w-10 h-10 text-dark-300 mx-auto mb-3" />
-            <p className="text-sm font-medium">Drop a bill image or PDF here</p>
-            <p className="text-xs text-dark-300 mt-1">or click to browse files</p>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {['Camera', 'Gallery', 'PDF'].map((src) => (
-              <button key={src} onClick={onConfirm} className="btn-outline text-xs py-2">{src}</button>
-            ))}
-          </div>
-        </div>
-        <div className="flex gap-3 p-5 border-t border-dark-500">
-          <button onClick={onClose} className="btn-outline flex-1">Cancel</button>
         </div>
       </div>
     </div>
@@ -121,46 +219,59 @@ function AddApplianceModal({ onClose, onSave }: { onClose: () => void; onSave: (
   );
 }
 
+const initialAppliances: Appliance[] = [
+  { name: 'Refrigerator', type: 'Kitchen', wattage: 150, hours: 24, efficiency: 85, energyStar: true },
+  { name: 'Washing Machine', type: 'Laundry', wattage: 500, hours: 1, efficiency: 72, energyStar: false },
+  { name: 'Air Conditioner', type: 'HVAC', wattage: 3500, hours: 8, efficiency: 65, energyStar: false },
+  { name: 'LED TV 55"', type: 'Living Room', wattage: 80, hours: 6, efficiency: 92, energyStar: true },
+  { name: 'Desktop Computer', type: 'Office', wattage: 300, hours: 8, efficiency: 78, energyStar: false },
+];
+
+const initialBills: Bill[] = [
+  { id: 'b1', month: '2026-01', provider: 'Hydro One', electricity: 380, gas: 42, water: 28, cost: 145.20 },
+  { id: 'b2', month: '2026-02', provider: 'Hydro One', electricity: 365, gas: 38, water: 26, cost: 138.50 },
+  { id: 'b3', month: '2026-03', provider: 'Hydro One', electricity: 340, gas: 30, water: 30, cost: 125.80 },
+  { id: 'b4', month: '2026-04', provider: 'Toronto Hydro', electricity: 310, gas: 22, water: 32, cost: 112.40 },
+  { id: 'b5', month: '2026-05', provider: 'Toronto Hydro', electricity: 290, gas: 15, water: 35, cost: 98.60 },
+  { id: 'b6', month: '2026-06', provider: 'Toronto Hydro', electricity: 280, gas: 10, water: 38, cost: 92.30 },
+];
+
+const recommendations = [
+  { title: 'Switch to LED bulbs', savings: '$120/yr', priority: 'high' as const, icon: Lightbulb, desc: 'Replace 8 incandescent bulbs with LED alternatives' },
+  { title: 'Service AC unit', savings: '$200/yr', priority: 'medium' as const, icon: Wrench, desc: 'Your 12-year-old AC is running inefficiently' },
+  { title: 'Weather-strip windows', savings: '$85/yr', priority: 'low' as const, icon: Wrench, desc: 'Seal drafty windows to reduce heating/cooling loss' },
+];
+
 export default function EnergyPage() {
   const [tab, setTab] = useState<'overview' | 'appliances' | 'audit'>('overview');
   const [showAddBill, setShowAddBill] = useState(false);
   const [showScanBill, setShowScanBill] = useState(false);
   const [showAddAppliance, setShowAddAppliance] = useState(false);
-  const [appliances, setAppliances] = useState(initialAppliances);
-  const [bills, setBills] = useState<{ month: string; electricity: number; gas: number; water: number }[]>(monthlyData);
+  const [appliances, setAppliances] = useState<Appliance[]>(initialAppliances);
+  const [bills, setBills] = useState<Bill[]>(initialBills);
 
-  const handleSaveBill = (form: BillForm) => {
-    const newBill = {
-      month: form.period || new Date().toISOString().slice(0, 7),
-      electricity: parseFloat(form.electricity) || 0,
-      gas: parseFloat(form.gas) || 0,
-      water: parseFloat(form.water) || 0,
-    };
-    setBills([newBill, ...bills]);
-    setShowAddBill(false);
-  };
+  // Compute chart data from actual bills
+  const chartData = [...bills].reverse().map(b => ({
+    month: new Date(b.month + '-01').toLocaleString('en', { month: 'short' }),
+    electricity: b.electricity,
+    gas: b.gas,
+    water: b.water,
+  }));
 
-  const handleScanConfirm = () => {
-    const newBill = {
-      month: new Date().toISOString().slice(0, 7),
-      electricity: Math.floor(Math.random() * 200 + 250),
-      gas: Math.floor(Math.random() * 30 + 10),
-      water: Math.floor(Math.random() * 15 + 20),
-    };
-    setBills([newBill, ...bills]);
-    setShowScanBill(false);
-  };
-
-  const handleAddAppliance = (name: string, wattage: number, hours: number, type: string) => {
-    setAppliances([...appliances, { name, type, wattage, hours, efficiency: 75, energyStar: wattage < 500 }]);
-    setShowAddAppliance(false);
-  };
+  const avgElectricity = bills.length > 0 ? Math.round(bills.reduce((s, b) => s + b.electricity, 0) / bills.length) : 0;
+  const latestBill = bills[0];
 
   return (
     <div className="space-y-6">
-      {showAddBill && <AddBillModal onClose={() => setShowAddBill(false)} onSave={handleSaveBill} />}
-      {showScanBill && <ScanBillModal onClose={() => setShowScanBill(false)} onConfirm={handleScanConfirm} />}
-      {showAddAppliance && <AddApplianceModal onClose={() => setShowAddAppliance(false)} onSave={handleAddAppliance} />}
+      {showAddBill && <AddBillModal onClose={() => setShowAddBill(false)} onSave={(form) => {
+        setBills([{ id: String(Date.now()), month: form.period || new Date().toISOString().slice(0, 7), provider: form.provider, electricity: parseFloat(form.electricity) || 0, gas: parseFloat(form.gas) || 0, water: parseFloat(form.water) || 0, cost: parseFloat(form.cost) || 0 }, ...bills]);
+        setShowAddBill(false);
+      }} />}
+      {showScanBill && <ScanBillModal onClose={() => setShowScanBill(false)} onSave={(bill) => { setBills([bill, ...bills]); setShowScanBill(false); }} />}
+      {showAddAppliance && <AddApplianceModal onClose={() => setShowAddAppliance(false)} onSave={(name, wattage, hours, type) => {
+        setAppliances([...appliances, { name, type, wattage, hours, efficiency: 75, energyStar: wattage < 500 }]);
+        setShowAddAppliance(false);
+      }} />}
 
       <div className="flex items-center justify-between">
         <div>
@@ -168,12 +279,8 @@ export default function EnergyPage() {
           <p className="text-dark-200 text-sm mt-1">Track your home energy usage</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setShowScanBill(true)} className="btn-primary flex items-center gap-2">
-            <Zap className="w-4 h-4" /> Scan Bill
-          </button>
-          <button onClick={() => setShowAddBill(true)} className="btn-outline flex items-center gap-2">
-            <Plus className="w-4 h-4" /> Add Bill
-          </button>
+          <button onClick={() => setShowScanBill(true)} className="btn-primary flex items-center gap-2"><Zap className="w-4 h-4" /> Scan Bill</button>
+          <button onClick={() => setShowAddBill(true)} className="btn-outline flex items-center gap-2"><Plus className="w-4 h-4" /> Add Bill</button>
         </div>
       </div>
 
@@ -188,23 +295,57 @@ export default function EnergyPage() {
       {tab === 'overview' && (
         <>
           <div className="grid grid-cols-3 gap-4">
-            <div className="card-elevated"><p className="text-dark-200 text-xs">Avg Monthly</p><p className="text-2xl font-bold text-warning mt-1">{(bills.reduce((s, b) => s + b.electricity, 0) / bills.length).toFixed(0)} kWh</p></div>
-            <div className="card-elevated"><p className="text-dark-200 text-xs">This Month</p><p className="text-2xl font-bold text-dark-50 mt-1">{bills[0]?.electricity || 0} kWh</p></div>
-            <div className="card-elevated"><p className="text-dark-200 text-xs">Appliances</p><p className="text-2xl font-bold text-secondary mt-1">{appliances.length}</p></div>
+            <div className="card-elevated">
+              <p className="text-dark-200 text-xs">Avg Monthly</p>
+              <p className="text-2xl font-bold text-warning mt-1">{avgElectricity} kWh</p>
+              <p className="text-xs text-dark-300 mt-1">electricity</p>
+            </div>
+            <div className="card-elevated">
+              <p className="text-dark-200 text-xs">Latest Bill</p>
+              <p className="text-2xl font-bold text-dark-50 mt-1">{latestBill?.electricity || 0} kWh</p>
+              <p className="text-xs text-dark-300 mt-1">{latestBill?.month || 'N/A'}</p>
+            </div>
+            <div className="card-elevated">
+              <p className="text-dark-200 text-xs">Appliances</p>
+              <p className="text-2xl font-bold text-secondary mt-1">{appliances.length}</p>
+              <p className="text-xs text-dark-300 mt-1">tracked devices</p>
+            </div>
           </div>
           <div className="card">
-            <h3 className="text-sm font-semibold text-dark-100 mb-3">Monthly Usage</h3>
+            <h3 className="text-sm font-semibold text-dark-100 mb-3">Monthly Usage (from {bills.length} bills)</h3>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={bills}>
+              <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                 <XAxis dataKey="month" stroke="#64748B" fontSize={11} />
                 <YAxis stroke="#64748B" fontSize={11} />
                 <Tooltip contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="electricity" fill="#F59E0B" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="gas" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="electricity" fill="#F59E0B" radius={[4, 4, 0, 0]} name="Electricity (kWh)" />
+                <Bar dataKey="gas" fill="#EF4444" radius={[4, 4, 0, 0]} name="Gas (therms)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
+          {bills.length > 0 && (
+            <div className="card">
+              <h3 className="text-sm font-semibold text-dark-100 mb-3">Bill History</h3>
+              <div className="space-y-2">
+                {bills.map((bill) => (
+                  <div key={bill.id} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 bg-warning/20 rounded-lg flex items-center justify-center"><Zap className="w-4 h-4 text-warning" /></div>
+                      <div>
+                        <p className="text-sm font-medium">{bill.provider}</p>
+                        <p className="text-xs text-dark-300">{bill.month}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{bill.electricity} kWh</p>
+                      <p className="text-xs text-secondary">${bill.cost.toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
 
@@ -269,17 +410,3 @@ export default function EnergyPage() {
     </div>
   );
 }
-
-const initialAppliances = [
-  { name: 'Refrigerator', type: 'Kitchen', wattage: 150, hours: 24, efficiency: 85, energyStar: true },
-  { name: 'Washing Machine', type: 'Laundry', wattage: 500, hours: 1, efficiency: 72, energyStar: false },
-  { name: 'Air Conditioner', type: 'HVAC', wattage: 3500, hours: 8, efficiency: 65, energyStar: false },
-  { name: 'LED TV 55"', type: 'Living Room', wattage: 80, hours: 6, efficiency: 92, energyStar: true },
-  { name: 'Desktop Computer', type: 'Office', wattage: 300, hours: 8, efficiency: 78, energyStar: false },
-];
-
-const recommendations = [
-  { title: 'Switch to LED bulbs', savings: '$120/yr', priority: 'high', icon: Lightbulb, desc: 'Replace 8 incandescent bulbs with LED alternatives' },
-  { title: 'Service AC unit', savings: '$200/yr', priority: 'medium', icon: Wrench, desc: 'Your 12-year-old AC is running inefficiently' },
-  { title: 'Weather-strip windows', savings: '$85/yr', priority: 'low', icon: Wrench, desc: 'Seal drafty windows to reduce heating/cooling loss' },
-];
