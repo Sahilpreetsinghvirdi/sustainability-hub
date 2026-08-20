@@ -1,6 +1,6 @@
 // mobile/src/screens/DashboardScreen.tsx
 import React from 'react';
-import { View, ScrollView, RefreshControl, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, ScrollView, RefreshControl, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useCarbon } from '@/hooks/useCarbon';
 import { useEnergy } from '@/hooks/useEnergy';
@@ -9,6 +9,7 @@ import { Card, ProgressBar, Badge, SparklineChart } from '@/components';
 import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
 import { formatCurrency, formatCarbon, formatEnergy, formatWeight, formatPercentage, formatTrend, getCategoryColor } from '@/utils/formatters';
 import { Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 export const DashboardScreen: React.FC = () => {
   const { summary, insights, achievements, isLoading, isRefreshing, refresh, loadTrends } = useDashboard('month');
@@ -45,7 +46,7 @@ export const DashboardScreen: React.FC = () => {
           <Text style={styles.greeting}>Welcome back! 🌱</Text>
           <Text style={styles.subtitle}>Here's your impact this month</Text>
         </View>
-        <TouchableOpacity style={styles.notificationButton}>
+        <TouchableOpacity style={styles.notificationButton} onPress={() => Alert.alert('Notifications', 'No new notifications')}>
           <Ionicons name="notifications-outline" size={24} color={colors.text.primary} />
         </TouchableOpacity>
       </View>
@@ -105,7 +106,7 @@ export const DashboardScreen: React.FC = () => {
         <Card>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>🛒 Carbon by Category</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/carbon')}>
               <Text style={styles.seeAll}>See all</Text>
             </TouchableOpacity>
           </View>
@@ -189,7 +190,7 @@ export const DashboardScreen: React.FC = () => {
             <Text style={styles.streakNumber}>{streak} Days</Text>
             <Text style={styles.streakLabel}>Current Zero-Waste Streak</Text>
           </View>
-          <TouchableOpacity style={styles.streakButton}>
+          <TouchableOpacity style={styles.streakButton} onPress={() => router.push('/food-waste/log')}>
             <Text style={styles.streakButtonText}>Log Meal</Text>
           </TouchableOpacity>
         </View>

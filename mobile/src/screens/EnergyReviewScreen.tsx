@@ -149,7 +149,7 @@ export const EnergyReviewScreen: React.FC = () => {
             </Text>
           </Stack>
         </Stack>
-        <Button variant="outline" fullWidth>View Recommendations</Button>
+        <Button variant="outline" fullWidth onPress={() => router.push('/energy/audit')}>View Recommendations</Button>
       </Card>
 
       {/* Actions */}

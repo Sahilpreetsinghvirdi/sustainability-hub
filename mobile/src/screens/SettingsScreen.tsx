@@ -1,6 +1,6 @@
 ﻿// mobile/src/screens/SettingsScreen.tsx
 import React from 'react';
-import { ScrollView, Alert, Switch } from 'react-native';
+import { ScrollView, Alert, Switch, View, TouchableOpacity } from 'react-native';
 import { Stack, Text, Button, Card, Badge, Avatar } from '@/ui';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useAuthStore } from '@/store/authStore';
@@ -217,6 +217,7 @@ export const SettingsScreen: React.FC = () => {
             title="Version"
             subtitle={`${config.app.version} (Build ${config.app.buildNumber})`}
             icon={<Ionicons name="information-circle" size={22} color="#0EA5E9" />}
+            onPress={() => Alert.alert('Version', `Sustainability Hub v${config.app.version}\nBuild ${config.app.buildNumber}`)}
           />
           <Divider />
           <SettingRow

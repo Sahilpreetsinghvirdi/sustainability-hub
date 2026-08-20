@@ -145,7 +145,7 @@ export const EnergyScreen: React.FC = () => {
         <Stack marginBottom="lg">
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
             <Text fontSize="20" fontWeight="700" color="#F8FAFC">Top Recommendations</Text>
-            <Button variant="ghost" size="sm">View All</Button>
+            <Button variant="ghost" size="sm" onPress={() => router.push('/energy/audit')}>View All</Button>
           </Stack>
           <Stack gap="2">
             {recommendations.slice(0, 3).map((rec, index) => (

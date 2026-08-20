@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Leaf, Zap, Trash2, Settings, Menu, X, Recycle } from 'lucide-react';
+import { LayoutDashboard, Leaf, Zap, Trash2, Settings, Menu, X } from 'lucide-react';
 import DashboardPage from './pages/Dashboard';
 import CarbonPage from './pages/Carbon';
 import EnergyPage from './pages/Energy';
@@ -21,7 +21,7 @@ function Sidebar() {
     <aside className="w-64 h-screen bg-dark-700 border-r border-dark-500 flex flex-col shrink-0">
       <div className="p-5 flex items-center gap-3 border-b border-dark-500">
         <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-          <Recycle className="w-6 h-6 text-white" />
+          <Leaf className="w-6 h-6 text-white" />
         </div>
         <div>
           <h1 className="text-lg font-bold text-dark-50">Sustainability</h1>

@@ -1,6 +1,6 @@
 ﻿// mobile/src/screens/EnergyAuditScreen.tsx
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, Alert } from 'react-native';
 import { Stack, Text, Button, Card, Badge, ProgressBar } from '@/ui';
 import { useEnergy } from '@/hooks/useEnergy';
 import { formatCurrency, formatCarbon, formatEnergy } from '@/utils/formatters';
@@ -147,7 +147,7 @@ export const EnergyAuditScreen: React.FC = () => {
             <Text>Save Audit Results</Text>
           </Stack>
         </Button>
-        <Button variant="outline" fullWidth onPress={() => {}}>
+        <Button variant="outline" fullWidth onPress={() => Alert.alert('Share', 'Report will be shared as a PDF')}>
           <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
             <Ionicons name="share" size={20} />
             <Text>Share Report</Text>
@@ -202,7 +202,7 @@ const RecommendationCard = ({ recommendation }: any) => {
             </Stack>
           </Stack>
         </Stack>
-        <Button variant="ghost" size="xs">
+        <Button variant="ghost" size="xs" onPress={() => Alert.alert(recommendation.title, recommendation.description)}>
           <Ionicons name="chevron-forward" size={20} />
         </Button>
       </Stack>

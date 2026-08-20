@@ -85,7 +85,7 @@ export const SettingsProfileScreen: React.FC = () => {
         <Badge variant="success" size="sm" marginTop="2">
           {user?.is_active ? 'Active Account' : 'Inactive'}
         </Badge>
-        <Button variant="outline" size="sm" marginTop="3" onPress={() => {}}>
+        <Button variant="outline" size="sm" marginTop="3" onPress={() => Alert.alert('Change Photo', 'Camera or gallery photo selection coming soon')}>
           <Stack flexDirection="row" alignItems="center" gap="1">
             <Ionicons name="camera" size={16} />
             <Text>Change Photo</Text>

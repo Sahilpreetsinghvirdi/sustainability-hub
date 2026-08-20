@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Leaf, Zap, Trash2, TrendingUp, TrendingDown, Flame, Target } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -16,9 +17,10 @@ const wasteData = [
   { day: 'Thu', value: 0.6 }, { day: 'Fri', value: 0.2 }, { day: 'Sat', value: 0.4 }, { day: 'Sun', value: 0.1 },
 ];
 
-function StatCard({ icon: Icon, label, value, unit, trend, trendUp, color }: any) {
+function StatCard({ icon: Icon, label, value, unit, trend, trendUp, color, path }: any) {
+  const navigate = useNavigate();
   return (
-    <div className="card-elevated flex items-start justify-between">
+    <div onClick={() => path && navigate(path)} className={`card-elevated flex items-start justify-between ${path ? 'cursor-pointer hover:border-primary/30 transition-all' : ''}`}>
       <div>
         <p className="text-dark-200 text-xs font-medium mb-1">{label}</p>
         <div className="flex items-baseline gap-1.5">
@@ -61,6 +63,13 @@ function MiniChart({ title, data, dataKey, color }: any) {
 }
 
 export default function DashboardPage() {
+  const navigate = useNavigate();
+  const actions = [
+    { label: 'Scan Receipt', icon: Leaf, color: 'bg-primary', desc: 'Log a carbon footprint', path: '/carbon' },
+    { label: 'Log Energy Bill', icon: Zap, color: 'bg-warning', desc: 'Track energy usage', path: '/energy' },
+    { label: 'Log Food Waste', icon: Trash2, color: 'bg-error', desc: 'Record wasted food', path: '/food-waste' },
+    { label: 'View Audit', icon: Target, color: 'bg-secondary', desc: 'Energy efficiency tips', path: '/energy' },
+  ];
   return (
     <div className="space-y-6">
       <div>
@@ -69,9 +78,9 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Leaf} label="Carbon Footprint" value="187" unit="kg CO₂e" trend="12%" trendUp={false} color="bg-primary" />
-        <StatCard icon={Zap} label="Energy Usage" value="423" unit="kWh" trend="5%" trendUp={true} color="bg-warning" />
-        <StatCard icon={Trash2} label="Food Waste" value="4.2" unit="kg" trend="20%" trendUp={false} color="bg-error" />
+        <StatCard icon={Leaf} label="Carbon Footprint" value="187" unit="kg CO₂e" trend="12%" trendUp={false} color="bg-primary" path="/carbon" />
+        <StatCard icon={Zap} label="Energy Usage" value="423" unit="kWh" trend="5%" trendUp={true} color="bg-warning" path="/energy" />
+        <StatCard icon={Trash2} label="Food Waste" value="4.2" unit="kg" trend="20%" trendUp={false} color="bg-error" path="/food-waste" />
         <StatCard icon={Flame} label="Waste Streak" value="14" unit="days" trend="Best: 21" trendUp={false} color="bg-accent" />
       </div>
 
@@ -84,13 +93,8 @@ export default function DashboardPage() {
       <div className="card">
         <h3 className="text-sm font-semibold text-dark-100 mb-3">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { label: 'Scan Receipt', icon: Leaf, color: 'bg-primary', desc: 'Log a carbon footprint' },
-            { label: 'Log Energy Bill', icon: Zap, color: 'bg-warning', desc: 'Track energy usage' },
-            { label: 'Log Food Waste', icon: Trash2, color: 'bg-error', desc: 'Record wasted food' },
-            { label: 'View Audit', icon: Target, color: 'bg-secondary', desc: 'Energy efficiency tips' },
-          ].map((action) => (
-            <button key={action.label} className="card hover:border-primary/50 transition-all text-left group">
+          {actions.map((action) => (
+            <button key={action.label} onClick={() => navigate(action.path)} className="card hover:border-primary/50 transition-all text-left group cursor-pointer">
               <div className={`w-9 h-9 ${action.color} rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
                 <action.icon className="w-4 h-4 text-white" />
               </div>

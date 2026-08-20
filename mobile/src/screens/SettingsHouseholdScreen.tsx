@@ -201,7 +201,7 @@ export const SettingsHouseholdScreen: React.FC = () => {
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
           <Text fontSize="16" fontWeight="600" color="#F8FAFC">Members</Text>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onPress={() => Alert.alert('Invite Member', 'Share the invite link with household members')}>
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name="add" size={16} />
               <Text>Invite</Text>
@@ -231,7 +231,7 @@ export const SettingsHouseholdScreen: React.FC = () => {
           ))}
         </Stack>
 
-        <Button variant="outline" fullWidth marginTop="lg">
+        <Button variant="outline" fullWidth marginTop="lg" onPress={() => Alert.alert('Invite Member', 'Share the invite link with household members')}>
           <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
             <Ionicons name="add" size={20} />
             <Text>Invite Member</Text>
