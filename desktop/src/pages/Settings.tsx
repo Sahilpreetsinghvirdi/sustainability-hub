@@ -4,6 +4,13 @@ import { User, Home, Bell, Cloud, LogOut, ChevronRight, Shield, Palette, Globe }
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'household' | 'notifications' | 'sync'>('profile');
 
+  const [saved, setSaved] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
+  const handleSync = () => { setSyncing(true); setTimeout(() => { setSyncing(false); alert('Sync complete! (Demo)'); }, 1500); };
+  const handleSignOut = () => { if (confirm('Sign out of Sustainability Hub?')) alert('Signed out. (Demo)'); };
+
   return (
     <div className="space-y-6">
       <div>
@@ -25,7 +32,7 @@ export default function SettingsPage() {
             </button>
           ))}
           <div className="border-t border-dark-500 my-2" />
-          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-error hover:bg-error/10 transition-colors">
+          <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-error hover:bg-error/10 transition-colors">
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
         </div>
@@ -39,7 +46,7 @@ export default function SettingsPage() {
                 <div>
                   <p className="font-medium">Sahil Virdi</p>
                   <p className="text-sm text-dark-200">sahil@example.com</p>
-                  <button className="text-xs text-primary mt-1">Change avatar</button>
+                  <button onClick={() => alert('Avatar updated! (Demo)')} className="text-xs text-primary mt-1">Change avatar</button>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -65,7 +72,7 @@ export default function SettingsPage() {
                   </select>
                 </div>
               </div>
-              <button className="btn-primary">Save Changes</button>
+              <button onClick={handleSave} className={saved ? 'btn-primary bg-green-500' : 'btn-primary'}>{saved ? 'Saved!' : 'Save Changes'}</button>
             </div>
           )}
 
@@ -100,7 +107,7 @@ export default function SettingsPage() {
                   </select>
                 </div>
               </div>
-              <button className="btn-primary">Save Changes</button>
+              <button onClick={handleSave} className={saved ? 'btn-primary bg-green-500' : 'btn-primary'}>{saved ? 'Saved!' : 'Save Changes'}</button>
             </div>
           )}
 
@@ -148,7 +155,7 @@ export default function SettingsPage() {
                   </div>
                 ))}
               </div>
-              <button className="btn-outline w-full">Sync Now</button>
+              <button onClick={handleSync} disabled={syncing} className="btn-outline w-full">{syncing ? 'Syncing...' : 'Sync Now'}</button>
             </div>
           )}
         </div>

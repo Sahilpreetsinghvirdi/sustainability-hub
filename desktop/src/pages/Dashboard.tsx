@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Leaf, Zap, Trash2, TrendingUp, TrendingDown, Flame, Target } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { store } from '../lib/store';
 
 const carbonData = [
   { week: 'W1', value: 42 }, { week: 'W2', value: 38 }, { week: 'W3', value: 35 },
@@ -64,6 +66,9 @@ function MiniChart({ title, data, dataKey, color }: any) {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const [dashData, setDashData] = useState(() => store.getDashboardData());
+  useEffect(() => { const t = setInterval(() => setDashData(store.getDashboardData()), 1000); return () => clearInterval(t); }, []);
+
   const actions = [
     { label: 'Scan Receipt', icon: Leaf, color: 'bg-primary', desc: 'Log a carbon footprint', path: '/carbon' },
     { label: 'Log Energy Bill', icon: Zap, color: 'bg-warning', desc: 'Track energy usage', path: '/energy' },
@@ -78,9 +83,9 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Leaf} label="Carbon Footprint" value="187" unit="kg CO₂e" trend="12%" trendUp={false} color="bg-primary" path="/carbon" />
-        <StatCard icon={Zap} label="Energy Usage" value="423" unit="kWh" trend="5%" trendUp={true} color="bg-warning" path="/energy" />
-        <StatCard icon={Trash2} label="Food Waste" value="4.2" unit="kg" trend="20%" trendUp={false} color="bg-error" path="/food-waste" />
+        <StatCard icon={Leaf} label="Carbon Footprint" value={dashData.carbon || 0} unit="kg CO\u2082e" trend={dashData.carbonEntries > 0 ? `${dashData.carbonEntries} receipts` : 'No data yet'} trendUp={false} color="bg-primary" path="/carbon" />
+        <StatCard icon={Zap} label="Energy Usage" value={dashData.energy || 0} unit="kWh" trend={dashData.energyBills > 0 ? `${dashData.energyBills} bills` : 'No data yet'} trendUp={true} color="bg-warning" path="/energy" />
+        <StatCard icon={Trash2} label="Food Waste" value={dashData.wasteKg || 0} unit="kg" trend={dashData.wasteCount > 0 ? `${dashData.wasteCount} items logged` : 'No data yet'} trendUp={false} color="bg-error" path="/food-waste" />
         <StatCard icon={Flame} label="Waste Streak" value="14" unit="days" trend="Best: 21" trendUp={false} color="bg-accent" />
       </div>
 

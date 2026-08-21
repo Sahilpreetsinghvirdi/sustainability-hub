@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Plus, Camera, FileText, Trash2, ChevronRight, Search, Filter, X, Upload, Store, CheckCircle2, AlertCircle, Loader2, Image as ImageIcon } from 'lucide-react';
 import { analyzeReceipt } from '../lib/aiAnalysis';
+import { store as appStore } from '../lib/store';
 
 const statusColors: Record<string, string> = {
   confirmed: 'bg-primary/20 text-primary',
@@ -310,13 +311,15 @@ export default function CarbonPage() {
       items: items.map(i => ({ name: i.name, price: parseFloat(i.price) || 0, category: i.category, carbonKg: parseFloat(i.carbonEstimate) || 0 })),
       itemCount: items.length, carbon: totalCarbon || Math.round(totalPrice * 0.35 * 10) / 10, price: totalPrice, status: 'confirmed',
     };
-    setScans([newScan, ...scans]); setShowManual(false);
+    setScans([newScan, ...scans]);
+    appStore.addCarbon({ id: newScan.id, date: newScan.date, items: newScan.items, total: newScan.price, totalCarbon: newScan.carbon, store: newScan.store });
+    setShowManual(false);
   };
 
   return (
     <div className="space-y-6">
       {showManual && <ManualEntryModal onClose={() => setShowManual(false)} onSave={handleSaveManual} />}
-      {showScan && <ScanReceiptModal onClose={() => setShowScan(false)} onSave={(receipt) => { setScans([receipt, ...scans]); setShowScan(false); }} />}
+      {showScan && <ScanReceiptModal onClose={() => setShowScan(false)} onSave={(receipt) => { setScans([receipt, ...scans]); appStore.addCarbon({ id: receipt.id, date: receipt.date, items: receipt.items, total: receipt.price, totalCarbon: receipt.carbon, store: receipt.store }); setShowScan(false); }} />}
       {detailScan && <ReceiptDetailModal scan={detailScan} onClose={() => setDetailScan(null)} />}
 
       <div className="flex items-center justify-between">

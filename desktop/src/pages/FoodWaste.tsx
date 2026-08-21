@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Plus, Camera, Flame, Calendar, TrendingDown, Leaf, AlertTriangle, X, Upload, CheckCircle2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { analyzeImage } from '../lib/aiAnalysis';
+import { store } from '../lib/store';
 
 const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 const REASONS = ['Plate waste', 'Spoilage', 'Preparation', 'Over-portioned', 'Other'];
@@ -14,7 +15,7 @@ interface WasteLog {
   amount: number;
   reason: string;
   carbon: number;
-  aiItems?: { name: string; confidence: number; carbonKg: number; category: string }[];
+  aiItems?: { name: string; confidence: number; carbonKg: number; category: string; portion: string }[];
   imagePreview?: string;
 }
 
@@ -23,7 +24,7 @@ function PhotoLogModal({ onClose, onSave }: { onClose: () => void; onSave: (log:
   const [step, setStep] = useState<'upload' | 'analyzing' | 'results'>('upload');
   const [preview, setPreview] = useState('');
   const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<{ items: { name: string; confidence: number; carbonKg: number; category: string }[]; totalCarbon: number; imagePreview: string } | null>(null);
+  const [result, setResult] = useState<{ items: { name: string; confidence: number; carbonKg: number; category: string; portion: string }[]; totalCarbon: number; imagePreview: string } | null>(null);
   const [selectedMeal, setSelectedMeal] = useState('Dinner');
   const [reason, setReason] = useState('Plate waste');
 
@@ -139,7 +140,7 @@ function PhotoLogModal({ onClose, onSave }: { onClose: () => void; onSave: (log:
                     <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center text-xs font-bold text-primary">{item.confidence}%</div>
                     <div>
                       <p className="text-sm font-medium">{item.name}</p>
-                      <p className="text-xs text-dark-300">{item.category}</p>
+                      <p className="text-xs text-dark-300">{item.category}{item.portion ? ' \u00b7 ' + item.portion : ''}</p>
                     </div>
                   </div>
                   <p className="text-sm font-medium text-primary">{item.carbonKg} kg CO₂</p>
@@ -289,8 +290,8 @@ export default function FoodWastePage() {
 
   return (
     <div className="space-y-6">
-      {showPhoto && <PhotoLogModal onClose={() => setShowPhoto(false)} onSave={(log) => { setLogs([log, ...logs]); setShowPhoto(false); }} />}
-      {showManual && <ManualLogModal onClose={() => setShowManual(false)} onSave={(log) => { setLogs([log, ...logs]); setShowManual(false); }} />}
+      {showPhoto && <PhotoLogModal onClose={() => setShowPhoto(false)} onSave={(log) => { setLogs([log, ...logs]); store.addWaste({ id: log.id, date: log.date, meal: log.meal, desc: log.desc, amount: log.amount, reason: log.reason, carbon: log.carbon }); setShowPhoto(false); }} />}
+      {showManual && <ManualLogModal onClose={() => setShowManual(false)} onSave={(log) => { setLogs([log, ...logs]); store.addWaste({ id: log.id, date: log.date, meal: log.meal, desc: log.desc, amount: log.amount, reason: log.reason, carbon: log.carbon }); setShowManual(false); }} />}
       {detailLog && <LogDetailModal log={detailLog} onClose={() => setDetailLog(null)} />}
 
       <div className="flex items-center justify-between">

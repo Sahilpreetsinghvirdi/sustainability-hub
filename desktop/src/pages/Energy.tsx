@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Zap, Plus, TrendingDown, Lightbulb, Wrench, ArrowRight, X, Upload, CheckCircle2, Loader2, Image as ImageIcon, Camera } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { analyzeBill } from '../lib/aiAnalysis';
+import { store } from '../lib/store';
 
 interface Bill {
   id: string;
@@ -264,10 +265,12 @@ export default function EnergyPage() {
   return (
     <div className="space-y-6">
       {showAddBill && <AddBillModal onClose={() => setShowAddBill(false)} onSave={(form) => {
-        setBills([{ id: String(Date.now()), month: form.period || new Date().toISOString().slice(0, 7), provider: form.provider, electricity: parseFloat(form.electricity) || 0, gas: parseFloat(form.gas) || 0, water: parseFloat(form.water) || 0, cost: parseFloat(form.cost) || 0 }, ...bills]);
+        const newBill: Bill = { id: String(Date.now()), month: form.period || new Date().toISOString().slice(0, 7), provider: form.provider, electricity: parseFloat(form.electricity) || 0, gas: parseFloat(form.gas) || 0, water: parseFloat(form.water) || 0, cost: parseFloat(form.cost) || 0 };
+        setBills([newBill, ...bills]);
+        store.addEnergy({ id: newBill.id, period: newBill.month, electricity: newBill.electricity, gas: newBill.gas, water: newBill.water, cost: newBill.cost });
         setShowAddBill(false);
       }} />}
-      {showScanBill && <ScanBillModal onClose={() => setShowScanBill(false)} onSave={(bill) => { setBills([bill, ...bills]); setShowScanBill(false); }} />}
+      {showScanBill && <ScanBillModal onClose={() => setShowScanBill(false)} onSave={(bill) => { setBills([bill, ...bills]); store.addEnergy({ id: bill.id, period: bill.month, electricity: bill.electricity, gas: bill.gas, water: bill.water, cost: bill.cost }); setShowScanBill(false); }} />}
       {showAddAppliance && <AddApplianceModal onClose={() => setShowAddAppliance(false)} onSave={(name, wattage, hours, type) => {
         setAppliances([...appliances, { name, type, wattage, hours, efficiency: 75, energyStar: wattage < 500 }]);
         setShowAddAppliance(false);
