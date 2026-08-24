@@ -318,10 +318,10 @@ export default function EnergyPage() {
             <h3 className="text-sm font-semibold text-dark-100 mb-3">Monthly Usage (from {bills.length} bills)</h3>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                <XAxis dataKey="month" stroke="#64748B" fontSize={11} />
-                <YAxis stroke="#64748B" fontSize={11} />
-                <Tooltip contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E4" />
+                <XAxis dataKey="month" stroke="#737373" fontSize={11} />
+                <YAxis stroke="#737373" fontSize={11} />
+                <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #DADADA', color: '#0A0A0A', borderRadius: 8, fontSize: 12 }} />
                 <Bar dataKey="electricity" fill="#F59E0B" radius={[4, 4, 0, 0]} name="Electricity (kWh)" />
                 <Bar dataKey="gas" fill="#EF4444" radius={[4, 4, 0, 0]} name="Gas (therms)" />
               </BarChart>

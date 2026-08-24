@@ -54,7 +54,7 @@ function HazardGauge({ score, level }: { score: number; level: HazardLevel }) {
   return (
     <div className="relative w-[120px] h-[120px] shrink-0">
       <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#1E293B" strokeWidth="9" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke="#EBEBEA" strokeWidth="9" />
         <circle
           cx="50"
           cy="50"
@@ -238,17 +238,17 @@ function CompositionChart({ materials }: { materials: MaterialAnalysis[] }) {
             innerRadius={52}
             outerRadius={88}
             paddingAngle={2}
-            stroke="#0A1628"
+            stroke="#FFFFFF"
           >
             {data.map((d, i) => (
               <Cell key={i} fill={d.color} />
             ))}
           </Pie>
           <Tooltip
-            contentStyle={{ backgroundColor: '#15233D', border: '1px solid #334155', borderRadius: 8, color: '#F8FAFC' }}
+            contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #DADADA', borderRadius: 8, color: '#0A0A0A' }}
             formatter={(value: number | string) => [`${value}%`, 'Share']}
           />
-          <Legend wrapperStyle={{ fontSize: 11, color: '#94A3B8' }} iconSize={8} />
+          <Legend wrapperStyle={{ fontSize: 11, color: '#6B6B6B' }} iconSize={8} />
         </PieChart>
       </ResponsiveContainer>
     </div>

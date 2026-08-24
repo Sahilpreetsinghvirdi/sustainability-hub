@@ -285,7 +285,7 @@ export default function FoodWastePage() {
   logs.forEach(l => { categoryCounts[l.reason] = (categoryCounts[l.reason] || 0) + l.amount; });
   const totalGrams = Object.values(categoryCounts).reduce((a, b) => a + b, 0) || 1;
   const pieData = Object.entries(categoryCounts)
-    .map(([name, grams]) => ({ name, value: Math.round(grams / totalGrams * 100), color: PIE_COLORS[name] || '#64748B' }))
+    .map(([name, grams]) => ({ name, value: Math.round(grams / totalGrams * 100), color: PIE_COLORS[name] || '#737373' }))
     .sort((a, b) => b.value - a.value);
 
   return (
@@ -368,7 +368,7 @@ export default function FoodWastePage() {
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={2}>
                       {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }} />
+                    <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #DADADA', color: '#0A0A0A', borderRadius: 8, fontSize: 12 }} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="space-y-1.5 mt-2">

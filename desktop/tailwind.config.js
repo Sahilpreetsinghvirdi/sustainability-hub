@@ -4,13 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        dark: { 50: '#F8FAFC', 100: '#CBD5E1', 200: '#94A3B8', 300: '#64748B', 400: '#475569', 500: '#334155', 600: '#1E293B', 700: '#15233D', 800: '#0A1628', 900: '#060D18' },
-        primary: { DEFAULT: '#22C55E', light: '#34D399', dark: '#16A34A' },
-        secondary: { DEFAULT: '#0EA5E9', light: '#38BDF8', dark: '#0284C7' },
-        accent: { DEFAULT: '#8B5CF6', light: '#A78BFA' },
-        success: '#22C55E',
-        warning: '#F59E0B',
-        error: '#EF4444',
+        /* Royal Black & White scale.
+           Class names kept (dark-*) so every existing component re-skins automatically:
+           low numbers = near-black text, high numbers = white surfaces. */
+        dark: {
+          50: '#0A0A0A', 100: '#1C1C1C', 200: '#444444', 300: '#6B6B6B',
+          400: '#9A9A9A', 500: '#DADADA', 600: '#F5F5F4', 700: '#FAFAF9',
+          800: '#FFFFFF', 900: '#F0F0EE',
+        },
+        primary: { DEFAULT: '#0A0A0A', light: '#262626', dark: '#000000' },
+        secondary: { DEFAULT: '#3F3F46', light: '#52525B', dark: '#27272A' },
+        accent: { DEFAULT: '#18181B', light: '#3F3F46' },
+        success: '#16A34A',
+        warning: '#D97706',
+        error: '#DC2626',
       },
       borderRadius: { xl: '12px', '2xl': '16px', '3xl': '24px' },
     },

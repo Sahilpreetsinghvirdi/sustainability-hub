@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Leaf, Zap, Trash2, Settings, Menu, X, ScanSearch } from 'lucide-react';
+import { LayoutDashboard, Leaf, Zap, Trash2, Settings, Menu, ScanSearch } from 'lucide-react';
 import WasteAnalyzerPage from './pages/WasteAnalyzer';
 import DashboardPage from './pages/Dashboard';
 import CarbonPage from './pages/Carbon';
@@ -9,8 +9,8 @@ import FoodWastePage from './pages/FoodWaste';
 import SettingsPage from './pages/Settings';
 
 const navItems = [
-  { path: '/', label: 'AI Waste Analyzer', icon: ScanSearch },
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/analyzer', label: 'AI Waste Analyzer', icon: ScanSearch },
   { path: '/carbon', label: 'Carbon', icon: Leaf },
   { path: '/energy', label: 'Energy', icon: Zap },
   { path: '/food-waste', label: 'Food Waste', icon: Trash2 },
@@ -69,7 +69,7 @@ function AppLayout() {
       <main className="flex-1 overflow-auto">
         <header className="h-12 border-b border-dark-500 bg-dark-700/50 backdrop-blur-sm flex items-center px-4 sticky top-0 z-10">
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-dark-600 text-dark-200 mr-3">
-            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <Menu className="w-5 h-5" />
           </button>
           <h2 className="text-sm font-semibold text-dark-100">
             {navItems.find((n) => n.path === useLocation().pathname)?.label || 'Sustainability Hub'}
@@ -77,8 +77,8 @@ function AppLayout() {
         </header>
         <div className="p-6">
           <Routes>
-            <Route path="/" element={<WasteAnalyzerPage />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/analyzer" element={<WasteAnalyzerPage />} />
             <Route path="/carbon" element={<CarbonPage />} />
             <Route path="/energy" element={<EnergyPage />} />
             <Route path="/food-waste" element={<FoodWastePage />} />

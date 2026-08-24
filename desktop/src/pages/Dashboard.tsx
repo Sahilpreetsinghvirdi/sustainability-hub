@@ -53,10 +53,10 @@ function MiniChart({ title, data, dataKey, color }: any) {
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-          <XAxis dataKey="week" stroke="#64748B" fontSize={11} />
-          <YAxis stroke="#64748B" fontSize={11} />
-          <Tooltip contentStyle={{ backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: 8, fontSize: 12 }} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E4" />
+          <XAxis dataKey="week" stroke="#737373" fontSize={11} />
+          <YAxis stroke="#737373" fontSize={11} />
+          <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #DADADA', borderRadius: 8, fontSize: 12, color: '#0A0A0A' }} />
           <Area type="monotone" dataKey={dataKey} stroke={color} fill={`url(#grad-${dataKey})`} strokeWidth={2} />
         </AreaChart>
       </ResponsiveContainer>
