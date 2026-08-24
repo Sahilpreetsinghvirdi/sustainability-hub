@@ -20,9 +20,16 @@ def log(msg: str) -> None:
 
 
 def port_up(port: int, host: str = "127.0.0.1") -> bool:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.settimeout(0.3)
-        return s.connect_ex((host, port)) == 0
+    for h in (host, "::1"):
+        try:
+            with socket.socket(socket.AF_INET6 if ":" in h else socket.AF_INET,
+                               socket.SOCK_STREAM) as s:
+                s.settimeout(0.3)
+                if s.connect_ex((h, port)) == 0:
+                    return True
+        except OSError:
+            continue
+    return False
 
 
 def shell_launch(file_: str, params: str = "", show: int = SW_HIDE, cwd: str | None = None) -> bool:
