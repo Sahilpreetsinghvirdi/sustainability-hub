@@ -41,3 +41,5 @@ desktop/src-tauri/target/
 # Testing
 coverage/
 .nyc_output/
+# runtime launcher log
+start-app.log
