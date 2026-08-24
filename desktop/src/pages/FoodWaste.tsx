@@ -3,6 +3,7 @@ import { Plus, Camera, Flame, Calendar, TrendingDown, Leaf, AlertTriangle, X, Up
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { analyzeImage } from '../lib/aiAnalysis';
 import { store } from '../lib/store';
+import { useChartChrome } from '../lib/chartColors';
 
 const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
 const REASONS = ['Plate waste', 'Spoilage', 'Preparation', 'Over-portioned', 'Other'];
@@ -276,6 +277,7 @@ export default function FoodWastePage() {
   const [showManual, setShowManual] = useState(false);
   const [detailLog, setDetailLog] = useState<WasteLog | null>(null);
   const [logs, setLogs] = useState<WasteLog[]>(initialLogs);
+  const chrome = useChartChrome();
 
   const totalWaste = logs.reduce((s, l) => s + l.amount, 0) / 1000;
   const totalCarbon = logs.reduce((s, l) => s + l.carbon, 0);
@@ -285,7 +287,7 @@ export default function FoodWastePage() {
   logs.forEach(l => { categoryCounts[l.reason] = (categoryCounts[l.reason] || 0) + l.amount; });
   const totalGrams = Object.values(categoryCounts).reduce((a, b) => a + b, 0) || 1;
   const pieData = Object.entries(categoryCounts)
-    .map(([name, grams]) => ({ name, value: Math.round(grams / totalGrams * 100), color: PIE_COLORS[name] || '#737373' }))
+    .map(([name, grams]) => ({ name, value: Math.round(grams / totalGrams * 100), color: PIE_COLORS[name] || chrome.fallback }))
     .sort((a, b) => b.value - a.value);
 
   return (
@@ -368,7 +370,7 @@ export default function FoodWastePage() {
                     <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={2}>
                       {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #DADADA', color: '#0A0A0A', borderRadius: 8, fontSize: 12 }} />
+                    <Tooltip contentStyle={{ backgroundColor: chrome.tooltipBg, border: `1px solid ${chrome.tooltipBorder}`, color: chrome.tooltipText, borderRadius: 8, fontSize: 12 }} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="space-y-1.5 mt-2">

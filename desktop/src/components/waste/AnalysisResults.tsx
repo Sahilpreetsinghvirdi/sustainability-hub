@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { HazardLevel, MaterialAnalysis, WasteAnalysisResponse } from '@/types';
+import { useChartChrome } from '@/lib/chartColors';
 
 export const HAZARD_STYLES: Record<HazardLevel, { bg: string; text: string; border: string; label: string }> = {
   low: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/30', label: 'Low Risk' },
@@ -53,10 +54,11 @@ function HazardGauge({ score, level }: { score: number; level: HazardLevel }) {
   const circ = 2 * Math.PI * r;
   const filled = (Math.min(100, Math.max(0, score)) / 100) * circ;
   const style = HAZARD_STYLES[level] ?? HAZARD_STYLES.low;
+  const chrome = useChartChrome();
   return (
     <div className="relative w-[120px] h-[120px] shrink-0">
       <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#EBEBEA" strokeWidth="9" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke={chrome.grid} strokeWidth="9" />
         <circle
           cx="50"
           cy="50"
@@ -220,12 +222,19 @@ function MaterialCard({ material, index }: { material: MaterialAnalysis; index: 
 }
 
 function CompositionChart({ materials }: { materials: MaterialAnalysis[] }) {
+  const chrome = useChartChrome();
   const sorted = [...materials].sort((a, b) => b.percentage - a.percentage);
   const data = sorted.map((m, i) => ({
     name: m.name.length > 22 ? `${m.name.slice(0, 20)}…` : m.name,
     value: Number(m.percentage.toFixed(1)),
     color: colorForMaterial(i, m.category),
   }));
+  const pieLabel = {
+    fill: chrome.axis,
+    fontSize: 11,
+    fontWeight: 600,
+    formatter: (value: number | string) => `${value}%`,
+  } as never;
   return (
     <div className="card h-[320px]">
       <h3 className="text-sm font-semibold text-dark-100 mb-1">Material Composition</h3>
@@ -241,18 +250,18 @@ function CompositionChart({ materials }: { materials: MaterialAnalysis[] }) {
             innerRadius={52}
             outerRadius={88}
             paddingAngle={2}
-            label={(p: { value?: number | string }) => `${p.value}%`}
+            label={pieLabel}
             labelLine={false}
           >
             {data.map((d, i) => (
-              <Cell key={`${d.name}-${i}`} fill={d.color} stroke="#FFFFFF" strokeWidth={2} />
+              <Cell key={`${d.name}-${i}`} fill={d.color} stroke={chrome.surface} strokeWidth={2} />
             ))}
           </Pie>
           <Tooltip
-            contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #DADADA', borderRadius: 8, color: '#0A0A0A' }}
+            contentStyle={{ backgroundColor: chrome.tooltipBg, border: `1px solid ${chrome.tooltipBorder}`, borderRadius: 8, color: chrome.tooltipText }}
             formatter={(value: number | string) => [`${value}%`, 'Share']}
           />
-          <Legend wrapperStyle={{ fontSize: 11, color: '#6B6B6B' }} iconSize={8} />
+          <Legend wrapperStyle={{ fontSize: 11, color: chrome.legend }} iconSize={8} />
         </PieChart>
       </ResponsiveContainer>
     </div>

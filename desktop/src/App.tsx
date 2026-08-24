@@ -7,6 +7,7 @@ import CarbonPage from './pages/Carbon';
 import EnergyPage from './pages/Energy';
 import FoodWastePage from './pages/FoodWaste';
 import SettingsPage from './pages/Settings';
+import ThemeToggle from './components/ui/ThemeToggle';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -23,7 +24,7 @@ function Sidebar() {
     <aside className="w-64 h-screen bg-dark-700 border-r border-dark-500 flex flex-col shrink-0">
       <div className="p-5 flex items-center gap-3 border-b border-dark-500">
         <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-          <Leaf className="w-6 h-6 text-white" />
+          <Leaf className="w-6 h-6 on-primary-chip" />
         </div>
         <div>
           <h1 className="text-lg font-bold text-dark-50">Sustainability</h1>
@@ -74,6 +75,9 @@ function AppLayout() {
           <h2 className="text-sm font-semibold text-dark-100">
             {navItems.find((n) => n.path === useLocation().pathname)?.label || 'Sustainability Hub'}
           </h2>
+          <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
+          </div>
         </header>
         <div className="p-6">
           <Routes>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Leaf, Zap, Trash2, TrendingUp, TrendingDown, Flame, Target } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { store } from '../lib/store';
+import { useChartChrome } from '../lib/chartColors';
 
 const carbonData = [
   { week: 'W1', value: 42 }, { week: 'W2', value: 38 }, { week: 'W3', value: 35 },
@@ -35,13 +36,14 @@ function StatCard({ icon: Icon, label, value, unit, trend, trendUp, color, path 
         </div>
       </div>
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-        <Icon className="w-5 h-5 text-white" />
+        <Icon className={`w-5 h-5 ${color.includes('primary') || color.includes('accent') ? 'on-primary-chip' : 'text-white'}`} />
       </div>
     </div>
   );
 }
 
 function MiniChart({ title, data, dataKey, color }: any) {
+  const chrome = useChartChrome();
   return (
     <div className="card">
       <h3 className="text-sm font-semibold text-dark-100 mb-3">{title}</h3>
@@ -53,10 +55,10 @@ function MiniChart({ title, data, dataKey, color }: any) {
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E5E4" />
-          <XAxis dataKey="week" stroke="#737373" fontSize={11} />
-          <YAxis stroke="#737373" fontSize={11} />
-          <Tooltip contentStyle={{ backgroundColor: '#FFFFFF', border: '1px solid #DADADA', borderRadius: 8, fontSize: 12, color: '#0A0A0A' }} />
+          <CartesianGrid strokeDasharray="3 3" stroke={chrome.grid} />
+          <XAxis dataKey="week" stroke={chrome.axis} fontSize={11} />
+          <YAxis stroke={chrome.axis} fontSize={11} />
+          <Tooltip contentStyle={{ backgroundColor: chrome.tooltipBg, border: `1px solid ${chrome.tooltipBorder}`, borderRadius: 8, fontSize: 12, color: chrome.tooltipText }} />
           <Area type="monotone" dataKey={dataKey} stroke={color} fill={`url(#grad-${dataKey})`} strokeWidth={2} />
         </AreaChart>
       </ResponsiveContainer>
@@ -101,7 +103,7 @@ export default function DashboardPage() {
           {actions.map((action) => (
             <button key={action.label} onClick={() => navigate(action.path)} className="card hover:border-primary/50 transition-all text-left group cursor-pointer">
               <div className={`w-9 h-9 ${action.color} rounded-lg flex items-center justify-center mb-2 group-hover:scale-110 transition-transform`}>
-                <action.icon className="w-4 h-4 text-white" />
+                <action.icon className={`w-4 h-4 ${action.color.includes('primary') || action.color.includes('accent') ? 'on-primary-chip' : 'text-white'}`} />
               </div>
               <p className="text-sm font-medium text-dark-50">{action.label}</p>
               <p className="text-xs text-dark-300 mt-0.5">{action.desc}</p>

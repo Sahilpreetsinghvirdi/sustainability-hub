@@ -4,20 +4,38 @@ export default {
   theme: {
     extend: {
       colors: {
-        /* Royal Black & White scale.
-           Class names kept (dark-*) so every existing component re-skins automatically:
-           low numbers = near-black text, high numbers = white surfaces. */
+        /* Royal Black & White scale — now driven by CSS variables so the whole
+           app flips between Light ("porcelain") and Dark ("midnight") themes.
+           Class names kept (dark-*); semantics: low = text, high = surfaces. */
         dark: {
-          50: '#0A0A0A', 100: '#1C1C1C', 200: '#444444', 300: '#6B6B6B',
-          400: '#9A9A9A', 500: '#DADADA', 600: '#F5F5F4', 700: '#FAFAF9',
-          800: '#FFFFFF', 900: '#F0F0EE',
+          50: 'rgb(var(--c50) / <alpha-value>)',
+          100: 'rgb(var(--c100) / <alpha-value>)',
+          200: 'rgb(var(--c200) / <alpha-value>)',
+          300: 'rgb(var(--c300) / <alpha-value>)',
+          400: 'rgb(var(--c400) / <alpha-value>)',
+          500: 'rgb(var(--c500) / <alpha-value>)',
+          600: 'rgb(var(--c600) / <alpha-value>)',
+          700: 'rgb(var(--c700) / <alpha-value>)',
+          800: 'rgb(var(--c800) / <alpha-value>)',
+          900: 'rgb(var(--c900) / <alpha-value>)',
         },
-        primary: { DEFAULT: '#0A0A0A', light: '#262626', dark: '#000000' },
-        secondary: { DEFAULT: '#3F3F46', light: '#52525B', dark: '#27272A' },
-        accent: { DEFAULT: '#18181B', light: '#3F3F46' },
-        success: '#16A34A',
-        warning: '#D97706',
-        error: '#DC2626',
+        primary: {
+          DEFAULT: 'rgb(var(--p-default) / <alpha-value>)',
+          light: 'rgb(var(--p-light) / <alpha-value>)',
+          dark: 'rgb(var(--p-dark) / <alpha-value>)',
+        },
+        secondary: {
+          DEFAULT: 'rgb(var(--s-default) / <alpha-value>)',
+          light: 'rgb(var(--s-light) / <alpha-value>)',
+          dark: 'rgb(var(--s-dark) / <alpha-value>)',
+        },
+        accent: {
+          DEFAULT: 'rgb(var(--a-default) / <alpha-value>)',
+          light: 'rgb(var(--a-light) / <alpha-value>)',
+        },
+        success: 'rgb(var(--success) / <alpha-value>)',
+        warning: 'rgb(var(--warning) / <alpha-value>)',
+        error: 'rgb(var(--error) / <alpha-value>)',
       },
       borderRadius: { xl: '12px', '2xl': '16px', '3xl': '24px' },
     },
