@@ -221,22 +221,21 @@ function AddApplianceModal({ onClose, onSave }: { onClose: () => void; onSave: (
   );
 }
 
-const initialAppliances: Appliance[] = [
-  { name: 'Refrigerator', type: 'Kitchen', wattage: 150, hours: 24, efficiency: 85, energyStar: true },
-  { name: 'Washing Machine', type: 'Laundry', wattage: 500, hours: 1, efficiency: 72, energyStar: false },
-  { name: 'Air Conditioner', type: 'HVAC', wattage: 3500, hours: 8, efficiency: 65, energyStar: false },
-  { name: 'LED TV 55"', type: 'Living Room', wattage: 80, hours: 6, efficiency: 92, energyStar: true },
-  { name: 'Desktop Computer', type: 'Office', wattage: 300, hours: 8, efficiency: 78, energyStar: false },
-];
+const initialAppliances: Appliance[] = [];
 
-const initialBills: Bill[] = [
-  { id: 'b1', month: '2026-01', provider: 'Hydro One', electricity: 380, gas: 42, water: 28, cost: 145.20 },
-  { id: 'b2', month: '2026-02', provider: 'Hydro One', electricity: 365, gas: 38, water: 26, cost: 138.50 },
-  { id: 'b3', month: '2026-03', provider: 'Hydro One', electricity: 340, gas: 30, water: 30, cost: 125.80 },
-  { id: 'b4', month: '2026-04', provider: 'Toronto Hydro', electricity: 310, gas: 22, water: 32, cost: 112.40 },
-  { id: 'b5', month: '2026-05', provider: 'Toronto Hydro', electricity: 290, gas: 15, water: 35, cost: 98.60 },
-  { id: 'b6', month: '2026-06', provider: 'Toronto Hydro', electricity: 280, gas: 10, water: 38, cost: 92.30 },
-];
+const initialBills: Bill[] = [];
+
+function loadBills(): Bill[] {
+  return store.getEnergy().map((b) => ({
+    id: b.id,
+    month: b.period,
+    provider: b.provider || 'Utility',
+    electricity: b.electricity,
+    gas: b.gas,
+    water: b.water,
+    cost: b.cost,
+  }));
+}
 
 const recommendations = [
   { title: 'Switch to LED bulbs', savings: '$120/yr', priority: 'high' as const, icon: Lightbulb, desc: 'Replace 8 incandescent bulbs with LED alternatives' },
@@ -249,9 +248,14 @@ export default function EnergyPage() {
   const [showAddBill, setShowAddBill] = useState(false);
   const [showScanBill, setShowScanBill] = useState(false);
   const [showAddAppliance, setShowAddAppliance] = useState(false);
-  const [appliances, setAppliances] = useState<Appliance[]>(initialAppliances);
-  const [bills, setBills] = useState<Bill[]>(initialBills);
+  const [appliances, setAppliances] = useState<Appliance[]>(() => store.getAppliances());
+  const [bills, setBills] = useState<Bill[]>(loadBills);
   const chrome = useChartChrome();
+
+  const saveAppliances = (next: Appliance[]) => {
+    setAppliances(next);
+    try { localStorage.setItem('sh_appliances', JSON.stringify(next)); } catch { /* ignore */ }
+  };
 
   // Compute chart data from actual bills
   const chartData = [...bills].reverse().map(b => ({
@@ -263,18 +267,21 @@ export default function EnergyPage() {
 
   const avgElectricity = bills.length > 0 ? Math.round(bills.reduce((s, b) => s + b.electricity, 0) / bills.length) : 0;
   const latestBill = bills[0];
+  const effScore = appliances.length > 0
+    ? Math.round(appliances.reduce((s, a) => s + a.efficiency, 0) / appliances.length)
+    : null;
 
   return (
     <div className="space-y-6">
       {showAddBill && <AddBillModal onClose={() => setShowAddBill(false)} onSave={(form) => {
         const newBill: Bill = { id: String(Date.now()), month: form.period || new Date().toISOString().slice(0, 7), provider: form.provider, electricity: parseFloat(form.electricity) || 0, gas: parseFloat(form.gas) || 0, water: parseFloat(form.water) || 0, cost: parseFloat(form.cost) || 0 };
         setBills([newBill, ...bills]);
-        store.addEnergy({ id: newBill.id, period: newBill.month, electricity: newBill.electricity, gas: newBill.gas, water: newBill.water, cost: newBill.cost });
+        store.addEnergy({ id: newBill.id, period: newBill.month, provider: newBill.provider, electricity: newBill.electricity, gas: newBill.gas, water: newBill.water, cost: newBill.cost });
         setShowAddBill(false);
       }} />}
-      {showScanBill && <ScanBillModal onClose={() => setShowScanBill(false)} onSave={(bill) => { setBills([bill, ...bills]); store.addEnergy({ id: bill.id, period: bill.month, electricity: bill.electricity, gas: bill.gas, water: bill.water, cost: bill.cost }); setShowScanBill(false); }} />}
+      {showScanBill && <ScanBillModal onClose={() => setShowScanBill(false)} onSave={(bill) => { setBills([bill, ...bills]); store.addEnergy({ id: bill.id, period: bill.month, provider: bill.provider, electricity: bill.electricity, gas: bill.gas, water: bill.water, cost: bill.cost }); setShowScanBill(false); }} />}
       {showAddAppliance && <AddApplianceModal onClose={() => setShowAddAppliance(false)} onSave={(name, wattage, hours, type) => {
-        setAppliances([...appliances, { name, type, wattage, hours, efficiency: 75, energyStar: wattage < 500 }]);
+        saveAppliances([...appliances, { name, type, wattage, hours, efficiency: 75, energyStar: wattage < 500 }]);
         setShowAddAppliance(false);
       }} />}
 
@@ -317,7 +324,10 @@ export default function EnergyPage() {
             </div>
           </div>
           <div className="card">
-            <h3 className="text-sm font-semibold text-dark-100 mb-3">Monthly Usage (from {bills.length} bills)</h3>
+            <h3 className="text-sm font-semibold text-dark-100 mb-3">Monthly Usage (from {bills.length} bill{bills.length === 1 ? '' : 's'})</h3>
+            {bills.length === 0 ? (
+              <p className="text-xs text-dark-300 text-center py-14">No bills yet — scan or add one above. Bills persist across restarts.</p>
+            ) : (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={chrome.grid} />
@@ -328,6 +338,7 @@ export default function EnergyPage() {
                 <Bar dataKey="gas" fill="#EF4444" radius={[4, 4, 0, 0]} name="Gas (therms)" />
               </BarChart>
             </ResponsiveContainer>
+            )}
           </div>
           {bills.length > 0 && (
             <div className="card">
@@ -361,6 +372,9 @@ export default function EnergyPage() {
             <button onClick={() => setShowAddAppliance(true)} className="btn-primary text-xs flex items-center gap-1"><Plus className="w-3 h-3" /> Add</button>
           </div>
           <div className="space-y-2">
+            {appliances.length === 0 && (
+              <p className="text-xs text-dark-300 text-center py-10">No appliances yet — click “Add” to track your devices.</p>
+            )}
             {appliances.map((a, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
                 <div className="flex items-center gap-3">
@@ -391,7 +405,16 @@ export default function EnergyPage() {
               </div>
               <div className="flex-1">
                 <p className="font-semibold">Energy Efficiency Score</p>
-                <p className="text-3xl font-bold text-primary mt-1">68<span className="text-lg text-dark-300">/100</span></p>
+                <p className="text-3xl font-bold text-primary mt-1">
+                  {effScore !== null ? (
+                    <>{effScore}<span className="text-lg text-dark-300">/100</span></>
+                  ) : (
+                    <span className="text-xl text-dark-300">Add appliances to score</span>
+                  )}
+                </p>
+                {appliances.length > 0 && (
+                  <p className="text-xs text-dark-300">Average across {appliances.length} appliance{appliances.length === 1 ? '' : 's'}</p>
+                )}
               </div>
             </div>
           </div>

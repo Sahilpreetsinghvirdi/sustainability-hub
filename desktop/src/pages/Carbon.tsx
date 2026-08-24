@@ -285,19 +285,23 @@ function ReceiptDetailModal({ scan, onClose }: { scan: ScannedReceipt; onClose: 
   );
 }
 
-const initialScans: ScannedReceipt[] = [
-  { id: '1', date: '2026-08-19', store: 'Whole Foods Market', items: [], itemCount: 12, carbon: 23.4, price: 67.50, status: 'confirmed' },
-  { id: '2', date: '2026-08-17', store: "Trader Joe's", items: [], itemCount: 8, carbon: 15.2, price: 42.30, status: 'confirmed' },
-  { id: '3', date: '2026-08-15', store: 'Costco', items: [], itemCount: 24, carbon: 45.8, price: 156.20, status: 'estimated' },
-  { id: '4', date: '2026-08-12', store: 'Sobeys', items: [], itemCount: 5, carbon: 8.1, price: 23.40, status: 'draft' },
-];
-
 export default function CarbonPage() {
   const [search, setSearch] = useState('');
   const [showManual, setShowManual] = useState(false);
   const [showScan, setShowScan] = useState(false);
   const [detailScan, setDetailScan] = useState<ScannedReceipt | null>(null);
-  const [scans, setScans] = useState<ScannedReceipt[]>(initialScans);
+  const [scans, setScans] = useState<ScannedReceipt[]>(() =>
+    appStore.getCarbon().map((c) => ({
+      id: c.id,
+      date: c.date,
+      store: c.store,
+      items: c.items,
+      itemCount: Math.max(c.items.length, 1),
+      carbon: c.totalCarbon,
+      price: c.total,
+      status: 'confirmed' as const,
+    })),
+  );
   const filtered = scans.filter((s) => s.store.toLowerCase().includes(search.toLowerCase()));
 
   const totalCarbon = scans.reduce((s, r) => s + r.carbon, 0);
@@ -372,6 +376,15 @@ export default function CarbonPage() {
             </tr>
           </thead>
           <tbody>
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={7} className="py-10 text-center text-xs text-dark-300">
+                  {scans.length === 0
+                    ? 'No receipts yet — scan or add one above. Entries persist across restarts.'
+                    : 'No receipts match your search.'}
+                </td>
+              </tr>
+            )}
             {filtered.map((scan) => (
               <tr key={scan.id} className="border-b border-dark-500/50 hover:bg-dark-600/50 transition-colors cursor-pointer" onClick={() => setDetailScan(scan)}>
                 <td className="py-3 text-sm">{scan.date}</td>

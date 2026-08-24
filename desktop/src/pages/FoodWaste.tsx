@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Plus, Camera, Flame, Calendar, TrendingDown, Leaf, AlertTriangle, X, Upload, CheckCircle2, Loader2, Image as ImageIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { analyzeImage } from '../lib/aiAnalysis';
-import { store } from '../lib/store';
+import { store, computeStreak, bestStreak, lastNDayLabels } from '../lib/store';
 import { useChartChrome } from '../lib/chartColors';
 
 const MEALS = ['Breakfast', 'Lunch', 'Dinner', 'Snack'];
@@ -263,24 +263,37 @@ function LogDetailModal({ log, onClose }: { log: WasteLog; onClose: () => void }
   );
 }
 
-const initialLogs: WasteLog[] = [
-  { id: '1', date: '2026-08-19', meal: 'Dinner', desc: 'Leftover pasta and salad', amount: 250, reason: 'Overcooked', carbon: 0.8 },
-  { id: '2', date: '2026-08-19', meal: 'Lunch', desc: 'Sandwich crusts', amount: 80, reason: 'Not eaten', carbon: 0.2 },
-  { id: '3', date: '2026-08-18', meal: 'Dinner', desc: 'Expired yogurt', amount: 150, reason: 'Spoiled', carbon: 0.5 },
-  { id: '4', date: '2026-08-17', meal: 'Lunch', desc: 'Too much rice', amount: 320, reason: 'Over-portioned', carbon: 1.1 },
-  { id: '5', date: '2026-08-16', meal: 'Breakfast', desc: 'Burnt toast', amount: 60, reason: 'Burned', carbon: 0.15 },
-];
-
 export default function FoodWastePage() {
   const [tab, setTab] = useState<'logs' | 'streak' | 'tips'>('logs');
   const [showPhoto, setShowPhoto] = useState(false);
   const [showManual, setShowManual] = useState(false);
   const [detailLog, setDetailLog] = useState<WasteLog | null>(null);
-  const [logs, setLogs] = useState<WasteLog[]>(initialLogs);
+  const [logs, setLogs] = useState<WasteLog[]>(() => store.getWaste().map((l) => ({ ...l })));
   const chrome = useChartChrome();
 
-  const totalWaste = logs.reduce((s, l) => s + l.amount, 0) / 1000;
+  const streak = computeStreak(logs);
+  const best = bestStreak(logs);
+
+  const weekStartIso = lastNDayLabels(7)[0].iso;
+  const weekLogs = logs.filter((l) => l.date >= weekStartIso);
+
+  const totalWaste = weekLogs.reduce((s, l) => s + l.amount, 0) / 1000;
   const totalCarbon = logs.reduce((s, l) => s + l.carbon, 0);
+
+  // Real 30-day activity grid (days that have at least one log)
+  const logDates = new Set(logs.map((l) => l.date));
+  const grid30 = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (29 - i));
+    const iso = d.toISOString().split('T')[0];
+    return { iso, active: logDates.has(iso) };
+  });
+  // Current streak visualized as the trailing run of active days
+  let trailCount = 0;
+  for (let i = grid30.length - 1; i >= 0; i--) {
+    if (!grid30[i].active) break;
+    trailCount++;
+  }
 
   // Compute pie data from actual logs
   const categoryCounts: Record<string, number> = {};
@@ -310,12 +323,12 @@ export default function FoodWastePage() {
       <div className="grid grid-cols-4 gap-4">
         <div className="card-elevated">
           <div className="flex items-center gap-2 mb-1"><Flame className="w-4 h-4 text-warning" /><p className="text-dark-200 text-xs">Current Streak</p></div>
-          <p className="text-2xl font-bold text-warning">14 days</p>
+          <p className="text-2xl font-bold text-warning">{streak} day{streak === 1 ? '' : 's'}</p>
         </div>
         <div className="card-elevated">
           <p className="text-dark-200 text-xs">This Week</p>
           <p className="text-2xl font-bold text-dark-50 mt-1">{totalWaste.toFixed(1)} kg</p>
-          <p className="text-xs text-primary mt-1">{logs.length} items logged</p>
+          <p className="text-xs text-primary mt-1">{weekLogs.length} item{weekLogs.length === 1 ? '' : 's'} logged</p>
         </div>
         <div className="card-elevated">
           <p className="text-dark-200 text-xs">CO₂ Impact</p>
@@ -341,12 +354,15 @@ export default function FoodWastePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2 card">
             <h3 className="text-sm font-semibold text-dark-100 mb-3">Recent Logs</h3>
+            {logs.length === 0 ? (
+              <p className="text-xs text-dark-300 text-center py-10">No food waste logged yet. Use “Log with Photo” or “Manual Log” — entries persist across restarts.</p>
+            ) : (
             <div className="space-y-2">
               {logs.map((log) => (
                 <div key={log.id} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg cursor-pointer hover:bg-dark-600/80 transition-colors" onClick={() => setDetailLog(log)}>
                   <div className="flex items-center gap-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${log.aiItems ? 'bg-purple-500/20 text-purple-400' : MEAL_BG[log.meal.toLowerCase()] || 'bg-dark-400 text-dark-200'}`}>
-                      {log.aiItems ? 'AI' : log.meal}
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${(log.aiItems || log.reason === 'AI detected') ? 'bg-purple-500/20 text-purple-400' : MEAL_BG[log.meal.toLowerCase()] || 'bg-dark-400 text-dark-200'}`}>
+                      {(log.aiItems || log.reason === 'AI detected') ? 'AI' : log.meal}
                     </span>
                     <div>
                       <p className="text-sm font-medium">{log.desc}</p>
@@ -358,8 +374,9 @@ export default function FoodWastePage() {
                     <p className="text-xs text-error">{log.carbon} kg CO₂</p>
                   </div>
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="card">
             <h3 className="text-sm font-semibold text-dark-100 mb-3">Waste by Category</h3>
@@ -398,18 +415,18 @@ export default function FoodWastePage() {
             <div className="w-20 h-20 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <Flame className="w-10 h-10 text-warning" />
             </div>
-            <p className="text-4xl font-bold text-warning">14 Days</p>
-            <p className="text-dark-200 mt-2">Current waste-reduction streak</p>
+            <p className="text-4xl font-bold text-warning">{streak} Day{streak === 1 ? '' : 's'}</p>
+            <p className="text-dark-200 mt-2">Current logging streak</p>
             <div className="flex justify-center gap-8 mt-6">
-              <div><p className="text-2xl font-bold text-dark-50">21</p><p className="text-xs text-dark-300">Best streak</p></div>
-              <div><p className="text-2xl font-bold text-dark-50">12.3</p><p className="text-xs text-dark-300">Average</p></div>
+              <div><p className="text-2xl font-bold text-dark-50">{best}</p><p className="text-xs text-dark-300">Best streak</p></div>
+              <div><p className="text-2xl font-bold text-dark-50">{logs.length > 0 ? (logs.reduce((s, l) => s + l.amount, 0) / 1000 / Math.max(1, new Set(logs.map(l => l.date)).size)).toFixed(1) : '0.0'}</p><p className="text-xs text-dark-300">Avg kg/log day</p></div>
             </div>
             <div className="flex justify-center gap-1 mt-6">
-              {Array.from({ length: 30 }, (_, i) => (
-                <div key={i} className={`w-3 h-3 rounded-sm ${i < 14 ? 'bg-warning shadow-[0_0_6px_rgba(245,158,11,0.4)]' : i < 21 ? 'bg-dark-500' : 'bg-dark-600'}`} />
+              {grid30.map((d, i) => (
+                <div key={i} title={d.iso} className={`w-3 h-3 rounded-sm ${d.active ? 'bg-warning shadow-[0_0_6px_rgba(245,158,11,0.4)]' : i >= grid30.length - trailCount ? 'bg-dark-500' : 'bg-dark-600'}`} />
               ))}
             </div>
-            <p className="text-xs text-dark-300 mt-2">Last 30 days (yellow = streak day)</p>
+            <p className="text-xs text-dark-300 mt-2">Last 30 days (yellow = day with logged food waste)</p>
           </div>
         </div>
       )}

@@ -202,7 +202,7 @@ function MaterialCard({ material, index }: { material: MaterialAnalysis; index: 
           </div>
 
           <div className={`rounded-lg border ${hs.border} ${hs.bg} p-3 space-y-1`}>
-            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide mb-1 ${hs.text}">
+            <p className={`flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide mb-1 ${hs.text}`}>
               <MapPin className={`w-4 h-4 ${hs.text}`} />
               <span className={hs.text}>Disposal &amp; Where It Can Go</span>
             </p>
