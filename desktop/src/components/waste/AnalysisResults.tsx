@@ -82,7 +82,7 @@ function HazardGauge({ score, level }: { score: number; level: HazardLevel }) {
 function Chip({ children, tone = 'default' }: { children: React.ReactNode; tone?: 'default' | 'danger' | 'eco' }) {
   const tones = {
     default: 'bg-dark-600 border-dark-400 text-dark-100',
-    danger: 'bg-error/10 border-error/30 text-red-300',
+    danger: 'bg-error/10 border-error/30 text-error',
     eco: 'bg-primary/10 border-primary/30 text-primary-light',
   };
   return (

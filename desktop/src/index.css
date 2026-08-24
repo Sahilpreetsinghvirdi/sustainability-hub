@@ -5,7 +5,8 @@
 /* ============================================================
    THEME TOKENS
    Light = "Porcelain" (white / royal black)
-   Dark  = "Midnight" (deep blue-black / soft white)
+   Dark  = "Obsidian" — layered elevation design:
+     page (deepest) < sidebar < CARD (raised, beveled) < hover fill
    Values are space-separated RGB channels for Tailwind alpha.
    ============================================================ */
 :root {
@@ -15,10 +16,15 @@
   --c300: 107 107 107;  /* muted text */
   --c400: 154 154 154;  /* subtle border */
   --c500: 218 218 218;  /* border */
-  --c600: 245 245 244;  /* hover surface */
+  --c600: 245 245 244;  /* chip / hover surface */
   --c700: 250 250 249;  /* sidebar / header */
   --c800: 255 255 255;  /* page background */
   --c900: 240 240 238;  /* inset well */
+
+  /* dedicated surfaces so cards can lift off the page in dark mode */
+  --page: 255 255 255;
+  --surface: 255 255 255;
+  --well: 245 245 244;
 
   --p-default: 10 10 10;
   --p-light: 38 38 38;
@@ -40,33 +46,42 @@
 }
 
 html.dark {
-  --c50: 251 251 252;
-  --c100: 233 233 237;
-  --c200: 205 205 213;
-  --c300: 161 161 170;
-  --c400: 68 68 76;
-  --c500: 47 47 55;
-  --c600: 31 31 38;
-  --c700: 21 21 26;
-  --c800: 13 13 17;
-  --c900: 9 9 12;
+  /* text — soft ivory ramp, never pure white */
+  --c50: 246 246 249;
+  --c100: 227 227 234;
+  --c200: 178 178 190;
+  --c300: 139 139 152;
 
-  --p-default: 250 250 249;
+  /* borders — cool slate, visible but quiet */
+  --c400: 62 62 74;
+  --c500: 41 41 51;
+
+  /* fills & surfaces — the elevation ladder */
+  --c600: 33 33 42;     /* chips / hover fill — clearly raised */
+  --c700: 17 17 23;     /* sidebar / header */
+  --c800: 10 10 14;     /* page background — deepest */
+  --c900: 6 6 9;        /* inset wells / scrollbar track */
+
+  --page: var(--c800);
+  --surface: 20 20 27;  /* card — one full step above the page */
+  --well: 13 13 18;
+
+  --p-default: 242 242 246;
   --p-light: 255 255 255;
-  --p-dark: 226 226 232;
+  --p-dark: 208 208 218;
 
-  --s-default: 52 52 62;
-  --s-light: 72 72 84;
-  --s-dark: 38 38 46;
+  --s-default: 46 46 58;
+  --s-light: 64 64 78;
+  --s-dark: 34 34 44;
 
-  --a-default: 228 228 234;
-  --a-light: 161 161 170;
+  --a-default: 222 222 230;
+  --a-light: 150 150 164;
 
-  --success: 34 197 94;
-  --warning: 245 158 11;
-  --error: 248 113 113;
+  --success: 39 208 105;
+  --warning: 250 166 26;
+  --error: 250 110 110;
 
-  --focus-ring: rgba(255, 255, 255, 0.12);
+  --focus-ring: rgba(148, 163, 255, 0.16);
   color-scheme: dark;
 }
 
@@ -77,19 +92,24 @@ html.dark {
 body {
   margin: 0;
   padding: 0;
-  background-color: rgb(var(--c800));
+  background-color: rgb(var(--page));
   color: rgb(var(--c50));
   overflow: hidden;
   transition: background-color 0.35s ease, color 0.35s ease;
 }
 
+/* Obsidian depth: faint indigo aura bleeding down from the top edge */
+html.dark body {
+  background-image: radial-gradient(1100px 480px at 50% -180px, rgba(129, 140, 248, 0.07), transparent 70%);
+}
+
 *::-webkit-scrollbar { width: 6px; }
-*::-webkit-scrollbar-track { background: rgb(var(--c900)); }
+*::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-thumb { background: rgb(var(--c400)); border-radius: 3px; }
 *::-webkit-scrollbar-thumb:hover { background: rgb(var(--c300)); }
 
 input, select, textarea {
-  background-color: rgb(var(--c800));
+  background-color: rgb(var(--well));
   border: 1px solid rgb(var(--c500));
   color: rgb(var(--c50));
   border-radius: 8px;
@@ -97,6 +117,9 @@ input, select, textarea {
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s, background-color 0.35s ease;
+}
+html.dark input, html.dark select, html.dark textarea {
+  border-color: rgb(var(--c400));
 }
 
 input:focus, select:focus, textarea:focus, input:focus-visible, select:focus-visible, textarea:focus-visible {
@@ -129,14 +152,26 @@ html.dark .bg-accent.text-white {
 }
 
 .card {
-  @apply bg-dark-800 border border-dark-500 rounded-xl p-4 shadow-sm;
-  transition: background-color 0.35s ease, border-color 0.35s ease;
+  @apply border border-dark-500 rounded-xl p-4;
+  background-color: rgb(var(--surface));
+  transition: background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+html.dark .card {
+  border-color: rgb(var(--c500));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 6px 20px rgba(0, 0, 0, 0.45);
 }
 .card-elevated {
   @apply card shadow-xl shadow-black/10;
 }
 html.dark .card-elevated {
-  @apply shadow-black/40;
+  @apply shadow-black/50;
+}
+html.dark .card-elevated {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 12px 32px rgba(0, 0, 0, 0.55);
 }
 .card-outlined {
   @apply border-2 border-dark-400 bg-transparent rounded-xl p-4;
