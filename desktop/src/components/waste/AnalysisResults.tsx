@@ -21,24 +21,26 @@ export const HAZARD_STYLES: Record<HazardLevel, { bg: string; text: string; bord
   critical: { bg: 'bg-error/10', text: 'text-error', border: 'border-error/30', label: 'Critical Risk' },
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  plastic: '#38BDF8',
-  paper: '#F59E0B',
-  organic: '#22C55E',
-  metal: '#94A3B8',
-  glass: '#A78BFA',
-  e_waste: '#EF4444',
-  textile: '#EC4899',
-  hazardous: '#F97316',
-  rubber: '#64748B',
-  construction: '#B45309',
-  other: '#0EA5E9',
-};
+/* One distinct color PER MATERIAL (by position), so every pie slice and its
+   matching card are always visually different — even when several items share
+   the same waste category (e.g. three kinds of plastic). */
+const MATERIAL_COLORS = [
+  '#0EA5E9', // sky
+  '#F59E0B', // amber
+  '#22C55E', // green
+  '#A78BFA', // violet
+  '#EF4444', // red
+  '#14B8A6', // teal
+  '#EC4899', // pink
+  '#84CC16', // lime
+  '#F97316', // orange
+  '#6366F1', // indigo
+  '#EAB308', // yellow
+  '#06B6D4', // cyan
+];
 
-const FALLBACK_COLORS = ['#38BDF8', '#22C55E', '#F59E0B', '#A78BFA', '#EF4444', '#0EA5E9'];
-
-export function colorForMaterial(index: number, category: string) {
-  return CATEGORY_COLORS[category] ?? FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+export function colorForMaterial(index: number, _category?: string) {
+  return MATERIAL_COLORS[index % MATERIAL_COLORS.length];
 }
 
 function hazardColor(level: HazardLevel) {
@@ -218,7 +220,8 @@ function MaterialCard({ material, index }: { material: MaterialAnalysis; index: 
 }
 
 function CompositionChart({ materials }: { materials: MaterialAnalysis[] }) {
-  const data = materials.map((m, i) => ({
+  const sorted = [...materials].sort((a, b) => b.percentage - a.percentage);
+  const data = sorted.map((m, i) => ({
     name: m.name.length > 22 ? `${m.name.slice(0, 20)}…` : m.name,
     value: Number(m.percentage.toFixed(1)),
     color: colorForMaterial(i, m.category),
@@ -238,10 +241,11 @@ function CompositionChart({ materials }: { materials: MaterialAnalysis[] }) {
             innerRadius={52}
             outerRadius={88}
             paddingAngle={2}
-            stroke="#FFFFFF"
+            label={(p: { value?: number | string }) => `${p.value}%`}
+            labelLine={false}
           >
             {data.map((d, i) => (
-              <Cell key={i} fill={d.color} />
+              <Cell key={`${d.name}-${i}`} fill={d.color} stroke="#FFFFFF" strokeWidth={2} />
             ))}
           </Pie>
           <Tooltip

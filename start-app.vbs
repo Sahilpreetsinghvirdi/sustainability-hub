@@ -4,35 +4,37 @@ Set sh = CreateObject("WScript.Shell")
 sh.CurrentDirectory = "D:\Visual Studio Files\Sustainability"
 
 Function PortUp(port)
-  Dim http
+  Dim oExec, found
+  found = False
   On Error Resume Next
-  Err.Clear
-  Set http = CreateObject("MSXML2.XMLHTTP")
-  http.Open "GET", "http://127.0.0.1:" & port & "/", False
-  http.Send
-  PortUp = (Err.Number = 0 And http.Status > 0)
+  Set oExec = sh.Exec("cmd /c netstat -ano | findstr :" & port & " | findstr LISTENING")
+  If Err.Number = 0 Then
+    If Not oExec.StdOut.AtEndOfStream Then found = True
+  End If
   On Error Goto 0
+  PortUp = found
 End Function
 
-' 1) Start backend API silently if not running
+' 1) Start backend engine silently (harmless if already running)
 If Not PortUp(8000) Then
   sh.Run "cmd /c cd /d ""D:\Visual Studio Files\Sustainability\backend"" && .venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000", 0, False
 End If
-Dim t : t = 0
-Do While Not PortUp(8000) And t < 40
-  WScript.Sleep 500
-  t = t + 1
-Loop
 
-' 2) Start the app frontend silently if not running
+' 2) Start the app frontend silently (harmless if already running)
 If Not PortUp(1420) Then
   sh.Run "cmd /c cd /d ""D:\Visual Studio Files\Sustainability\desktop"" && npm run dev", 0, False
 End If
-t = 0
-Do While Not PortUp(1420) And t < 60
-  WScript.Sleep 500
-  t = t + 1
+
+' 3) Wait until frontend answers (max ~30s), checking once per second
+Dim waited
+waited = 0
+Do While Not PortUp(1420) And waited < 30
+  WScript.Sleep 1000
+  waited = waited + 1
 Loop
 
-' 3) Launch the native desktop app (real .exe window)
+' brief grace moment for the page to be fully served
+WScript.Sleep 1500
+
+' 4) Launch the native desktop app (.exe window)
 sh.Run """D:\Visual Studio Files\Sustainability\desktop\src-tauri\target\release\sustainability-hub-desktop.exe""", 1, False
