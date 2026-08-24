@@ -73,6 +73,6 @@ for _ in range(60):
 time.sleep(1.5)
 
 if os.path.exists(EXE):
-    shell_launch(EXE, "", SW_SHOWNORMAL)
+    shell_launch(EXE, "", SW_SHOWNORMAL, os.path.dirname(EXE))
 else:
     log("exe missing!")

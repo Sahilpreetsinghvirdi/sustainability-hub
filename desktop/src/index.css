@@ -130,12 +130,14 @@ input:focus, select:focus, textarea:focus, input:focus-visible, select:focus-vis
 .btn-primary {
   @apply bg-primary text-white font-semibold px-4 py-2 rounded-lg hover:bg-primary-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
 }
-/* In dark mode primary/accent chips turn LIGHT — their white labels flip to ink. */
+/* In dark mode primary/accent chips turn LIGHT - their white labels flip to ink. */
 html.dark .bg-primary.text-white,
-html.dark button.bg-primary.text-white {
+html.dark button.bg-primary.text-white,
+html.dark .bg-accent.text-white {
   color: rgb(var(--c800));
 }
-html.dark .bg-accent.text-white {
+/* .btn-primary inlines bg-primary/text-white via @apply, so the class-name flip above cannot match it - override label color directly. */
+html.dark .btn-primary {
   color: rgb(var(--c800));
 }
 .btn-secondary {
