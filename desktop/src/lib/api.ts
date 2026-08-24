@@ -6,6 +6,7 @@ import type {
   UserProfile,
   DashboardSummary,
   WasteAnalysisResponse,
+  AgriAnalysisResponse,
 } from '@/types';
 
 const API_BASE = 'http://localhost:8000/api/v1';
@@ -48,6 +49,39 @@ export async function fetchAnalyzerStatus(): Promise<{
   const res = await fetch(`${API_BASE}/waste/status`);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
+}
+
+export interface FertilizerContext {
+  crop: string;
+  growth_stage?: string;
+  soil_type?: string;
+  irrigation?: string;
+  season?: string;
+  notes?: string;
+}
+
+/** Multipart upload for the AgriSense fertilizer advisor. */
+export async function analyzeFertilizer(
+  file: File | Blob,
+  context: FertilizerContext,
+): Promise<AgriAnalysisResponse> {
+  const form = new FormData();
+  form.append('file', file, file instanceof File ? file.name : 'fertilizer.jpg');
+  form.append('crop', context.crop);
+  (['growth_stage', 'soil_type', 'irrigation', 'season', 'notes'] as const).forEach((k) => {
+    const v = context[k];
+    if (v && v.trim()) form.append(k, v.trim());
+  });
+  const res = await fetch(`${API_BASE}/agri/analyze`, { method: 'POST', body: form });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail =
+      data && typeof data === 'object' && 'detail' in data
+        ? String((data as { detail: unknown }).detail)
+        : `API error ${res.status}`;
+    throw new Error(detail);
+  }
+  return data as AgriAnalysisResponse;
 }
 
 export const api = {

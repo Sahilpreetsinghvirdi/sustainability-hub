@@ -120,3 +120,59 @@ export interface WasteAnalysisResponse {
   analyzer_model: string;
   processing_time_ms: number;
 }
+
+// ============ AGRISENSE — FERTILIZER ADVISOR ============
+
+export type Suitability =
+  | 'beneficial'
+  | 'conditionally_beneficial'
+  | 'neutral'
+  | 'harmful';
+
+export interface ProductIdentification {
+  name: string;
+  type: string;
+  confidence: number;
+  description: string;
+}
+
+export interface NutrientProfile {
+  npk: string;
+  organic_matter?: string | null;
+  micronutrients: string[];
+  ph_effect: string;
+}
+
+export interface SuitabilityVerdict {
+  suitability: Suitability;
+  score: number; // 0-100
+  reasoning: string;
+}
+
+export interface CropFit {
+  suitable_for_current_crop: boolean;
+  explanation: string;
+}
+
+export interface ApplicationStep {
+  title: string;
+  detail: string;
+}
+
+export interface AgriAnalysisResponse {
+  summary: string;
+  product_identification: ProductIdentification;
+  nutrient_profile: NutrientProfile;
+  verdict: SuitabilityVerdict;
+  crop_fit: CropFit;
+  benefits: string[];
+  risks_cautions: string[];
+  application_guidance: ApplicationStep[];
+  dosage: string;
+  best_timing: string;
+  alternatives: string[];
+  environmental_notes: string;
+  recommendations: string[];
+  analyzer_model: string;
+  processing_time_ms: number;
+}

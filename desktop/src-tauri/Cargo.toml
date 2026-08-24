@@ -1,6 +1,6 @@
 [package]
 name = "sustainability-hub-desktop"
-version = "1.0.0"
+version = "1.1.0"
 description = "Sustainability Hub - Desktop Edition"
 authors = ["Sahil Virdi"]
 edition = "2021"

@@ -1,25 +1,64 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Leaf, Zap, Trash2, Settings, Menu, ScanSearch } from 'lucide-react';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  NavLink,
+  useLocation,
+} from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Leaf,
+  Zap,
+  Trash2,
+  Settings,
+  Menu,
+  ScanSearch,
+  Sprout,
+} from 'lucide-react';
 import WasteAnalyzerPage from './pages/WasteAnalyzer';
 import DashboardPage from './pages/Dashboard';
 import CarbonPage from './pages/Carbon';
 import EnergyPage from './pages/Energy';
 import FoodWastePage from './pages/FoodWaste';
 import SettingsPage from './pages/Settings';
+import AgriSensePage from './pages/AgriSense';
 import ThemeToggle from './components/ui/ThemeToggle';
 
-const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/analyzer', label: 'AI Waste Analyzer', icon: ScanSearch },
-  { path: '/carbon', label: 'Carbon', icon: Leaf },
-  { path: '/energy', label: 'Energy', icon: Zap },
-  { path: '/food-waste', label: 'Food Waste', icon: Trash2 },
-  { path: '/settings', label: 'Settings', icon: Settings },
+interface NavItem {
+  path: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+}
+
+const navSections: { title?: string; items: NavItem[] }[] = [
+  {
+    items: [{ path: '/', label: 'Dashboard', icon: LayoutDashboard }],
+  },
+  {
+    title: 'AI Tools',
+    items: [
+      { path: '/analyzer', label: 'AI Waste Analyzer', icon: ScanSearch },
+      { path: '/agrisense', label: 'AgriSense', icon: Sprout },
+    ],
+  },
+  {
+    title: 'Sustainability Tracker',
+    items: [
+      { path: '/carbon', label: 'Carbon', icon: Leaf },
+      { path: '/energy', label: 'Energy', icon: Zap },
+      { path: '/food-waste', label: 'Food Waste', icon: Trash2 },
+    ],
+  },
+  {
+    title: 'System',
+    items: [{ path: '/settings', label: 'Settings', icon: Settings }],
+  },
 ];
 
+const allNavItems = navSections.flatMap((s) => s.items);
+
 function Sidebar() {
-  const location = useLocation();
   return (
     <aside className="w-64 h-screen bg-dark-700 border-r border-dark-500 flex flex-col shrink-0">
       <div className="p-5 flex items-center gap-3 border-b border-dark-500">
@@ -31,22 +70,33 @@ function Sidebar() {
           <p className="text-xs text-dark-200">Hub Desktop</p>
         </div>
       </div>
-      <nav className="flex-1 p-3 space-y-1">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-primary/15 text-primary'
-                  : 'text-dark-200 hover:bg-dark-600 hover:text-dark-50'
-              }`
-            }
-          >
-            <item.icon className="w-5 h-5" />
-            {item.label}
-          </NavLink>
+      <nav className="flex-1 px-3 pb-3 overflow-y-auto">
+        {navSections.map((section, si) => (
+          <div key={si} className={si === 0 ? '' : 'pt-4'}>
+            {section.title && (
+              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-dark-300 select-none">
+                {section.title}
+              </p>
+            )}
+            <div className="space-y-1">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-primary/15 text-primary'
+                        : 'text-dark-200 hover:bg-dark-600 hover:text-dark-50'
+                    }`
+                  }
+                >
+                  <item.icon className="w-5 h-5" />
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
       <div className="p-4 border-t border-dark-500">
@@ -64,6 +114,10 @@ function Sidebar() {
 
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
+  const headerTitle =
+    allNavItems.find((n) => n.path === location.pathname)?.label || 'Sustainability Hub';
+
   return (
     <div className="flex h-screen overflow-hidden">
       {sidebarOpen && <Sidebar />}
@@ -72,9 +126,7 @@ function AppLayout() {
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-dark-600 text-dark-200 mr-3">
             <Menu className="w-5 h-5" />
           </button>
-          <h2 className="text-sm font-semibold text-dark-100">
-            {navItems.find((n) => n.path === useLocation().pathname)?.label || 'Sustainability Hub'}
-          </h2>
+          <h2 className="text-sm font-semibold text-dark-100">{headerTitle}</h2>
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
           </div>
@@ -83,6 +135,7 @@ function AppLayout() {
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/analyzer" element={<WasteAnalyzerPage />} />
+            <Route path="/agrisense" element={<AgriSensePage />} />
             <Route path="/carbon" element={<CarbonPage />} />
             <Route path="/energy" element={<EnergyPage />} />
             <Route path="/food-waste" element={<FoodWastePage />} />
