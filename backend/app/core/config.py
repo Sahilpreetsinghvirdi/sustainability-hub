@@ -42,7 +42,14 @@ class Settings(BaseSettings):
     BCRYPT_ROUNDS: int = 12
 
     # CORS
-    CORS_ORIGINS: List[str] = Field(default=["http://localhost:3000", "http://localhost:8081", "exp://localhost:8081"])
+    CORS_ORIGINS: List[str] = Field(default=[
+        "http://localhost:3000",
+        "http://localhost:8081",
+        "exp://localhost:8081",
+        "http://localhost:1420",      # Vite dev server (desktop)
+        "http://tauri.localhost",     # Tauri v2 webview origin
+        "https://tauri.localhost",
+    ])
     CORS_ALLOW_CREDENTIALS: bool = True
     CORS_ALLOW_METHODS: List[str] = ["*"]
     CORS_ALLOW_HEADERS: List[str] = ["*"]
@@ -63,6 +70,14 @@ class Settings(BaseSettings):
     FOOD_WASTE_MODEL_PATH: str = "models/food_waste_v1.2.0.tflite"
     ENERGY_MODEL_PATH: str = "models/energy_v1.0.0.joblib"
     MODEL_CONFIDENCE_THRESHOLD: float = 0.5
+
+    # AI Waste Analyzer (vision LLM)
+    AI_PROVIDER: str = Field(default="gemini")  # "gemini" | "openai"
+    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_MODEL: str = "gemini-2.0-flash"
+    OPENAI_API_KEY: Optional[str] = None
+    OPENAI_MODEL: str = "gpt-4o-mini"
+    AI_TIMEOUT_SECONDS: int = 90
 
     # OCR
     PADDLE_OCR_LANG: str = "en"

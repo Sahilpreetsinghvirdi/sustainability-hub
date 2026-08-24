@@ -6,7 +6,8 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import (
     String, Text, DateTime, Date, Numeric, Integer, Boolean, 
-    ForeignKey, UniqueConstraint, Index, CheckConstraint, JSON
+    ForeignKey, UniqueConstraint, Index, CheckConstraint, JSON,
+    PrimaryKeyConstraint
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID, JSONB
@@ -144,7 +145,7 @@ class CarbonFactor(Base):
     region: Mapped[str] = mapped_column(String(10), nullable=False, default="US")
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     confidence: Mapped[str] = mapped_column(String(10), nullable=False, default="medium")
-    metadata: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    extra_metadata: Mapped[Optional[dict]] = mapped_column("metadata", JSONB, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     __table_args__ = (
@@ -162,7 +163,7 @@ class Product(Base):
     carbon_kg_per_unit: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 4), nullable=True)
     unit: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     source: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    metadata: Mapped[Optional[dict]] = mapped_column(JSONB, nullable=True)
+    extra_metadata: Mapped[Optional[dict]] = mapped_column("metadata", JSONB, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 

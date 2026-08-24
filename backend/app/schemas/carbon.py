@@ -77,3 +77,17 @@ class CarbonFactorsResponse(BaseModel):
 
 # Alias for endpoint compatibility
 CarbonFactorResponse = CarbonFactorsResponse
+
+
+class CarbonTopCategory(BaseModel):
+    category: str
+    total: float
+
+
+class CarbonSummary(BaseModel):
+    total_kg: Decimal
+    period_kg: Decimal
+    daily_average_kg: Decimal
+    trend: str = "stable"
+    trend_percentage: Decimal = Decimal("0")
+    top_categories: List[CarbonTopCategory] = []

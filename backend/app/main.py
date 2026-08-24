@@ -20,13 +20,20 @@ async def lifespan(app: FastAPI):
     # Startup
     setup_logging()
     logger.info("Starting up Sustainability Hub API...")
-    await init_db()
-    logger.info("Database initialized")
+    try:
+        await init_db()
+        logger.info("Database initialized")
+    except Exception as exc:
+        # The waste analyzer is stateless; keep the API usable even without a database.
+        logger.warning("Database initialization failed (API continues in stateless mode): %s", exc)
     yield
     # Shutdown
     logger.info("Shutting down...")
-    await close_db()
-    logger.info("Database connections closed")
+    try:
+        await close_db()
+        logger.info("Database connections closed")
+    except Exception as exc:
+        logger.warning("Error while closing database connections: %s", exc)
 
 
 def create_application() -> FastAPI:

@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     dashboard,
     sync,
     health,
+    waste,
 )
 
 api_router = APIRouter()
@@ -24,3 +25,4 @@ api_router.include_router(food_waste.router, prefix="/food-waste", tags=["Food W
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 api_router.include_router(sync.router, prefix="/sync", tags=["Sync"])
 api_router.include_router(health.router, prefix="/health", tags=["Health"])
+api_router.include_router(waste.router, prefix="/waste", tags=["Waste Analyzer"])

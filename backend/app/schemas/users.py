@@ -12,6 +12,11 @@ class UserUpdate(BaseModel):
     preferences: Optional[dict] = None
 
 
+class UserPreferencesUpdate(BaseModel):
+    """Partial merge into the user's JSONB preferences blob."""
+    model_config = {"extra": "allow"}
+
+
 class UserResponse(BaseModel):
     id: UUID
     email: str

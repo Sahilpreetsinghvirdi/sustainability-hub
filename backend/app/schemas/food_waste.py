@@ -57,6 +57,17 @@ class FoodWasteStreakResponse(BaseModel):
         from_attributes = True
 
 
+class FoodWasteSummary(BaseModel):
+    total_logs: int
+    total_waste_kg: Decimal
+    avoidable_waste_kg: Decimal
+    current_streak: int
+    longest_streak: int
+    money_saved: Decimal
+    carbon_saved: Decimal
+    daily_average_waste_g: Decimal
+
+
 class FoodWastePredictionResponse(BaseModel):
     id: UUID
     log_id: UUID

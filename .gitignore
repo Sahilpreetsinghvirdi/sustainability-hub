@@ -8,12 +8,14 @@ mobile/.env
 mobile/.env.local
 
 # Backend
-backend/__pycache__/
-backend/*.pyc
+**/__pycache__/
+*.pyc
 backend/.pytest_cache/
 backend/venv/
+backend/.venv/
 backend/.env
 backend/.env.local
+backend/uploads/
 
 # IDE
 .vscode/

@@ -1,4 +1,12 @@
-import type { CarbonScan, EnergyBill, EnergyAppliance, FoodWasteLog, UserProfile, DashboardSummary } from '@/types';
+import type {
+  CarbonScan,
+  EnergyBill,
+  EnergyAppliance,
+  FoodWasteLog,
+  UserProfile,
+  DashboardSummary,
+  WasteAnalysisResponse,
+} from '@/types';
 
 const API_BASE = 'http://localhost:8000/api/v1';
 
@@ -7,6 +15,37 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
     headers: { 'Content-Type': 'application/json' },
     ...options,
   });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+/** Multipart upload — must NOT set Content-Type manually (browser adds boundary). */
+export async function analyzeWasteImage(
+  file: File | Blob,
+  question = '',
+  fileName = 'capture.jpg',
+): Promise<WasteAnalysisResponse> {
+  const form = new FormData();
+  form.append('file', file, fileName);
+  if (question.trim()) form.append('question', question.trim());
+  const res = await fetch(`${API_BASE}/waste/analyze`, { method: 'POST', body: form });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail =
+      data && typeof data === 'object' && 'detail' in data
+        ? String((data as { detail: unknown }).detail)
+        : `API error ${res.status}`;
+    throw new Error(detail);
+  }
+  return data as WasteAnalysisResponse;
+}
+
+export async function fetchAnalyzerStatus(): Promise<{
+  ai_configured: boolean;
+  provider: string | null;
+  model: string;
+}> {
+  const res = await fetch(`${API_BASE}/waste/status`);
   if (!res.ok) throw new Error(`API error: ${res.status}`);
   return res.json();
 }

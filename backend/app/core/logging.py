@@ -2,19 +2,29 @@
 import logging
 import sys
 from typing import Any, Dict
-from pythonjsonlogger import jsonlogger
+
+try:
+    from pythonjsonlogger import jsonlogger
+
+    _JSON_LOGGING_AVAILABLE = True
+except ImportError:  # pragma: no cover - dev machines may skip this dependency
+    jsonlogger = None
+    _JSON_LOGGING_AVAILABLE = False
+
 from app.core.config import settings
 
 
-class CustomJsonFormatter(jsonlogger.JsonFormatter):
-    def add_fields(self, log_record: Dict[str, Any], record: logging.LogRecord, message_dict: Dict[str, Any]) -> None:
-        super().add_fields(log_record, record, message_dict)
-        log_record["timestamp"] = self.formatTime(record)
-        log_record["level"] = record.levelname
-        log_record["logger"] = record.name
-        log_record["module"] = record.module
-        log_record["function"] = record.funcName
-        log_record["line"] = record.lineno
+if _JSON_LOGGING_AVAILABLE:
+
+    class CustomJsonFormatter(jsonlogger.JsonFormatter):
+        def add_fields(self, log_record: Dict[str, Any], record: logging.LogRecord, message_dict: Dict[str, Any]) -> None:
+            super().add_fields(log_record, record, message_dict)
+            log_record["timestamp"] = self.formatTime(record)
+            log_record["level"] = record.levelname
+            log_record["logger"] = record.name
+            log_record["module"] = record.module
+            log_record["function"] = record.funcName
+            log_record["line"] = record.lineno
 
 
 def setup_logging() -> None:
@@ -31,7 +41,7 @@ def setup_logging() -> None:
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(log_level)
 
-    if settings.ENVIRONMENT == "production":
+    if settings.ENVIRONMENT == "production" and _JSON_LOGGING_AVAILABLE:
         formatter = CustomJsonFormatter(
             "%(timestamp)s %(level)s %(logger)s %(message)s"
         )

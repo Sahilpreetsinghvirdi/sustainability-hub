@@ -78,3 +78,45 @@ export interface DashboardSummary {
   energy_trend: number[];
   waste_trend: number[];
 }
+
+// ============ AI WASTE ANALYZER ============
+
+export type HazardLevel = 'low' | 'medium' | 'high' | 'critical';
+
+export interface HazardInfo {
+  level: HazardLevel;
+  score: number; // 0-100
+  toxins: string[];
+  health_risks: string[];
+  environmental_risks?: string[];
+}
+
+export interface DisposalInfo {
+  method: string;
+  destination: string;
+  recyclable: boolean;
+}
+
+export interface MaterialAnalysis {
+  name: string;
+  category: string;
+  percentage: number;
+  confidence: number;
+  description: string;
+  hazard: HazardInfo;
+  common_uses: string[];
+  reuse_ideas: string[];
+  eco_alternatives: string[];
+  disposal: DisposalInfo;
+}
+
+export interface WasteAnalysisResponse {
+  summary: string;
+  overall_hazard: HazardInfo;
+  materials: MaterialAnalysis[];
+  recommendations: string[];
+  environmental_impact: string;
+  estimated_decomposition?: string | null;
+  analyzer_model: string;
+  processing_time_ms: number;
+}

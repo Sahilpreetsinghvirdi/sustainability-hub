@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BrowserRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Leaf, Zap, Trash2, Settings, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Leaf, Zap, Trash2, Settings, Menu, X, ScanSearch } from 'lucide-react';
+import WasteAnalyzerPage from './pages/WasteAnalyzer';
 import DashboardPage from './pages/Dashboard';
 import CarbonPage from './pages/Carbon';
 import EnergyPage from './pages/Energy';
@@ -8,7 +9,8 @@ import FoodWastePage from './pages/FoodWaste';
 import SettingsPage from './pages/Settings';
 
 const navItems = [
-  { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/', label: 'AI Waste Analyzer', icon: ScanSearch },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/carbon', label: 'Carbon', icon: Leaf },
   { path: '/energy', label: 'Energy', icon: Zap },
   { path: '/food-waste', label: 'Food Waste', icon: Trash2 },
@@ -75,7 +77,8 @@ function AppLayout() {
         </header>
         <div className="p-6">
           <Routes>
-            <Route path="/" element={<DashboardPage />} />
+            <Route path="/" element={<WasteAnalyzerPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/carbon" element={<CarbonPage />} />
             <Route path="/energy" element={<EnergyPage />} />
             <Route path="/food-waste" element={<FoodWastePage />} />

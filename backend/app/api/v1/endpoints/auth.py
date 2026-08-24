@@ -11,9 +11,8 @@ from app.core.security import (
     create_access_token,
     create_refresh_token,
     verify_password,
-    get_password_hash,
+    hash_password,
     decode_token,
-    TokenData,
 )
 from app.schemas.auth import (
     Token,
