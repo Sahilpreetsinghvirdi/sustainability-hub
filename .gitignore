@@ -43,3 +43,6 @@ coverage/
 .nyc_output/
 # runtime launcher log
 start-app.log
+
+# Secret AI handoff briefs (local only, never commit)
+.ai/
