@@ -89,12 +89,18 @@ html.dark {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 body {
   margin: 0;
   padding: 0;
   background-color: rgb(var(--page));
   color: rgb(var(--c50));
   overflow: hidden;
+  overflow-x: hidden;
   transition: background-color 0.35s ease, color 0.35s ease;
 }
 
@@ -254,6 +260,54 @@ html.dark .on-primary-chip { color: rgb(var(--c800)); }
   50% { opacity: 1; transform: scale(1.25); }
 }
 
+/* ============================================================
+   PAGE & LAYOUT TRANSITIONS
+   ============================================================ */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-pageIn {
+  animation: pageIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Recent checks drawer — grid rows trick for smooth height */
+.drawer-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+  opacity: 0.6;
+}
+.drawer-grid.open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.drawer-grid > div { overflow: hidden; }
+
+/* Horizontal scroll containers — keep scroll inside, never bleed to page */
+.scroll-x-contained {
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.scroll-x-contained::-webkit-scrollbar { height: 4px; }
+.scroll-x-contained::-webkit-scrollbar-thumb { background: rgb(var(--c400)); border-radius: 9999px; }
+
+/* Prevent any page-level sideways scroll */
+main, .page-wrap { overflow-x: hidden; max-width: 100%; }
+
+/* Toast slide-in */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(14px) translateY(6px) scale(0.98); }
+  to   { opacity: 1; transform: translateX(0) translateY(0) scale(1); }
+}
+.animate-toastIn {
+  animation: toastIn 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .theme-toggle, .theme-toggle * { transition-duration: 0.01ms !important; animation: none !important; }
+  .animate-pageIn, .animate-toastIn { animation: none !important; }
+  .drawer-grid { transition: none !important; }
 }

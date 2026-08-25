@@ -51,6 +51,43 @@ export async function fetchAnalyzerStatus(): Promise<{
   return res.json();
 }
 
+export interface AISettingsResponse {
+  gemini_api_key_masked: string | null;
+  openai_api_key_masked: string | null;
+  gemini_model: string;
+  openai_model: string;
+  ai_provider: string;
+  ai_configured: boolean;
+  gemini_configured: boolean;
+  openai_configured: boolean;
+}
+
+export async function fetchAISettings(): Promise<AISettingsResponse> {
+  const res = await fetch(`${API_BASE}/settings/ai`);
+  if (!res.ok) throw new Error(`Failed to load AI settings: ${res.status}`);
+  return res.json();
+}
+
+export async function updateAISettings(payload: {
+  gemini_api_key?: string;
+  openai_api_key?: string;
+  gemini_model?: string;
+  openai_model?: string;
+  ai_provider?: string;
+}): Promise<AISettingsResponse> {
+  const res = await fetch(`${API_BASE}/settings/ai`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const msg = data && typeof data === 'object' && 'detail' in data ? String((data as any).detail) : `Save failed: ${res.status}`;
+    throw new Error(msg);
+  }
+  return data as AISettingsResponse;
+}
+
 export interface FertilizerContext {
   crop: string;
   growth_stage?: string;

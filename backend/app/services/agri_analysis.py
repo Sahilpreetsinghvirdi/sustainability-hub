@@ -52,7 +52,8 @@ Rules:
 - dosage & best_timing: concrete numbers where possible (kg/hectare or g/plant, growth-stage timing).
 - risks_cautions: over-application, crop-specific harm (e.g. chloride sensitivity), soil effects.
 - Consider Indian farming realities (FPO guidance, soil health card scheme, local availability).
-- If the image shows no recognizable fertilizer/manure/soil product, set confidence low, suitability neutral, and explain in summary.
+- CRITICAL SAFETY RULE: If the image shows garbage, plastic waste, municipal trash, dumping site, landfill, or any non-agricultural refuse (NOT a fertilizer/manure/soil amendment), you MUST return suitability "harmful", score 0, confidence 0.85-0.95, and a STRONG warning that it must NEVER be applied to any crop/soil — it is toxic, soil-polluting, with zero agronomic value. NEVER use "neutral" for garbage/plastic/municipal waste.
+- If the image is blurry/unclear and no product can be identified at all (but not clearly garbage), set confidence low, suitability neutral, and explain in summary.
 - Respond ONLY with valid JSON."""
 
 
@@ -179,6 +180,19 @@ def _normalize(data: Dict[str, Any], analyzer_model: str, elapsed_ms: int) -> Ag
     if suitability not in VALID_SUITABILITY:
         suitability = "neutral"
 
+    # Safety override: garbage/plastic/municipal waste must never be "neutral" — force harmful
+    score_raw = int(_clamp(verdict_raw.get("score", 50), 0, 100, 50))
+    pid_name = str(pid_raw.get("name", "")).lower()
+    pid_type = str(pid_raw.get("type", "")).lower()
+    combined = f"{pid_name} {pid_type}"
+    is_garbage = any(k in combined for k in ("garbage", "plastic", "municipal", "refuse", "non-agricultural", "dumping", "landfill", "trash", "waste pile"))
+    if is_garbage and suitability == "neutral":
+        suitability = "harmful"
+        score_raw = min(score_raw, 5)
+    # Low-score neutral is also unsafe — treat as harmful
+    if suitability == "neutral" and score_raw <= 15:
+        suitability = "harmful"
+
     guidance: List[ApplicationStep] = []
     for step in (data.get("application_guidance") or [])[:8]:
         if isinstance(step, dict) and step.get("title"):
@@ -207,7 +221,7 @@ def _normalize(data: Dict[str, Any], analyzer_model: str, elapsed_ms: int) -> Ag
         ),
         verdict=SuitabilityVerdict(
             suitability=suitability,
-            score=int(_clamp(verdict_raw.get("score", 50), 0, 100, 50)),
+            score=int(_clamp(score_raw, 0, 100, 50)),
             reasoning=str(verdict_raw.get("reasoning", "")),
         ),
         crop_fit=CropFit(

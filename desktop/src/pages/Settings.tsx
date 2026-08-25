@@ -1,70 +1,343 @@
-import { useState } from 'react';
-import { User, Home, Bell, Cloud, LogOut, ChevronRight, Shield, Palette, Globe } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  User, Home, Bell, Shield, KeyRound, Eye, EyeOff,
+  CheckCircle2, AlertTriangle, ExternalLink, Sparkles, Sprout, ScanSearch, Loader2, Save,
+  Trash2, Database, Download,
+} from 'lucide-react';
+import { fetchAISettings, updateAISettings, type AISettingsResponse } from '@/lib/api';
+import { store, type ProfileData, type HouseholdData, type NotificationPrefs } from '@/lib/store';
+
+type Tab = 'ai' | 'profile' | 'household' | 'notifications' | 'data';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<'profile' | 'household' | 'notifications' | 'sync'>('profile');
+  const [activeTab, setActiveTab] = useState<Tab>('ai');
 
-  const [saved, setSaved] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+  // AI settings state
+  const [aiLoading, setAiLoading] = useState(true);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiData, setAiData] = useState<AISettingsResponse | null>(null);
+  const [provider, setProvider] = useState<'gemini' | 'openai'>('gemini');
+  const [geminiKey, setGeminiKey] = useState('');
+  const [openaiKey, setOpenaiKey] = useState('');
+  const [geminiModel, setGeminiModel] = useState('gemini-3.6-flash');
+  const [openaiModel, setOpenaiModel] = useState('gpt-4o-mini');
+  const [showGemini, setShowGemini] = useState(false);
+  const [showOpenai, setShowOpenai] = useState(false);
+  const [savingAI, setSavingAI] = useState(false);
+  const [aiSaved, setAiSaved] = useState(false);
+  const [aiSaveError, setAiSaveError] = useState<string | null>(null);
 
-  const handleSave = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
-  const handleSync = () => { setSyncing(true); setTimeout(() => { setSyncing(false); alert('Sync complete! (Demo)'); }, 1500); };
-  const handleSignOut = () => { if (confirm('Sign out of Sustainability Hub?')) alert('Signed out. (Demo)'); };
+  // Profile / Household / Notifications — persisted to localStorage via store
+  const [profile, setProfile] = useState<ProfileData>(() => store.getProfile());
+  const [household, setHousehold] = useState<HouseholdData>(() => store.getHousehold());
+  const [notifs, setNotifs] = useState<NotificationPrefs>(() => store.getNotifications());
+  const [profileSaved, setProfileSaved] = useState(false);
+  const [householdSaved, setHouseholdSaved] = useState(false);
+
+  // Data tab counts
+  const [counts, setCounts] = useState({ scans: 0, agri: 0, waste: 0, carbon: 0, energy: 0 });
+
+  function refreshCounts() {
+    setCounts({
+      scans: store.getWasteHistory().length,
+      agri: store.getAgriHistory().length,
+      waste: store.getWaste().length,
+      carbon: store.getCarbon().length,
+      energy: store.getEnergy().length,
+    });
+  }
+
+  async function loadAI() {
+    setAiLoading(true); setAiError(null);
+    try {
+      const data = await fetchAISettings();
+      setAiData(data);
+      setProvider((data.ai_provider as 'gemini' | 'openai') || 'gemini');
+      setGeminiModel(data.gemini_model || 'gemini-3.6-flash');
+      setOpenaiModel(data.openai_model || 'gpt-4o-mini');
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : 'Failed to load AI settings. Is the backend running?');
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
+  useEffect(() => { loadAI(); refreshCounts(); }, []);
+  useEffect(() => { if (activeTab === 'ai') loadAI(); if (activeTab === 'data') refreshCounts(); }, [activeTab]);
+
+  // Keep profile sync with sidebar (dispatch event)
+  function saveProfile() {
+    if (!profile.name.trim() || !profile.email.trim()) {
+      alert('Name and email are required.');
+      return;
+    }
+    store.setProfile(profile);
+    setProfileSaved(true);
+    window.dispatchEvent(new CustomEvent('profile-updated'));
+    setTimeout(() => setProfileSaved(false), 2000);
+  }
+  function saveHousehold() {
+    store.setHousehold(household);
+    setHouseholdSaved(true);
+    setTimeout(() => setHouseholdSaved(false), 2000);
+  }
+  function toggleNotif(key: keyof NotificationPrefs) {
+    const next = { ...notifs, [key]: !notifs[key] };
+    setNotifs(next);
+    store.setNotifications(next);
+  }
+
+  async function handleSaveAI() {
+    setSavingAI(true); setAiSaveError(null); setAiSaved(false);
+    try {
+      const payload: Record<string, string> = {};
+      if (geminiKey.trim()) payload.gemini_api_key = geminiKey.trim();
+      if (openaiKey.trim()) payload.openai_api_key = openaiKey.trim();
+      payload.gemini_model = geminiModel.trim();
+      payload.openai_model = openaiModel.trim();
+      payload.ai_provider = provider;
+      const updated = await updateAISettings(payload);
+      setAiData(updated);
+      setGeminiKey('');
+      setOpenaiKey('');
+      setAiSaved(true);
+      setTimeout(() => setAiSaved(false), 2500);
+    } catch (e) {
+      setAiSaveError(e instanceof Error ? e.message : 'Save failed');
+    } finally {
+      setSavingAI(false);
+    }
+  }
+
+  async function handleClearKey(which: 'gemini' | 'openai') {
+    if (!confirm(`Clear the stored ${which === 'gemini' ? 'Gemini' : 'OpenAI'} API key? Analyses will fail until a new key is added.`)) return;
+    setSavingAI(true);
+    try {
+      const payload: Record<string, string> = {};
+      if (which === 'gemini') payload.gemini_api_key = '';
+      else payload.openai_api_key = '';
+      const updated = await updateAISettings(payload);
+      setAiData(updated);
+    } catch (e) {
+      setAiSaveError(e instanceof Error ? e.message : 'Clear failed');
+    } finally {
+      setSavingAI(false);
+    }
+  }
+
+  function initials(name: string) {
+    return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('') || 'SV';
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto w-full min-w-0 overflow-x-hidden space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-dark-200 text-sm mt-1">Manage your account and preferences</p>
+        <h1 className="text-2xl font-bold text-dark-50">Settings</h1>
+        <p className="text-dark-200 text-sm mt-1">Manage your AI keys, profile and app data</p>
       </div>
 
-      <div className="flex gap-6">
-        <div className="w-56 space-y-1 shrink-0">
+      <div className="flex flex-col lg:flex-row gap-6 min-w-0">
+        <div className="w-full lg:w-56 space-y-1 shrink-0">
           {[
-            { key: 'profile', label: 'Profile', icon: User },
-            { key: 'household', label: 'Household', icon: Home },
-            { key: 'notifications', label: 'Notifications', icon: Bell },
-            { key: 'sync', label: 'Cloud Sync', icon: Cloud },
+            { key: 'ai' as Tab, label: 'AI Configuration', icon: KeyRound },
+            { key: 'profile' as Tab, label: 'Profile', icon: User },
+            { key: 'household' as Tab, label: 'Household', icon: Home },
+            { key: 'notifications' as Tab, label: 'Notifications', icon: Bell },
+            { key: 'data' as Tab, label: 'Data & Privacy', icon: Database },
           ].map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key ? 'bg-primary/15 text-primary' : 'text-dark-200 hover:bg-dark-600 hover:text-dark-50'}`}>
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key ? 'bg-primary/15 text-primary' : 'text-dark-200 hover:bg-dark-600 hover:text-dark-50'}`}>
               <tab.icon className="w-4 h-4" /> {tab.label}
+              {tab.key === 'ai' && aiData && (
+                <span className={`ml-auto w-2 h-2 rounded-full ${aiData.ai_configured ? 'bg-success' : 'bg-error animate-pulse'}`} />
+              )}
             </button>
           ))}
-          <div className="border-t border-dark-500 my-2" />
-          <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-error hover:bg-error/10 transition-colors">
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
         </div>
 
-        <div className="flex-1">
-          {activeTab === 'profile' && (
-            <div className="card space-y-4">
-              <h3 className="text-sm font-semibold text-dark-100">Profile Settings</h3>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-white text-xl font-bold">SV</div>
+        <div className="flex-1 min-w-0 space-y-4">
+          {activeTab === 'ai' && (
+            <div className="space-y-4 animate-pageIn">
+              <div className={`rounded-xl border p-4 flex items-start gap-3 ${aiData?.ai_configured ? 'bg-success/10 border-success/30' : 'bg-warning/10 border-warning/30'}`}>
+                {aiData?.ai_configured ? <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" /> : <AlertTriangle className="w-5 h-5 text-warning shrink-0 mt-0.5" />}
+                <div className="min-w-0 flex-1">
+                  <p className={`text-sm font-semibold ${aiData?.ai_configured ? 'text-success' : 'text-warning'}`}>
+                    {aiLoading ? 'Checking AI configuration…' : aiData?.ai_configured ? `AI ready — ${aiData.ai_provider} · ${aiData.ai_provider === 'openai' ? aiData.openai_model : aiData.gemini_model}` : 'AI not configured — analyses will fail'}
+                  </p>
+                  <p className="text-xs text-dark-200 mt-1 leading-relaxed">
+                    Keys are used by <strong>both</strong> AI Waste Analyzer and AgriSense. Stored securely in <code className="px-1 py-0.5 rounded bg-dark-600 border border-dark-500 text-[11px]">backend/.env</code> on this machine and never shown in full again.
+                  </p>
+                </div>
+                <span className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-medium ${aiData?.ai_configured ? 'bg-success/15 border-success/30 text-success' : 'bg-warning/15 border-warning/30 text-warning'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${aiData?.ai_configured ? 'bg-success' : 'bg-warning animate-pulse'}`} />
+                  {aiLoading ? '…' : aiData?.ai_configured ? 'Configured' : 'Missing key'}
+                </span>
+              </div>
+
+              {aiError && (
+                <div className="rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error">
+                  {aiError}
+                </div>
+              )}
+
+              <div className="card-elevated p-5 space-y-5 min-w-0">
                 <div>
-                  <p className="font-medium">Sahil Virdi</p>
-                  <p className="text-sm text-dark-200">sahil@example.com</p>
-                  <button onClick={() => alert('Avatar updated! (Demo)')} className="text-xs text-primary mt-1">Change avatar</button>
+                  <h3 className="text-sm font-semibold text-dark-50 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-primary" /> AI Provider
+                  </h3>
+                  <p className="text-xs text-dark-300 mt-1">Choose which model the analyzers call. You can configure both keys and switch anytime.</p>
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                    {(['gemini', 'openai'] as const).map((p) => (
+                      <button key={p} onClick={() => setProvider(p)}
+                        className={`relative p-3 rounded-xl border text-left transition-all ${provider === p ? 'bg-primary/10 border-primary/40 ring-1 ring-primary/20' : 'bg-dark-700 border-dark-500 hover:border-primary/30'}`}>
+                        <p className="text-sm font-semibold text-dark-50 flex items-center gap-1.5">
+                          {p === 'gemini' ? <Sparkles className="w-4 h-4 text-primary" /> : <Sprout className="w-4 h-4 text-primary" />}
+                          {p === 'gemini' ? 'Google Gemini' : 'OpenAI'}
+                          {provider === p && <CheckCircle2 className="w-3.5 h-3.5 text-success ml-auto" />}
+                        </p>
+                        <p className="text-[11px] text-dark-300 mt-1 leading-snug">
+                          {p === 'gemini' ? 'Fast, cost-effective vision (recommended).' : 'GPT-4o vision — strong reasoning.'}
+                        </p>
+                        <p className="text-[11px] font-mono text-dark-200 mt-2">
+                          {p === 'gemini' ? (aiData?.gemini_model ?? geminiModel) : (aiData?.openai_model ?? openaiModel)}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-dark-500 bg-dark-700/50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-dark-50 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-primary" /> Google Gemini
+                      {aiData?.gemini_configured ? <span className="px-2 py-0.5 rounded-full bg-success/15 border border-success/30 text-[10px] font-medium text-success">Configured</span> : <span className="px-2 py-0.5 rounded-full bg-dark-600 border border-dark-400 text-[10px] text-dark-200">Not set</span>}
+                    </h4>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary-light">
+                      Get key <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  {aiData?.gemini_api_key_masked && (
+                    <p className="text-[11px] font-mono text-dark-200 bg-dark-700 border border-dark-500 rounded-lg px-3 py-1.5">
+                      Current: {aiData.gemini_api_key_masked}
+                    </p>
+                  )}
+                  <div className="relative">
+                    <input
+                      type={showGemini ? 'text' : 'password'}
+                      value={geminiKey}
+                      onChange={(e) => setGeminiKey(e.target.value)}
+                      placeholder={aiData?.gemini_api_key_masked ? 'Leave blank to keep existing • or paste a new key (AIza…)' : 'Paste Gemini API key (AIza…)'}
+                      className="w-full pr-20 font-mono text-sm"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    <div className="absolute right-1 top-1 bottom-1 flex items-center gap-1">
+                      <button type="button" onClick={() => setShowGemini((v) => !v)} className="p-1.5 rounded-md hover:bg-dark-600 text-dark-300 hover:text-dark-50">
+                        {showGemini ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                      {aiData?.gemini_configured && (
+                        <button type="button" onClick={() => handleClearKey('gemini')} className="text-[11px] px-2 py-1 rounded-md bg-error/10 hover:bg-error/20 text-error border border-error/20">Clear</button>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-dark-200">Model</label>
+                    <input value={geminiModel} onChange={(e) => setGeminiModel(e.target.value)} placeholder="gemini-3.6-flash" className="w-full mt-1 font-mono text-sm" />
+                    <p className="text-[11px] text-dark-300 mt-1">Use <code className="font-mono">gemini-2.0-flash</code> or <code>gemini-1.5-flash</code> if 3.6 is unavailable.</p>
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-dark-500 bg-dark-700/50 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-dark-50 flex items-center gap-2">
+                      <ScanSearch className="w-4 h-4 text-primary" /> OpenAI
+                      {aiData?.openai_configured ? <span className="px-2 py-0.5 rounded-full bg-success/15 border border-success/30 text-[10px] font-medium text-success">Configured</span> : <span className="px-2 py-0.5 rounded-full bg-dark-600 border border-dark-400 text-[10px] text-dark-200">Not set</span>}
+                    </h4>
+                    <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary-light">
+                      Get key <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                  {aiData?.openai_api_key_masked && (
+                    <p className="text-[11px] font-mono text-dark-200 bg-dark-700 border border-dark-500 rounded-lg px-3 py-1.5">
+                      Current: {aiData.openai_api_key_masked}
+                    </p>
+                  )}
+                  <div className="relative">
+                    <input
+                      type={showOpenai ? 'text' : 'password'}
+                      value={openaiKey}
+                      onChange={(e) => setOpenaiKey(e.target.value)}
+                      placeholder={aiData?.openai_api_key_masked ? 'Leave blank to keep existing • or paste a new key (sk-…)' : 'Paste OpenAI API key (sk-…)'}
+                      className="w-full pr-20 font-mono text-sm"
+                      autoComplete="off"
+                      spellCheck={false}
+                    />
+                    <div className="absolute right-1 top-1 bottom-1 flex items-center gap-1">
+                      <button type="button" onClick={() => setShowOpenai((v) => !v)} className="p-1.5 rounded-md hover:bg-dark-600 text-dark-300 hover:text-dark-50">
+                        {showOpenai ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                      {aiData?.openai_configured && (
+                        <button type="button" onClick={() => handleClearKey('openai')} className="text-[11px] px-2 py-1 rounded-md bg-error/10 hover:bg-error/20 text-error border border-error/20">Clear</button>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-dark-200">Model</label>
+                    <input value={openaiModel} onChange={(e) => setOpenaiModel(e.target.value)} placeholder="gpt-4o-mini" className="w-full mt-1 font-mono text-sm" />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-1">
+                  <button onClick={handleSaveAI} disabled={savingAI} className="btn-primary inline-flex items-center gap-2 disabled:opacity-50">
+                    {savingAI ? <Loader2 className="w-4 h-4 animate-spin" /> : aiSaved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                    {savingAI ? 'Saving…' : aiSaved ? 'Saved!' : 'Save AI Keys'}
+                  </button>
+                  <span className="text-xs text-dark-300">
+                    {aiSaved ? 'Keys saved to backend/.env — analyses will use them immediately.' : 'Both analyzers (Waste + AgriSense) use these keys.'}
+                  </span>
+                </div>
+                {aiSaveError && <div className="rounded-lg border border-error/30 bg-error/10 p-2.5 text-sm text-error">{aiSaveError}</div>}
+                {aiSaved && <div className="rounded-lg border border-success/30 bg-success/10 p-2.5 text-sm text-success flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Saved. Try an analysis now.</div>}
+              </div>
+
+              <div className="card p-4 bg-dark-700/30 border-dashed">
+                <h4 className="text-xs font-semibold uppercase tracking-wide text-dark-300">Where to get keys</h4>
+                <ul className="mt-2 space-y-1.5 text-sm text-dark-200 list-disc list-inside">
+                  <li><strong>Gemini</strong> — <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">aistudio.google.com/app/apikey <ExternalLink className="w-3 h-3" /></a> (free tier available)</li>
+                  <li><strong>OpenAI</strong> — <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">platform.openai.com/api-keys <ExternalLink className="w-3 h-3" /></a></li>
+                </ul>
+                <p className="text-[11px] text-dark-300 mt-2">Keys never leave this machine — they’re written to <code>backend/.env</code> and used by your local Python backend only.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'profile' && (
+            <div className="card-elevated p-5 space-y-4 animate-pageIn">
+              <h3 className="text-sm font-semibold text-dark-50">Profile</h3>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0">{initials(profile.name)}</div>
+                <div className="min-w-0">
+                  <p className="font-medium text-dark-50 truncate">{profile.name}</p>
+                  <p className="text-sm text-dark-200 truncate">{profile.email}</p>
+                  <p className="text-xs text-dark-300">{profile.location} · {profile.diet}</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-dark-300 mb-1 block">Full Name</label>
-                  <input defaultValue="Sahil Virdi" className="w-full" />
+                  <label className="text-xs font-medium text-dark-200 mb-1 block">Full Name *</label>
+                  <input value={profile.name} onChange={(e) => setProfile({ ...profile, name: e.target.value })} placeholder="Your name" className="w-full" />
                 </div>
                 <div>
-                  <label className="text-xs text-dark-300 mb-1 block">Email</label>
-                  <input defaultValue="sahil@example.com" className="w-full" />
+                  <label className="text-xs font-medium text-dark-200 mb-1 block">Email *</label>
+                  <input type="email" value={profile.email} onChange={(e) => setProfile({ ...profile, email: e.target.value })} placeholder="you@example.com" className="w-full" />
                 </div>
                 <div>
-                  <label className="text-xs text-dark-300 mb-1 block">Location</label>
-                  <input defaultValue="Ontario, Canada" className="w-full" />
+                  <label className="text-xs font-medium text-dark-200 mb-1 block">Location</label>
+                  <input value={profile.location} onChange={(e) => setProfile({ ...profile, location: e.target.value })} placeholder="City, Country" className="w-full" />
                 </div>
                 <div>
-                  <label className="text-xs text-dark-300 mb-1 block">Dietary Preference</label>
-                  <select className="w-full">
+                  <label className="text-xs font-medium text-dark-200 mb-1 block">Dietary Preference</label>
+                  <select value={profile.diet} onChange={(e) => setProfile({ ...profile, diet: e.target.value })} className="w-full">
                     <option>Omnivore</option>
                     <option>Vegetarian</option>
                     <option>Vegan</option>
@@ -72,21 +345,28 @@ export default function SettingsPage() {
                   </select>
                 </div>
               </div>
-              <button onClick={handleSave} className={saved ? 'btn-primary bg-green-500' : 'btn-primary'}>{saved ? 'Saved!' : 'Save Changes'}</button>
+              <div className="flex items-center gap-2">
+                <button onClick={saveProfile} className={`btn-primary inline-flex items-center gap-2 ${profileSaved ? '!bg-success' : ''}`}>
+                  {profileSaved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                  {profileSaved ? 'Saved!' : 'Save Profile'}
+                </button>
+                <span className="text-xs text-dark-300">Shown in the sidebar and on reports.</span>
+              </div>
             </div>
           )}
 
           {activeTab === 'household' && (
-            <div className="card space-y-4">
-              <h3 className="text-sm font-semibold text-dark-100">Household Settings</h3>
-              <div className="grid grid-cols-2 gap-4">
+            <div className="card-elevated p-5 space-y-4 animate-pageIn">
+              <h3 className="text-sm font-semibold text-dark-50">Household</h3>
+              <p className="text-xs text-dark-300">Used to personalize Energy and Carbon estimates.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-dark-300 mb-1 block">Household Size</label>
-                  <input type="number" defaultValue={4} className="w-full" />
+                  <label className="text-xs font-medium text-dark-200 mb-1 block">Household Size</label>
+                  <input type="number" min={1} max={20} value={household.size} onChange={(e) => setHousehold({ ...household, size: Math.max(1, parseInt(e.target.value) || 1) })} className="w-full" />
                 </div>
                 <div>
-                  <label className="text-xs text-dark-300 mb-1 block">Home Type</label>
-                  <select className="w-full">
+                  <label className="text-xs font-medium text-dark-200 mb-1 block">Home Type</label>
+                  <select value={household.homeType} onChange={(e) => setHousehold({ ...household, homeType: e.target.value })} className="w-full">
                     <option>House</option>
                     <option>Apartment</option>
                     <option>Condo</option>
@@ -94,12 +374,12 @@ export default function SettingsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-dark-300 mb-1 block">Square Footage</label>
-                  <input type="number" defaultValue={2000} className="w-full" />
+                  <label className="text-xs font-medium text-dark-200 mb-1 block">Square Footage</label>
+                  <input type="number" min={100} step={100} value={household.sqft} onChange={(e) => setHousehold({ ...household, sqft: Math.max(100, parseInt(e.target.value) || 0) })} className="w-full" />
                 </div>
                 <div>
-                  <label className="text-xs text-dark-300 mb-1 block">Heating Type</label>
-                  <select className="w-full">
+                  <label className="text-xs font-medium text-dark-200 mb-1 block">Heating Type</label>
+                  <select value={household.heating} onChange={(e) => setHousehold({ ...household, heating: e.target.value })} className="w-full">
                     <option>Natural Gas</option>
                     <option>Electric</option>
                     <option>Oil</option>
@@ -107,55 +387,125 @@ export default function SettingsPage() {
                   </select>
                 </div>
               </div>
-              <button onClick={handleSave} className={saved ? 'btn-primary bg-green-500' : 'btn-primary'}>{saved ? 'Saved!' : 'Save Changes'}</button>
+              <button onClick={saveHousehold} className={`btn-primary inline-flex items-center gap-2 ${householdSaved ? '!bg-success' : ''}`}>
+                {householdSaved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+                {householdSaved ? 'Saved!' : 'Save Household'}
+              </button>
             </div>
           )}
 
           {activeTab === 'notifications' && (
-            <div className="card space-y-4">
-              <h3 className="text-sm font-semibold text-dark-100">Notification Preferences</h3>
+            <div className="card-elevated p-5 space-y-4 animate-pageIn">
+              <h3 className="text-sm font-semibold text-dark-50">Notifications</h3>
+              <p className="text-xs text-dark-300">Local reminders — no emails are sent. Toggles are saved on this device.</p>
               {[
-                { label: 'Weekly summary report', desc: 'Get a weekly email summary of your sustainability metrics', default: true },
-                { label: 'Streak reminders', desc: 'Daily reminder to log food waste and maintain your streak', default: true },
-                { label: 'Carbon budget alerts', desc: 'Alert when approaching monthly carbon budget', default: false },
-                { label: 'Energy-saving tips', desc: 'Personalized tips based on your energy usage patterns', default: true },
-                { label: 'Achievement badges', desc: 'Notification when you earn a new achievement', default: true },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
-                  <div>
-                    <p className="text-sm font-medium">{item.label}</p>
+                { key: 'weekly' as const, label: 'Weekly summary', desc: 'Show a weekly summary card on Dashboard' },
+                { key: 'streak' as const, label: 'Streak reminders', desc: 'Highlight streak at risk on Food Waste tracker' },
+                { key: 'carbon' as const, label: 'Carbon budget alerts', desc: 'Warn when monthly carbon estimate is high' },
+                { key: 'tips' as const, label: 'Energy-saving tips', desc: 'Show personalized tips on Energy page' },
+                { key: 'badges' as const, label: 'Achievement toasts', desc: 'Bottom-right toasts when analyses finish' },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center justify-between p-3 rounded-xl border border-dark-500 bg-dark-700">
+                  <div className="pr-4">
+                    <p className="text-sm font-medium text-dark-50">{item.label}</p>
                     <p className="text-xs text-dark-300 mt-0.5">{item.desc}</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" defaultChecked={item.default} className="sr-only peer" />
-                    <div className="w-9 h-5 bg-dark-400 peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" checked={notifs[item.key]} onChange={() => toggleNotif(item.key)} className="sr-only peer" />
+                    <div className="w-9 h-5 bg-dark-400 peer-focus:ring-2 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
                   </label>
                 </div>
               ))}
             </div>
           )}
 
-          {activeTab === 'sync' && (
-            <div className="card space-y-4">
-              <h3 className="text-sm font-semibold text-dark-100">Cloud Sync</h3>
-              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Cloud className="w-5 h-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium text-primary">Sync is active</p>
-                    <p className="text-xs text-dark-200">Last synced: 2 minutes ago</p>
-                  </div>
+          {activeTab === 'data' && (
+            <div className="space-y-4 animate-pageIn">
+              <div className="card-elevated p-5 space-y-4">
+                <h3 className="text-sm font-semibold text-dark-50 flex items-center gap-2"><Database className="w-4 h-4 text-primary" /> Data & Privacy</h3>
+                <p className="text-xs text-dark-300">All data is stored locally on this machine (localStorage + <code>backend/.env</code> for AI keys). No cloud sync.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                    { label: 'Waste scans', value: counts.scans },
+                    { label: 'Agri checks', value: counts.agri },
+                    { label: 'Food logs', value: counts.waste },
+                    { label: 'Carbon entries', value: counts.carbon },
+                    { label: 'Energy bills', value: counts.energy },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-xl border border-dark-500 bg-dark-700 p-3 text-center">
+                      <p className="text-lg font-bold text-dark-50">{s.value}</p>
+                      <p className="text-[11px] uppercase tracking-wide text-dark-300">{s.label}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="space-y-2">
-                {['Scans', 'Energy Bills', 'Food Waste Logs', 'Settings'].map((item) => (
-                  <div key={item} className="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
-                    <span className="text-sm">{item}</span>
-                    <span className="text-xs text-primary">Up to date</span>
-                  </div>
-                ))}
+
+              <div className="card p-4 space-y-3">
+                <h4 className="text-sm font-semibold text-dark-50">Manage data</h4>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      if (!confirm('Clear all Waste Analyzer history? This cannot be undone.')) return;
+                      localStorage.removeItem('sh_waste_history');
+                      refreshCounts();
+                    }}
+                    className="btn-outline inline-flex items-center gap-2 !border-dark-400 !text-dark-200 hover:!bg-dark-600"
+                  >
+                    <Trash2 className="w-4 h-4" /> Clear Waste History
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!confirm('Clear all AgriSense history?')) return;
+                      localStorage.removeItem('sh_agri_history');
+                      refreshCounts();
+                    }}
+                    className="btn-outline inline-flex items-center gap-2 !border-dark-400 !text-dark-200 hover:!bg-dark-600"
+                  >
+                    <Trash2 className="w-4 h-4" /> Clear Agri History
+                  </button>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([JSON.stringify({
+                        profile: store.getProfile(),
+                        household: store.getHousehold(),
+                        notifications: store.getNotifications(),
+                        wasteHistory: store.getWasteHistory(),
+                        agriHistory: store.getAgriHistory(),
+                        waste: store.getWaste(),
+                        carbon: store.getCarbon(),
+                        energy: store.getEnergy(),
+                      }, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url; a.download = `sustainability-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="btn-outline inline-flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" /> Export Backup (JSON)
+                  </button>
+                </div>
+                <div className="pt-3 border-t border-dark-500">
+                  <button
+                    onClick={() => {
+                      if (!confirm('Reset ALL app data — profile, household, scan history, food/carbon/energy logs? This cannot be undone.')) return;
+                      if (!confirm('Are you absolutely sure? Type OK to confirm.')) return;
+                      store.clearAll();
+                      refreshCounts();
+                      // reset in-memory state
+                      setProfile(store.getProfile());
+                      setHousehold(store.getHousehold());
+                      setNotifs(store.getNotifications());
+                      alert('All local data cleared. Reloading app.');
+                      location.reload();
+                    }}
+                    className="btn-outline inline-flex items-center gap-2 !border-error/30 !text-error hover:!bg-error/10"
+                  >
+                    <Trash2 className="w-4 h-4" /> Reset All Local Data
+                  </button>
+                  <p className="text-[11px] text-dark-300 mt-2">AI keys in <code>backend/.env</code> are not cleared by this — clear them in the AI Configuration tab if needed.</p>
+                </div>
               </div>
-              <button onClick={handleSync} disabled={syncing} className="btn-outline w-full">{syncing ? 'Syncing...' : 'Sync Now'}</button>
             </div>
           )}
         </div>

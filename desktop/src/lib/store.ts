@@ -1,4 +1,4 @@
-import type { WasteAnalysisResponse } from '../types';
+import type { WasteAnalysisResponse, AgriAnalysisResponse, Suitability } from '../types';
 
 export interface CarbonEntry { id: string; date: string; items: { name: string; price: number; category: string; carbonKg: number }[]; total: number; totalCarbon: number; store: string }
 export interface EnergyBill { id: string; period: string; electricity: number; gas: number; water: number; cost: number; provider?: string }
@@ -8,6 +8,8 @@ export interface WasteHistoryItem {
   id: string;
   ts: string;
   thumb: string;
+  /** Full-resolution oriented image for report view (JPEG data URL, max 1600px). Falls back to thumb for old items. */
+  image?: string;
   question?: string;
   summary: string;
   hazardLevel: WasteAnalysisResponse['overall_hazard']['level'];
@@ -19,12 +21,35 @@ export interface WasteHistoryItem {
 
 export interface ApplianceRecord { name: string; type: string; wattage: number; hours: number; efficiency: number; energyStar: boolean }
 
+export interface AgriHistoryItem {
+  id: string;
+  ts: string;
+  thumb: string;
+  /** Full-resolution oriented image for report view (JPEG data URL, max 1600px). Falls back to thumb for old items. */
+  image?: string;
+  crop: string;
+  productName: string;
+  suitability: Suitability;
+  score: number;
+  summary: string;
+  context: { growth_stage?: string; soil_type?: string; irrigation?: string; season?: string };
+  result: AgriAnalysisResponse;
+}
+
+export interface ProfileData { name: string; email: string; location: string; diet: string }
+export interface HouseholdData { size: number; homeType: string; sqft: number; heating: string }
+export interface NotificationPrefs { weekly: boolean; streak: boolean; carbon: boolean; tips: boolean; badges: boolean }
+
 const KEYS = {
   carbon: 'sh_carbon_entries',
   energy: 'sh_energy_bills',
   waste: 'sh_waste_logs',
   wasteHistory: 'sh_waste_history',
+  agriHistory: 'sh_agri_history',
   appliances: 'sh_appliances',
+  profile: 'sh_profile',
+  household: 'sh_household',
+  notifications: 'sh_notifications',
 } as const;
 
 const WASTE_HISTORY_CAP = 25;
@@ -43,6 +68,16 @@ function save<T>(key: string, data: T[]) {
       try { localStorage.setItem(key, payload); } catch { /* give up quietly */ }
     }
   }
+}
+function loadOne<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch { return fallback; }
+}
+function saveOne<T>(key: string, data: T) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
 }
 
 // ---------- date helpers ----------
@@ -106,6 +141,17 @@ export const store = {
   getAppliances: (): ApplianceRecord[] => load<ApplianceRecord>(KEYS.appliances),
   addAppliance: (a: ApplianceRecord) => { const all = load<ApplianceRecord>(KEYS.appliances); all.push(a); save(KEYS.appliances, all); },
 
+  // ---------- Settings: profile / household / notifications ----------
+  getProfile: (): ProfileData => loadOne<ProfileData>(KEYS.profile, { name: 'Sahil Virdi', email: 'sahil@example.com', location: 'Ontario, Canada', diet: 'Omnivore' }),
+  setProfile: (p: ProfileData) => saveOne(KEYS.profile, p),
+  getHousehold: (): HouseholdData => loadOne<HouseholdData>(KEYS.household, { size: 4, homeType: 'House', sqft: 2000, heating: 'Natural Gas' }),
+  setHousehold: (h: HouseholdData) => saveOne(KEYS.household, h),
+  getNotifications: (): NotificationPrefs => loadOne<NotificationPrefs>(KEYS.notifications, { weekly: true, streak: true, carbon: false, tips: true, badges: true }),
+  setNotifications: (n: NotificationPrefs) => saveOne(KEYS.notifications, n),
+  clearAll: () => {
+    Object.values(KEYS).forEach((k) => { try { localStorage.removeItem(k); } catch {} });
+  },
+
   // ---------- AI waste analyzer history ----------
   getWasteHistory: () => load<WasteHistoryItem>(KEYS.wasteHistory),
   getLatestWasteAnalysis: (): WasteHistoryItem | null => load<WasteHistoryItem>(KEYS.wasteHistory)[0] ?? null,
@@ -115,6 +161,16 @@ export const store = {
     save(KEYS.wasteHistory, all.slice(0, WASTE_HISTORY_CAP));
   },
   removeWasteHistory: (id: string) => save(KEYS.wasteHistory, load<WasteHistoryItem>(KEYS.wasteHistory).filter((h) => h.id !== id)),
+
+  // ---------- AgriSense fertilizer checks ----------
+  getAgriHistory: () => load<AgriHistoryItem>(KEYS.agriHistory),
+  getLatestAgriCheck: (): AgriHistoryItem | null => load<AgriHistoryItem>(KEYS.agriHistory)[0] ?? null,
+  addAgriHistory: (item: AgriHistoryItem) => {
+    const all = load<AgriHistoryItem>(KEYS.agriHistory);
+    all.unshift(item);
+    save(KEYS.agriHistory, all.slice(0, WASTE_HISTORY_CAP));
+  },
+  removeAgriHistory: (id: string) => save(KEYS.agriHistory, load<AgriHistoryItem>(KEYS.agriHistory).filter((h) => h.id !== id)),
 
   getDashboardData() {
     const carbon = this.getCarbon();
