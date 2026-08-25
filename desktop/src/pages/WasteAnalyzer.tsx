@@ -47,6 +47,7 @@ type Outcome =
 let activeRun: ActiveRun | null = null;
 let outcome: Outcome = null;
 const subscribers = new Set<(o: NonNullable<Outcome>) => void>();
+let suppressAutoRestore = false;
 
 function foodMaterialsOf(r: WasteAnalysisResponse) {
   return r.materials.filter((m) => isOrganicMaterial(m.name, m.category));
@@ -115,7 +116,7 @@ export default function WasteAnalyzerPage() {
       setQuestion(activeRun.question);
       if (outcome) sub(outcome);
       else setAnalyzing(true);
-    } else {
+    } else if (!suppressAutoRestore) {
       const latest = store.getLatestWasteAnalysis();
       if (latest) {
         setResult(latest.result);
@@ -191,6 +192,7 @@ export default function WasteAnalyzerPage() {
   }
 
   function startRun(file: File | Blob, q: string, preview: string) {
+    suppressAutoRestore = false;
     outcome = null;
     activeRun = { file, previewUrl: preview, question: q };
     setAnalyzing(true); setError(null); setResult(null); setStageIdx(0); setNote(null);
@@ -248,6 +250,7 @@ export default function WasteAnalyzerPage() {
   }
 
   function openHistoryItem(item: WasteHistoryItem) {
+    suppressAutoRestore = false;
     stopCamera(); setImageFile(null); setAnalyzing(false); setError(null); setNote(null);
     setQuestion(item.question ?? ''); setPreviewUrl(item.image ?? item.thumb);
     setResult(item.result); setActiveHistoryId(item.id);
@@ -259,6 +262,7 @@ export default function WasteAnalyzerPage() {
   }
 
   function reset() {
+    suppressAutoRestore = true;
     activeRun = null; outcome = null;
     setImageFile(null); setPreviewUrl(null); setResult(null);
     setError(null); setQuestion(''); setNote(null); setActiveHistoryId(null);

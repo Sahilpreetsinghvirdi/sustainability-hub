@@ -1,4 +1,4 @@
-import type { WasteAnalysisResponse, AgriAnalysisResponse, Suitability } from '../types';
+import type { WasteAnalysisResponse, AgriAnalysisResponse, PlantAnalysisResponse, Suitability, HealthStatus } from '../types';
 
 export interface CarbonEntry { id: string; date: string; items: { name: string; price: number; category: string; carbonKg: number }[]; total: number; totalCarbon: number; store: string }
 export interface EnergyBill { id: string; period: string; electricity: number; gas: number; water: number; cost: number; provider?: string }
@@ -36,6 +36,19 @@ export interface AgriHistoryItem {
   result: AgriAnalysisResponse;
 }
 
+export interface PlantHistoryItem {
+  id: string;
+  ts: string;
+  thumb: string;
+  image?: string;
+  plantName: string;
+  healthStatus: HealthStatus;
+  healthScore: number;
+  summary: string;
+  context: { crop?: string; growth_stage?: string; soil_type?: string };
+  result: PlantAnalysisResponse;
+}
+
 export interface ProfileData { name: string; email: string; location: string; diet: string }
 export interface HouseholdData { size: number; homeType: string; sqft: number; heating: string }
 export interface NotificationPrefs { weekly: boolean; streak: boolean; carbon: boolean; tips: boolean; badges: boolean }
@@ -46,6 +59,7 @@ const KEYS = {
   waste: 'sh_waste_logs',
   wasteHistory: 'sh_waste_history',
   agriHistory: 'sh_agri_history',
+  plantHistory: 'sh_plant_history',
   appliances: 'sh_appliances',
   profile: 'sh_profile',
   household: 'sh_household',
@@ -171,6 +185,16 @@ export const store = {
     save(KEYS.agriHistory, all.slice(0, WASTE_HISTORY_CAP));
   },
   removeAgriHistory: (id: string) => save(KEYS.agriHistory, load<AgriHistoryItem>(KEYS.agriHistory).filter((h) => h.id !== id)),
+
+  // ---------- PlantSense health checks ----------
+  getPlantHistory: () => load<PlantHistoryItem>(KEYS.plantHistory),
+  getLatestPlantCheck: (): PlantHistoryItem | null => load<PlantHistoryItem>(KEYS.plantHistory)[0] ?? null,
+  addPlantHistory: (item: PlantHistoryItem) => {
+    const all = load<PlantHistoryItem>(KEYS.plantHistory);
+    all.unshift(item);
+    save(KEYS.plantHistory, all.slice(0, WASTE_HISTORY_CAP));
+  },
+  removePlantHistory: (id: string) => save(KEYS.plantHistory, load<PlantHistoryItem>(KEYS.plantHistory).filter((h) => h.id !== id)),
 
   getDashboardData() {
     const carbon = this.getCarbon();

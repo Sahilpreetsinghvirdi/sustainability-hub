@@ -108,6 +108,7 @@ type Outcome =
 let activeRun: RunContext | null = null;
 let outcome: Outcome = null;
 const subscribers = new Set<(o: NonNullable<Outcome>) => void>();
+let suppressAutoRestore = false;
 
 export default function AgriSensePage() {
   const [imageFile, setImageFile] = useState<File | Blob | null>(null);
@@ -157,7 +158,7 @@ export default function AgriSensePage() {
       setSoilType(activeRun.soilType); setIrrigation(activeRun.irrigation);
       setSeason(activeRun.season); setNotes(activeRun.notes);
       if (outcome) sub(outcome); else setAnalyzing(true);
-    } else {
+    } else if (!suppressAutoRestore) {
       const latest = store.getLatestAgriCheck();
       if (latest) {
         setResult(latest.result); setPreviewUrl(latest.image ?? latest.thumb);
@@ -217,6 +218,7 @@ export default function AgriSensePage() {
   }
 
   function startRun(ctx: RunContext) {
+    suppressAutoRestore = false;
     outcome = null; activeRun = ctx;
     setAnalyzing(true); setError(null); setResult(null); setNote(null); setStageIdx(0);
     analyzeFertilizer(ctx.file, {
@@ -274,6 +276,7 @@ export default function AgriSensePage() {
   }
 
   function openHistoryItem(item: AgriHistoryItem) {
+    suppressAutoRestore = false;
     stopCamera(); setImageFile(null); setAnalyzing(false); setError(null); setNote(null);
     setCrop(item.crop); setGrowthStage(item.context.growth_stage ?? '');
     setSoilType(item.context.soil_type ?? ''); setIrrigation(item.context.irrigation ?? '');
@@ -287,6 +290,7 @@ export default function AgriSensePage() {
   }
 
   function reset() {
+    suppressAutoRestore = true;
     activeRun = null; outcome = null;
     setImageFile(null); setPreviewUrl(null); setResult(null);
     setError(null); setNotes(''); setNote(null); setActiveHistoryId(null);

@@ -176,3 +176,51 @@ export interface AgriAnalysisResponse {
   analyzer_model: string;
   processing_time_ms: number;
 }
+
+// ============ PLANTSENSE — PLANT HEALTH ============
+
+export type HealthStatus = 'healthy' | 'stressed' | 'diseased' | 'critical' | 'unknown';
+
+export interface PlantIdentification {
+  name: string;
+  type: string;
+  confidence: number;
+  description: string;
+}
+
+export interface HealthVerdict {
+  status: HealthStatus;
+  score: number; // 0-100
+  reasoning: string;
+}
+
+export interface DiseaseInfo {
+  name: string;
+  pathogen_type: string; // fungus | bacteria | virus | pest | abiotic | unknown
+  confidence: number;
+  severity: string;
+  symptoms: string[];
+  treatment: string;
+}
+
+export interface CareStep {
+  title: string;
+  detail: string;
+}
+
+export interface PlantAnalysisResponse {
+  summary: string;
+  plant_identification: PlantIdentification;
+  health: HealthVerdict;
+  deficiencies: string[];
+  diseases: DiseaseInfo[];
+  care_plan: CareStep[];
+  fertilizer_recommendations: string[];
+  manures_suggested: string[];
+  watering_guidance: string;
+  light_guidance: string;
+  environmental_notes: string;
+  recommendations: string[];
+  analyzer_model: string;
+  processing_time_ms: number;
+}

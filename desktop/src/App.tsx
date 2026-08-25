@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Leaf,
   Sprout,
+  HeartPulse,
   X,
   Zap,
   Trash2,
@@ -27,6 +28,7 @@ import EnergyPage from './pages/Energy';
 import FoodWastePage from './pages/FoodWaste';
 import SettingsPage from './pages/Settings';
 import AgriSensePage from './pages/AgriSense';
+import PlantSensePage from './pages/PlantSense';
 import ThemeToggle from './components/ui/ThemeToggle';
 import { store } from './lib/store';
 
@@ -34,6 +36,7 @@ interface NavItem {
   path: string;
   label: string;
   icon: typeof LayoutDashboard;
+  desc?: string;
 }
 
 const navSections: { title?: string; items: NavItem[] }[] = [
@@ -43,8 +46,9 @@ const navSections: { title?: string; items: NavItem[] }[] = [
   {
     title: 'AI Tools',
     items: [
-      { path: '/analyzer', label: 'AI Waste Analyzer', icon: ScanSearch },
-      { path: '/agrisense', label: 'AgriSense', icon: Sprout },
+      { path: '/analyzer', label: 'AI Waste Analyzer', icon: ScanSearch, desc: 'Vision scan' },
+      { path: '/agrisense', label: 'AgriSense', icon: Sprout, desc: 'Crop advisor' },
+      { path: '/plantsense', label: 'PlantSense', icon: HeartPulse, desc: 'Plant doctor' },
     ],
   },
   {
@@ -188,6 +192,7 @@ function AppLayout() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/analyzer" element={<WasteAnalyzerPage />} />
               <Route path="/agrisense" element={<AgriSensePage />} />
+              <Route path="/plantsense" element={<PlantSensePage />} />
               <Route path="/carbon" element={<CarbonPage />} />
               <Route path="/energy" element={<EnergyPage />} />
               <Route path="/food-waste" element={<FoodWastePage />} />

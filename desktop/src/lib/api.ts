@@ -121,6 +121,38 @@ export async function analyzeFertilizer(
   return data as AgriAnalysisResponse;
 }
 
+export interface PlantContext {
+  crop?: string;
+  growth_stage?: string;
+  soil_type?: string;
+  notes?: string;
+}
+
+export async function analyzePlant(
+  file: File | Blob,
+  context: PlantContext,
+): Promise<import('@/types').PlantAnalysisResponse> {
+  const form = new FormData();
+  form.append('file', file, file instanceof File ? file.name : 'plant.jpg');
+  (['crop', 'growth_stage', 'soil_type', 'notes'] as const).forEach((k) => {
+    const v = context[k as keyof PlantContext];
+    if (v && String(v).trim()) form.append(k, String(v).trim());
+  });
+  const res = await fetch(`${API_BASE}/plant/analyze`, { method: 'POST', body: form });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail = data && typeof data === 'object' && 'detail' in data ? String((data as any).detail) : `API error ${res.status}`;
+    throw new Error(detail);
+  }
+  return data as import('@/types').PlantAnalysisResponse;
+}
+
+export async function fetchPlantStatus(): Promise<{ ai_configured: boolean; provider: string | null; model: string }> {
+  const res = await fetch(`${API_BASE}/plant/status`);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
 export const api = {
   carbon: {
     list: () => fetchAPI<CarbonScan[]>('/carbon/scans'),

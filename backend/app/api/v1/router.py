@@ -13,6 +13,7 @@ from app.api.v1.endpoints import (
     health,
     waste,
     agri,
+    plant,
     settings_ai,
 )
 
@@ -29,4 +30,5 @@ api_router.include_router(sync.router, prefix="/sync", tags=["Sync"])
 api_router.include_router(health.router, prefix="/health", tags=["Health"])
 api_router.include_router(waste.router, prefix="/waste", tags=["Waste Analyzer"])
 api_router.include_router(agri.router, prefix="/agri", tags=["AgriSense"])
+api_router.include_router(plant.router, prefix="/plant", tags=["PlantSense"])
 api_router.include_router(settings_ai.router, prefix="/settings", tags=["Settings"])
