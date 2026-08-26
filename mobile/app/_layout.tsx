@@ -2,17 +2,21 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar, Text, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Providers } from '@/store/providers';
-import { colors } from '@/constants/theme';
+import { colors, themeDark, themeLight } from '@/constants/theme';
 import TopNavigation from '@/components/TopNavigation';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useAiConfigStore } from '@/store/aiConfigStore';
+import { useSettingsStore } from '@/store/settingsStore';
 
 function RootStack() {
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
   const isLoading = useAuthStore(s => s.isLoading);
   const hasHydrated = useAuthStore.persist.hasHydrated();
   const isConfigured = useAiConfigStore(s => (s.provider === 'gemini' ? !!s.geminiKey : !!s.openaiKey));
+  const theme = useSettingsStore(s => s.theme);
+  const isDark = theme === 'dark';
+  const palette = isDark ? themeDark : themeLight;
   const segments = useSegments();
   const router = useRouter();
   const [ready, setReady] = useState(false);
@@ -47,9 +51,9 @@ function RootStack() {
 
   if (!ready || !hasHydrated) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' }}>
-        <ActivityIndicator color="#0A0A0A" />
-        <Text style={{ marginTop: 12, fontSize: 12, color: '#6B7280', fontWeight: '600' }}>Loading Sustainability Hub…</Text>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.bg }}>
+        <ActivityIndicator color={palette.primary} />
+        <Text style={{ marginTop: 12, fontSize: 12, color: palette.textMuted, fontWeight: '600' }}>Loading Sustainability Hub…</Text>
       </View>
     );
   }
@@ -59,13 +63,14 @@ function RootStack() {
   const showHeader = !inAuth;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }} edges={['top', 'bottom']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: palette.bg }} edges={['top', 'bottom']}>
       <Stack
         screenOptions={{
           header: showHeader ? () => <TopNavigation /> : () => null,
           headerShown: showHeader,
-          animation: 'fade',
-          contentStyle: { backgroundColor: colors.background.primary },
+          animation: 'slide_from_right',
+          animationDuration: 220,
+          contentStyle: { backgroundColor: palette.bg },
         }}
       >
         <Stack.Screen name="login" options={{ headerShown: false }} />
@@ -92,9 +97,12 @@ function RootStack() {
 }
 
 export default function RootLayout() {
+  const theme = useSettingsStore(s => s.theme);
+  const isDark = theme === 'dark';
+  const palette = isDark ? themeDark : themeLight;
   return (
     <Providers>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background.primary} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={palette.bg} />
       <RootStack />
     </Providers>
   );

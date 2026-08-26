@@ -5,6 +5,9 @@ import { router } from 'expo-router';
 import { useCarbonStore } from '@/store/carbonStore';
 import { useEnergyStore } from '@/store/energyStore';
 import { useFoodWasteStore } from '@/store/foodWasteStore';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { useSettingsStore } from '@/store/settingsStore';
+import { themeDark, themeLight } from '@/constants/theme';
 
 export const DashboardScreen: React.FC = () => {
   const scans = useCarbonStore(s => s.scans);
@@ -16,10 +19,12 @@ export const DashboardScreen: React.FC = () => {
   const totalWaste = logs.reduce((sum: number, l: any) => sum + (l.avoidable_waste_kg || 0), 0);
   const days = streak?.current_streak_days || 0;
   const hasData = scans.length > 0 || bills.length > 0 || logs.length > 0;
+  const isDark = useSettingsStore(s => s.theme) === 'dark';
+  const palette = isDark ? themeDark : themeLight;
   return (
-    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+    <ScrollView style={[s.container, { backgroundColor: palette.bg }]} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
       {/* DAILY STREAK */}
-      <View style={s.streakCard}>
+      <Animated.View entering={FadeInDown.duration(320).delay(40)} style={s.streakCard}>
         <View style={s.streakBgLeaf}>
           <MaterialCommunityIcons name="leaf" size={120} color="rgba(255,255,255,0.06)" />
         </View>
@@ -35,10 +40,10 @@ export const DashboardScreen: React.FC = () => {
         <View style={s.xpTrack}>
           <View style={[s.xpFill, { width: `${Math.min(100, (days * 38 / 600) * 100)}%` }]} />
         </View>
-      </View>
+      </Animated.View>
 
       {/* Weekly Overview */}
-      <View style={s.section}>
+      <Animated.View entering={FadeInDown.duration(320).delay(80)} style={s.section}>
         <View style={s.sectionHead}>
           <Text style={s.sectionTitle}>Weekly Overview</Text>
           <View style={s.pillLight}>
@@ -75,10 +80,10 @@ export const DashboardScreen: React.FC = () => {
             <Text style={s.overviewSub}>{hasData ? 'Meal prep planned' : 'No waste logged yet'}</Text>
           </View>
         </View>
-      </View>
+      </Animated.View>
 
       {/* Quick Actions */}
-      <View style={s.section}>
+      <Animated.View entering={FadeInDown.duration(320).delay(120)} style={s.section}>
         <Text style={s.sectionTitle}>Quick Actions</Text>
         <Pressable style={s.actionRow} onPress={() => router.push('/carbon/manual' as any)}>
           <View style={s.actionIcon}><Ionicons name="add" size={20} color="#FFFFFF" /></View>
@@ -96,10 +101,10 @@ export const DashboardScreen: React.FC = () => {
           </View>
           <Ionicons name="chevron-forward" size={18} color="#9CA3AF" />
         </Pressable>
-      </View>
+      </Animated.View>
 
       {/* Recent Activity */}
-      <View style={s.section}>
+      <Animated.View entering={FadeInDown.duration(320).delay(160)} style={s.section}>
         <View style={s.sectionHead}>
           <Text style={s.sectionTitle}>Recent Activity</Text>
           <Pressable onPress={() => { if (logs.length > 0) router.push('/food-waste' as any); }}><Text style={s.viewAll}>View All</Text></Pressable>
@@ -169,10 +174,10 @@ export const DashboardScreen: React.FC = () => {
             </View>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {/* Eco Tip */}
-      <View style={s.tipCard}>
+      <Animated.View entering={FadeInUp.duration(320).delay(200)} style={s.tipCard}>
         <View style={s.tipHead}>
           <View style={s.tipIcon}><Ionicons name="information-circle-outline" size={16} color="#0A0A0A" /></View>
           <Text style={s.tipKicker}>ECO TIP</Text>
@@ -181,7 +186,7 @@ export const DashboardScreen: React.FC = () => {
         <Pressable style={s.tipFab} onPress={() => router.push('/energy' as any)}>
           <Ionicons name="arrow-forward" size={16} color="#FFFFFF" style={{ transform: [{ rotate: '-45deg' }] }} />
         </Pressable>
-      </View>
+      </Animated.View>
 
       <View style={{ height: 16 }} />
     </ScrollView>

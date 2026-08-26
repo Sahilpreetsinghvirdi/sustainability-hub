@@ -1,3 +1,22 @@
+export const themeLight = {
+  bg: '#FFFFFF',
+  card: '#F9FAFA',
+  cardElevated: '#FFFFFF',
+  border: '#E5E5E5',
+  text: '#0A0A0A',
+  textMuted: '#6B7280',
+  primary: '#0A0A0A',
+} as const;
+export const themeDark = {
+  bg: '#0A0A0A',
+  card: '#1C1C1E',
+  cardElevated: '#242426',
+  border: '#2D2D2F',
+  text: '#F8FAFC',
+  textMuted: '#9CA3AF',
+  primary: '#FFFFFF',
+} as const;
+
 export const colors = {
   primary: {
     50: '#F5F5F5',

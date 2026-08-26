@@ -6,11 +6,12 @@ import { config } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import { useAiConfigStore } from '@/store/aiConfigStore';
 import { useSettingsStore } from '@/store/settingsStore';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export const SettingsScreen: React.FC = () => {
   const { user, logout } = useAuthStore();
   const { provider, geminiKey, openaiKey, setProvider, setGeminiKey, setOpenaiKey } = useAiConfigStore();
-  const { notificationsEnabled, setNotificationsEnabled, biometricEnabled, setBiometricEnabled } = useSettingsStore();
+  const { notificationsEnabled, setNotificationsEnabled, biometricEnabled, setBiometricEnabled, theme } = useSettingsStore();
   const [showKey, setShowKey] = useState(false);
   const [householdOpen, setHouseholdOpen] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -30,6 +31,16 @@ export const SettingsScreen: React.FC = () => {
         </View>
         <Ionicons name="chevron-forward" size={16} color="#0A0A0A" />
       </Pressable>
+
+      {/* Appearance - Light/Dark */}
+      <View style={s.secHead}><Ionicons name="contrast-outline" size={16} color="#0A0A0A" /><Text style={s.secTitle}>APPEARANCE</Text></View>
+      <View style={[s.accordion, { justifyContent: 'space-between' }]}>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+          <View style={s.accIcon}><Ionicons name={theme === 'dark' ? 'moon' : 'sunny-outline'} size={14} color="#0A0A0A" /></View>
+          <View><Text style={s.accTitle}>Theme</Text><Text style={s.accSub}>{theme === 'dark' ? 'Dark • ease on eyes' : 'Light • Visily monochrome'}</Text></View>
+        </View>
+        <ThemeToggle size="sm" />
+      </View>
 
       {/* AI Engine & Configuration */}
       <View style={s.secHead}><Ionicons name="hardware-chip-outline" size={16} color="#0A0A0A" /><Text style={s.secTitle}>AI ENGINE & CONFIGURATION</Text></View>
@@ -137,8 +148,6 @@ export const SettingsScreen: React.FC = () => {
         <Ionicons name="log-out-outline" size={16} color="#0A0A0A" />
         <Text style={s.signOutText}>SIGN OUT OF DEVICE</Text>
       </Pressable>
-
-      <Text style={s.footer}>SUSTAINABILITY HUB V2.4.0-MONOCHROME</Text>
     </ScrollView>
   );
 };

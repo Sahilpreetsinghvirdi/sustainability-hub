@@ -38,13 +38,7 @@ export default function AvatarScreen() {
         </View>
       </View>
 
-      <View style={s.compliance}><View style={s.complianceHead}><Ionicons name="information-circle-outline" size={14} color="#0A0A0A" /><Text style={s.complianceKicker}>COMPLIANCE STATUS</Text></View><Text style={s.complianceText}>ISO 14001:2015 compliant identity verification. Metadata is stripped for privacy protection.</Text></View>
-
-      <Text style={s.techTitle}>TECHNICAL GUIDELINES</Text>
-      <View style={s.guideCard}><View style={s.guideIcon}><Ionicons name="image-outline" size={16} color="#0A0A0A" /></View><View style={{ flex: 1 }}><Text style={s.guideTitle}>Format & Scale</Text><Text style={s.guideSub}>Minimum 400x400px, JPG or PNG. Strictly monochrome preferred.</Text></View></View>
-      <View style={s.guideCard}><View style={s.guideIcon}><Ionicons name="shield-checkmark-outline" size={16} color="#0A0A0A" /></View><View style={{ flex: 1 }}><Text style={s.guideTitle}>Lighting Precision</Text><Text style={s.guideSub}>Ensure high-contrast frontal lighting for biometric audit logs.</Text></View></View>
-
-      <Pressable style={s.cancel} onPress={() => router.back()}><Ionicons name="close" size={16} color="#0A0A0A" /><Text style={s.cancelText}>Cancel Modification</Text></Pressable>
+      <Pressable style={s.cancel} onPress={() => router.back()}><Ionicons name="close" size={16} color="#0A0A0A" /><Text style={s.cancelText}>Done</Text></Pressable>
     </ScrollView>
   );
 }
