@@ -102,7 +102,7 @@ export const FoodWasteScreen: React.FC = () => {
         <SummaryCard
           title="This Week"
           value={formatWeight(avoidableWaste)}
-          subtitle={formatCurrency(wasteCost)} + ' wasted'
+          subtitle={`${formatCurrency(wasteCost)} wasted`}
           icon={<Ionicons name="trash" size={22} />}
           color="#EF4444"
         />
@@ -116,7 +116,7 @@ export const FoodWasteScreen: React.FC = () => {
         <SummaryCard
           title="Weekly Target"
           value={formatWeight(3.5 / 4)}
-          subtitle={Math.min(100, (avoidableWaste / (3.5 / 4)) * 100).toFixed(0)} + '% used'
+          subtitle={`${Math.min(100, (avoidableWaste / (3.5 / 4)) * 100).toFixed(0)}% used`}
           icon={<Ionicons name="target" size={22} />}
           color="#F59E0B"
         />

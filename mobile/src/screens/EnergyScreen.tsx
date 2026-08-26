@@ -94,7 +94,7 @@ export const EnergyScreen: React.FC = () => {
         <SummaryCard
           title="Avg Monthly"
           value={`${avgMonthly.toFixed(0)} kWh`}
-          subtitle={formatCurrency(bills.length ? totalCost / bills.length : 0)} + '/mo'
+          subtitle={`${formatCurrency(bills.length ? totalCost / bills.length : 0)}/mo`}
           icon={<Ionicons name="flash" size={22} />}
           color="#F59E0B"
         />
