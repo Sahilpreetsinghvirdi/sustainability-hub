@@ -43,14 +43,24 @@ export const SettingsScreen: React.FC = () => {
         <View style={s.keyHead}><Text style={s.groupKicker}>PERSONAL API KEY {provider === 'gemini' ? '( GEMINI )' : '( OPENAI )'}</Text><Text style={s.encrypted}>ENCRYPTED</Text></View>
         <View style={s.keyRow}><TextInput style={s.keyInput} value={draftKey} onChangeText={setDraftKey} placeholder={provider === 'gemini' ? 'AIza...' : 'sk-proj-...'} placeholderTextColor="#9CA3AF" secureTextEntry={!showKey} autoCapitalize="none" /><Pressable onPress={() => setShowKey(!showKey)} style={s.eye}><Ionicons name={showKey ? 'eye-off-outline' : 'eye-outline'} size={16} color="#0A0A0A" /></Pressable></View>
         <View style={s.btnRow}>
-          <Pressable style={s.outlineBtn} onPress={() => {
+          <Pressable style={s.outlineBtn} onPress={async () => {
             const k = draftKey.trim();
             if (!k) { Alert.alert('Key required'); return; }
             if (provider === 'gemini') setGeminiKey(k); else setOpenaiKey(k);
-            Alert.alert('Saved', `${provider === 'gemini' ? 'Gemini' : 'OpenAI'} key saved`);
+            try {
+              const BASE = config.api.baseUrl;
+              const body: any = { ai_provider: provider };
+              if (provider === 'gemini') body.gemini_api_key = k; else body.openai_api_key = k;
+              const res = await fetch(`${BASE}/settings/ai`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+              if (!res.ok) throw new Error(`${res.status}`);
+              Alert.alert('Saved', `${provider === 'gemini' ? 'Gemini' : 'OpenAI'} key saved on backend`);
+            } catch (e: any) {
+              Alert.alert('Saved locally', `Key saved on device, backend not reachable (${e.message}). Diagnose will use offline mock until backend at ${config.api.baseUrl} is reachable. For physical device, set LAN IP in config.ts`);
+            }
           }}><Text style={s.outlineText}>Verify & Save</Text></Pressable>
-          <Pressable style={s.outlineBtn} onPress={() => {
+          <Pressable style={s.outlineBtn} onPress={async () => {
             setDraftKey(''); if (provider === 'gemini') setGeminiKey(''); else setOpenaiKey('');
+            try { const BASE = config.api.baseUrl; await fetch(`${BASE}/settings/ai`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(provider === 'gemini' ? { gemini_api_key: '' } : { openai_api_key: '' }) }); } catch {}
             Alert.alert('Reset', 'Key cleared');
           }}><Text style={s.outlineText}>Reset</Text></Pressable>
         </View>

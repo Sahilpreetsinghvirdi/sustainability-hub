@@ -3,6 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAiConfigStore } from '@/store/aiConfigStore';
+import { config } from '@/constants/config';
 
 export default function ApiSetupScreen() {
   const { provider, setProvider, geminiKey, openaiKey, setGeminiKey, setOpenaiKey } = useAiConfigStore();
@@ -11,12 +12,23 @@ export default function ApiSetupScreen() {
   const [oaKey, setOaKey] = useState(openaiKey);
   const [show, setShow] = useState(false);
 
-  const onSave = () => {
+  const onSave = async () => {
     const key = localProvider === 'gemini' ? gemKey.trim() : oaKey.trim();
     if (!key) { Alert.alert('Key required', `Enter your ${localProvider === 'gemini' ? 'Gemini' : 'OpenAI'} API key`); return; }
+    // save locally first
     if (localProvider === 'gemini') { setGeminiKey(key); setProvider('gemini'); }
     else { setOpenaiKey(key); setProvider('openai'); }
-    Alert.alert('Connected', `${localProvider === 'gemini' ? 'Gemini' : 'OpenAI'} configured`, [{ text: 'Continue', onPress: () => router.replace('/' as any) }]);
+    // try to push to backend so diagnose uses real AI (backend at 10.0.2.2 for emulator, LAN IP for device)
+    try {
+      const BASE = config.api.baseUrl;
+      const body: any = { ai_provider: localProvider };
+      if (localProvider === 'gemini') body.gemini_api_key = key; else body.openai_api_key = key;
+      const res = await fetch(`${BASE}/settings/ai`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error(`backend ${res.status}`);
+      Alert.alert('Connected', `${localProvider === 'gemini' ? 'Gemini' : 'OpenAI'} configured on backend`, [{ text: 'Continue', onPress: () => router.replace('/' as any) }]);
+    } catch (e: any) {
+      Alert.alert('Saved locally', `Key saved on device, but backend not reachable (${e.message}).\n\nIf on physical device, set backend to your PC LAN IP in src/constants/config.ts (e.g. 192.168.1.50) and run backend with --host 0.0.0.0.\n\nDiagnose will use offline mock until backend reachable.`, [{ text: 'Continue', onPress: () => router.replace('/' as any) }]);
+    }
   };
 
   return (

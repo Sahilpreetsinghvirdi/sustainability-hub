@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Tex
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { analyzePlant, getPlantHistory } from '@/services/ai';
+import { useAiConfigStore } from '@/store/aiConfigStore';
 
 export default function PlantSenseScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -24,7 +25,7 @@ export default function PlantSenseScreen() {
       setResult(out);
       try { const { savePlantHistory } = await import('@/services/ai'); await savePlantHistory({ id: `pl_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: out, crop: crop || undefined }); } catch {}
     } catch (e: any) {
-      // offline fallback - mock result so button always works
+      const hasKey = useAiConfigStore.getState().provider === 'gemini' ? !!useAiConfigStore.getState().geminiKey : !!useAiConfigStore.getState().openaiKey;
       const mock = {
         summary: `${crop || 'Plant'} appears healthy with minor light deficiency. Increase light exposure and maintain soil moisture at 60-70%.`,
         plant_identification: { name: crop || 'Ficus Elastica', type: 'indoor', confidence: 0.92, description: 'Common indoor foliage plant' },
@@ -36,14 +37,15 @@ export default function PlantSenseScreen() {
         manures_suggested: ['Vermicompost 10% top dressing'],
         watering_guidance: 'Water 250ml when soil moisture <65%',
         light_guidance: 'Target 1000 lux, 6h daily',
-        environmental_notes: 'Offline analysis — connect API key for precise AI diagnosis',
+        environmental_notes: hasKey ? 'Offline — backend not reachable, key saved locally' : 'Offline analysis — add API key in Settings for precise AI diagnosis',
         recommendations: ['Monitor new growth for 7 days'],
         analyzer_model: 'offline-mock',
         processing_time_ms: 800,
       };
       setResult(mock as any);
       try { const { savePlantHistory } = await import('@/services/ai'); await savePlantHistory({ id: `pl_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: mock as any, crop: crop || undefined }); } catch {}
-      Alert.alert('Offline Mode', 'Network unavailable — showing offline analysis. Add API key in Settings for full AI.');
+      if (hasKey) Alert.alert('Backend not reachable', `Key saved, but backend at ${e.message.includes('10.0.2.2') ? '10.0.2.2' : 'configured URL'} not reachable. For physical device, set your PC LAN IP in src/constants/config.ts and run backend with --host 0.0.0.0`);
+      else Alert.alert('Offline Mode', 'Network unavailable — showing offline analysis. Add API key in Settings for full AI.');
     } finally { setAnalyzing(false); }
   };
   const score = result?.health?.score ?? 92;

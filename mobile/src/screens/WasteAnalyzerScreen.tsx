@@ -3,6 +3,7 @@ import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Tex
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { analyzeWaste, clearWasteHistory, getWasteHistory, getWasteStatus, saveWasteHistory, WasteAnalysisResponse, WasteHistoryItem } from '@/services/ai';
+import { useAiConfigStore } from '@/store/aiConfigStore';
 
 export default function WasteAnalyzerScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -34,12 +35,13 @@ export default function WasteAnalyzerScreen() {
       await saveWasteHistory(item);
       setHistory(prev => [item, ...prev]);
     } catch (e: any) {
+      const hasKey = useAiConfigStore.getState().provider === 'gemini' ? !!useAiConfigStore.getState().geminiKey : !!useAiConfigStore.getState().openaiKey;
       const mock: any = {
-        summary: 'Offline analysis: appears to be compostable organic waste (e.g., vegetable scraps). Segregate for compost.',
+        summary: hasKey ? 'Offline analysis (key saved, backend not reachable): appears compostable organic waste. Will use AI when backend reachable.' : 'Offline analysis: appears to be compostable organic waste (e.g., vegetable scraps). Segregate for compost.',
         overall_hazard: { level: 'low', score: 12, toxins: [], health_risks: [] },
         materials: [{ name: 'Organic Waste', category: 'organic', percentage: 95, confidence: 0.9, description: 'Compostable organic matter', hazard: { level: 'low', score: 10, toxins: [], health_risks: [] }, reuse_ideas: ['Compost'], eco_alternatives: [], disposal: { method: 'Compost', destination: 'Compost bin', recyclable: true } }],
         recommendations: ['Add to compost bin, keep moisture 60%'],
-        environmental_impact: 'Offline — add API key for precise AI',
+        environmental_impact: hasKey ? 'Offline — backend not reachable, key saved' : 'Offline — add API key for precise AI',
         analyzer_model: 'offline-mock',
         processing_time_ms: 600,
       };
@@ -47,7 +49,8 @@ export default function WasteAnalyzerScreen() {
       const item: WasteHistoryItem = { id: `w_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: mock, question: question || undefined };
       await saveWasteHistory(item).catch(() => {});
       setHistory(prev => [item, ...prev]);
-      Alert.alert('Offline Mode', 'Network unavailable — showing offline analysis. Add API key in Settings for full AI.');
+      if (hasKey) Alert.alert('Backend not reachable', `Key saved, backend not reachable (${e.message}). For physical device, set LAN IP in config.ts and run backend --host 0.0.0.0`);
+      else Alert.alert('Offline Mode', 'Network unavailable — showing offline analysis. Add API key in Settings for full AI.');
     } finally { setAnalyzing(false); }
   };
 
