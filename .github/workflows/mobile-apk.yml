@@ -42,7 +42,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: mobile
-        run: npm ci --legacy-peer-deps
+        run: npm install --legacy-peer-deps
 
       - name: Prebuild Android
         working-directory: mobile
