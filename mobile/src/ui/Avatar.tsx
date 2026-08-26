@@ -10,7 +10,7 @@ interface AvatarProps {
 }
 
 const statusColors: Record<string, string> = { online: colors.primary[400], busy: colors.error, away: colors.warning, offline: colors.text.tertiary };
-const avatarColors = [colors.primary[700], colors.secondary[700], '#755C9B', '#987044', '#A0544A', '#8C4E73'];
+const avatarColors = [colors.primary[700], colors.secondary[700], '#444444', '#6B6B6B', '#444444', '#444444'];
 
 const getColor = (name: string) => {
   let hash = 0;

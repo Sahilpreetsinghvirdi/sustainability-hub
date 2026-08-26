@@ -6,10 +6,10 @@ export interface BadgeProps { children: React.ReactNode; variant?: 'default' | '
 
 const palette: Record<string, { background: string; text: string }> = {
   default: { background: colors.background.tertiary, text: colors.text.secondary },
-  success: { background: 'rgba(87,197,138,0.16)', text: colors.primary[300] },
-  warning: { background: 'rgba(242,184,91,0.16)', text: colors.warning },
-  danger: { background: 'rgba(233,121,102,0.16)', text: colors.error },
-  info: { background: 'rgba(114,168,229,0.16)', text: colors.info },
+  success: { background: 'rgba(10,10,10,0.1)', text: colors.primary[300] },
+  warning: { background: 'rgba(10,10,10,0.08)', text: colors.warning },
+  danger: { background: 'rgba(10,10,10,0.08)', text: colors.error },
+  info: { background: 'rgba(10,10,10,0.08)', text: colors.info },
   outline: { background: 'transparent', text: colors.text.secondary },
 };
 

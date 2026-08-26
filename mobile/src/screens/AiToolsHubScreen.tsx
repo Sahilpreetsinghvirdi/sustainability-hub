@@ -38,7 +38,7 @@ export default function AiToolsHubScreen() {
 
       {/* Tool Cards */}
       <TouchableOpacity style={styles.toolCard} onPress={() => router.push('/ai-tools/waste')}>
-        <View style={[styles.toolIcon, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
+        <View style={[styles.toolIcon, { backgroundColor: 'rgba(10,10,10,0.1)' }]}>
           <Ionicons name="scan" size={32} color={colors.error} />
         </View>
         <View style={styles.toolInfo}>
@@ -52,7 +52,7 @@ export default function AiToolsHubScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.toolCard} onPress={() => router.push('/ai-tools/agri')}>
-        <View style={[styles.toolIcon, { backgroundColor: 'rgba(34, 197, 94, 0.15)' }]}>
+        <View style={[styles.toolIcon, { backgroundColor: 'rgba(10,10,10,0.1)' }]}>
           <Ionicons name="leaf" size={32} color={colors.primary[500]} />
         </View>
         <View style={styles.toolInfo}>
@@ -66,7 +66,7 @@ export default function AiToolsHubScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.toolCard} onPress={() => router.push('/ai-tools/plant')}>
-        <View style={[styles.toolIcon, { backgroundColor: 'rgba(59, 130, 246, 0.15)' }]}>
+        <View style={[styles.toolIcon, { backgroundColor: 'rgba(10,10,10,0.1)' }]}>
           <Ionicons name="flower" size={32} color={colors.info} />
         </View>
         <View style={styles.toolInfo}>
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   iconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.background.card, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm },
   title: { fontSize: typography.fontSize.xxl, fontWeight: typography.fontWeight.bold, color: colors.text.primary },
   subtitle: { fontSize: typography.fontSize.md, color: colors.text.tertiary, marginTop: spacing.xs },
-  warningBanner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: 'rgba(245,158,11,0.12)', padding: spacing.md, borderRadius: borderRadius.md, borderWidth: 1, borderColor: 'rgba(245,158,11,0.3)' },
+  warningBanner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: 'rgba(10,10,10,0.08)', padding: spacing.md, borderRadius: borderRadius.md, borderWidth: 1, borderColor: 'rgba(10,10,10,0.2)' },
   warningText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.warning, lineHeight: 20 },
   toolCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.background.card, borderRadius: borderRadius.lg, padding: spacing.lg, gap: spacing.md, borderWidth: 1, borderColor: colors.border.light },
   toolIcon: { width: 56, height: 56, borderRadius: borderRadius.lg, alignItems: 'center', justifyContent: 'center' },

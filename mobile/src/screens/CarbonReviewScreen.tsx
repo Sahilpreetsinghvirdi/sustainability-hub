@@ -59,23 +59,23 @@ export const CarbonReviewScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="20" fontWeight="700" color="#F2F8F3">Review Receipt</Text>
+        <Text fontSize="20" fontWeight="700" color="#0A0A0A">Review Receipt</Text>
         <Stack width={40} />
       </Stack>
 
       {/* Store Info */}
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" alignItems="center" gap="4">
-          <Stack width={56} height={56} borderRadius="lg" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
-            <Ionicons name="storefront" size={28} color="#57C58A" />
+          <Stack width={56} height={56} borderRadius="lg" backgroundColor="rgba(10,10,10,0.12)" alignItems="center" justifyContent="center">
+            <Ionicons name="storefront" size={28} color="#1C1C1C" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="20" fontWeight="700" color="#F2F8F3">{scan.store_name || 'Unknown Store'}</Text>
-            <Text fontSize="8" color="#C4D8CB">{formatDate(scan.scanned_at)}</Text>
+            <Text fontSize="20" fontWeight="700" color="#0A0A0A">{scan.store_name || 'Unknown Store'}</Text>
+            <Text fontSize="8" color="#444444">{formatDate(scan.scanned_at)}</Text>
           </Stack>
           <Stack alignItems="flex-end">
-            <Text fontSize="24" fontWeight="800" color="#57C58A">{formatCarbon(scan.total_carbon_kg)}</Text>
-            <Text fontSize="8" color="#C4D8CB">{formatCurrency(scan.total_amount)}</Text>
+            <Text fontSize="24" fontWeight="800" color="#1C1C1C">{formatCarbon(scan.total_carbon_kg)}</Text>
+            <Text fontSize="8" color="#444444">{formatCurrency(scan.total_amount)}</Text>
           </Stack>
         </Stack>
       </Card>
@@ -83,7 +83,7 @@ export const CarbonReviewScreen: React.FC = () => {
       {/* Progress */}
       <Card variant="default" padding="md" marginBottom="lg">
         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom="3">
-          <Text fontSize="12" fontWeight="600" color="#F2F8F3">Processing Progress</Text>
+          <Text fontSize="12" fontWeight="600" color="#0A0A0A">Processing Progress</Text>
           <Badge variant="success" size="sm">{completedItems}/{totalItems} items matched</Badge>
         </Stack>
         <ProgressBar
@@ -98,7 +98,7 @@ export const CarbonReviewScreen: React.FC = () => {
       {/* Items List */}
       <Stack marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-          <Text fontSize="20" fontWeight="700" color="#F2F8F3">Items ({totalItems})</Text>
+          <Text fontSize="20" fontWeight="700" color="#0A0A0A">Items ({totalItems})</Text>
           <Button variant="ghost" size="sm" onPress={() => router.push('/carbon/manual')}>
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name="add" size={16} />
@@ -126,7 +126,7 @@ export const CarbonReviewScreen: React.FC = () => {
 
       {/* Breakdown */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="lg">Carbon Breakdown</Text>
+        <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="lg">Carbon Breakdown</Text>
         <Stack gap="2">
           {Object.entries(scan.items?.reduce((acc: any, item: any) => {
             acc[item.category] = (acc[item.category] || 0) + item.carbon_kg;
@@ -140,12 +140,12 @@ export const CarbonReviewScreen: React.FC = () => {
       {/* Insights */}
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.insightCard}>
         <Stack flexDirection="row" alignItems="flex-start" gap="3" marginBottom="lg">
-          <Stack width={40} height={40} borderRadius="lg" backgroundColor="rgba(245,158,11,0.2)" alignItems="center" justifyContent="center">
-            <Ionicons name="lightbulb" size={22} color="#F2B85B" />
+          <Stack width={40} height={40} borderRadius="lg" backgroundColor="rgba(10,10,10,0.12)" alignItems="center" justifyContent="center">
+            <Ionicons name="lightbulb" size={22} color="#6B6B6B" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="16" fontWeight="600" color="#F2F8F3">Smart Insight</Text>
-            <Text fontSize="12" color="#C4D8CB" marginTop="1">
+            <Text fontSize="16" fontWeight="600" color="#0A0A0A">Smart Insight</Text>
+            <Text fontSize="12" color="#444444" marginTop="1">
               {getInsight(scan)}
             </Text>
           </Stack>
@@ -169,8 +169,8 @@ export const CarbonReviewScreen: React.FC = () => {
 
 const LoadingScreen = () => (
   <Stack style={styles.loading}>
-    <Ionicons name="sync" size={48} color="#57C58A" />
-    <Text fontSize="12" color="#C4D8CB" marginTop="3">Loading receipt...</Text>
+    <Ionicons name="sync" size={48} color="#1C1C1C" />
+    <Text fontSize="12" color="#444444" marginTop="3">Loading receipt...</Text>
   </Stack>
 );
 
@@ -232,11 +232,11 @@ const ItemCard = ({ item, index, isEditing, onEdit, onSave, onCategoryChange, ed
   return (
     <Card variant="default" padding="md" style={styles.itemCard}>
       <Stack flexDirection="row" alignItems="center" gap="3">
-        <Text fontSize="24" fontWeight="700" color="#C4D8CB" style={{ width: 28 }}>{index + 1}.</Text>
+        <Text fontSize="24" fontWeight="700" color="#444444" style={{ width: 28 }}>{index + 1}.</Text>
         <Stack width={4} height="100%" borderRadius="full" backgroundColor={categoryColor} />
         <Stack flex={1} gap="1">
           <Stack flexDirection="row" alignItems="center" justifyContent="space-between">
-            <Text fontSize="12" fontWeight="600" color="#F2F8F3">{item.name}</Text>
+            <Text fontSize="12" fontWeight="600" color="#0A0A0A">{item.name}</Text>
             {isEditing ? (
               <Button variant="ghost" size="xs" onPress={onSave}>
                 <Ionicons name="checkmark" size={16} />
@@ -252,8 +252,8 @@ const ItemCard = ({ item, index, isEditing, onEdit, onSave, onCategoryChange, ed
           </Stack>
         </Stack>
         <Stack alignItems="flex-end" gap="1" style={{ minWidth: 80 }}>
-          <Text fontSize="16" fontWeight="700" color="#57C58A">{formatCarbon(item.carbon_kg)}</Text>
-          <Text fontSize="4" color="#C4D8CB">{formatCurrency(item.price)}</Text>
+          <Text fontSize="16" fontWeight="700" color="#1C1C1C">{formatCarbon(item.carbon_kg)}</Text>
+          <Text fontSize="4" color="#444444">{formatCurrency(item.price)}</Text>
         </Stack>
       </Stack>
 
@@ -301,7 +301,7 @@ const CategoryBreakdownRow = ({ category, value, total }: any) => (
   <Stack flexDirection="row" alignItems="center" gap="3" style={styles.breakdownRow}>
     <Stack width={12} height={12} borderRadius="sm" backgroundColor={getCategoryColor(category)} />
     <Stack flex={1}>
-      <Text fontSize="12" color="#F2F8F3" fontWeight="500">
+      <Text fontSize="12" color="#0A0A0A" fontWeight="500">
         {category.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
       </Text>
       <ProgressBar
@@ -311,20 +311,20 @@ const CategoryBreakdownRow = ({ category, value, total }: any) => (
       />
     </Stack>
     <Stack alignItems="flex-end" style={{ minWidth: 70 }}>
-      <Text fontSize="12" fontWeight="600" color="#F2F8F3">{formatCarbon(value)}</Text>
-      <Text fontSize="4" color="#C4D8CB">{total > 0 ? `${((value / total) * 100).toFixed(1)}%` : '0%'}</Text>
+      <Text fontSize="12" fontWeight="600" color="#0A0A0A">{formatCarbon(value)}</Text>
+      <Text fontSize="4" color="#444444">{total > 0 ? `${((value / total) * 100).toFixed(1)}%` : '0%'}</Text>
     </Stack>
   </Stack>
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#081A14' },
-  content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 24 },
   loading: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingTop: 100 },
   itemCard: {},
-  editFields: { paddingTop: 8, borderTopWidth: 1, borderTopColor: '#234736', marginTop: 8 },
+  editFields: { paddingTop: 8, borderTopWidth: 1, borderTopColor: '#DADADA', marginTop: 8 },
   itemActions: { marginTop: 4 },
   breakdownRow: { paddingVertical: 4 },
-  insightCard: { backgroundColor: 'rgba(245,158,11,0.05)' },
+  insightCard: { backgroundColor: 'rgba(10,10,10,0.05)' },
   actions: { marginTop: 8 },
 };

@@ -9,10 +9,10 @@ import { Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const MEAL_TYPES = [
-  { id: 'breakfast', label: 'Breakfast', icon: 'weather-sunny', color: '#F2B85B', component: Ionicons },
-  { id: 'lunch', label: 'Lunch', icon: 'weather-partly-sunny', color: '#E97966', component: Ionicons },
-  { id: 'dinner', label: 'Dinner', icon: 'moon', color: '#9B7BD5', component: Ionicons },
-  { id: 'snack', label: 'Snack', icon: 'cookie', color: '#EC4899', component: MaterialIcons },
+  { id: 'breakfast', label: 'Breakfast', icon: 'weather-sunny', color: '#6B6B6B', component: Ionicons },
+  { id: 'lunch', label: 'Lunch', icon: 'weather-partly-sunny', color: '#444444', component: Ionicons },
+  { id: 'dinner', label: 'Dinner', icon: 'moon', color: '#6B6B6B', component: Ionicons },
+  { id: 'snack', label: 'Snack', icon: 'cookie', color: '#6B6B6B', component: MaterialIcons },
 ];
 
 export const FoodWasteLogScreen: React.FC = () => {
@@ -135,7 +135,7 @@ export const FoodWasteLogScreen: React.FC = () => {
       {/* Progress Header */}
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.progressCard}>
         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom="md">
-          <Text fontSize="16" fontWeight="600" color="#F2F8F3">Log Food Waste</Text>
+          <Text fontSize="16" fontWeight="600" color="#0A0A0A">Log Food Waste</Text>
           <Badge variant="outline" size="sm">Step {step} of 4</Badge>
         </Stack>
         <Stack flexDirection="row" gap="2">
@@ -150,16 +150,16 @@ export const FoodWasteLogScreen: React.FC = () => {
                 width={32}
                 height={32}
                 borderRadius="full"
-                backgroundColor={step > item.step ? '#57C58A' : step === item.step ? '#57C58A' : '#234736'}
+                backgroundColor={step > item.step ? '#1C1C1C' : step === item.step ? '#1C1C1C' : '#DADADA'}
                 alignItems="center"
                 justifyContent="center"
                 marginBottom="1"
               >
-                <Text fontSize="8" fontWeight="700" color={step >= item.step ? '#34D399' : step === item.step ? '#FFFFFF' : '#C4D8CB'}>
+                <Text fontSize="8" fontWeight="700" color={step >= item.step ? '#6B6B6B' : step === item.step ? '#FFFFFF' : '#444444'}>
                   {index + 1}
                 </Text>
               </Stack>
-              <Text fontSize="4" color={step >= item.step ? '#57C58A' : step === item.step ? '#57C58A' : '#C4D8CB'} textAlign="center">
+              <Text fontSize="4" color={step >= item.step ? '#1C1C1C' : step === item.step ? '#1C1C1C' : '#444444'} textAlign="center">
                 {item.label}
               </Text>
             </Stack>
@@ -206,9 +206,9 @@ export const FoodWasteLogScreen: React.FC = () => {
       {isAnalyzing && (
         <Stack style={styles.analyzingOverlay}>
           <Card variant="elevated" padding="lg" style={styles.analyzingCard}>
-            <Ionicons name="sync" size={48} color="#57C58A" />
-            <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginTop="3" marginBottom="1">Analyzing Photos...</Text>
-            <Text fontSize="8" color="#C4D8CB">{analysisProgress > 0 ? `${analysisProgress}%` : 'Identifying food & waste'}</Text>
+            <Ionicons name="sync" size={48} color="#1C1C1C" />
+            <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginTop="3" marginBottom="1">Analyzing Photos...</Text>
+            <Text fontSize="8" color="#444444">{analysisProgress > 0 ? `${analysisProgress}%` : 'Identifying food & waste'}</Text>
             <ProgressBar progress={analysisProgress} variant="primary" size="lg" style={{ marginTop: 8 }} />
           </Card>
         </Stack>
@@ -219,7 +219,7 @@ export const FoodWasteLogScreen: React.FC = () => {
 
 const MealTypeStep = ({ onSelect }: any) => (
   <Stack gap="3">
-    <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="md">What meal was this?</Text>
+    <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="md">What meal was this?</Text>
     <Stack flexDirection="row" flexWrap="wrap" gap="3">
       {MEAL_TYPES.map(type => (
         <TouchableOpacity
@@ -238,7 +238,7 @@ const MealTypeStep = ({ onSelect }: any) => (
           >
             <type.component name={type.icon} size={28} color={type.color} />
           </Stack>
-          <Text fontSize="12" fontWeight="600" color="#F2F8F3">{type.label}</Text>
+          <Text fontSize="12" fontWeight="600" color="#0A0A0A">{type.label}</Text>
         </TouchableOpacity>
       ))}
     </Stack>
@@ -251,11 +251,11 @@ const PhotoStep = ({ title, subtitle, image, onPick, type, mealType, showZeroWas
   if (image === 'zero-waste') {
     return (
       <Stack gap="lg" alignItems="center" style={styles.zeroWasteCard}>
-        <Stack width={120} height={120} borderRadius="full" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
-          <Entypo name="star" size={50} color="#57C58A" />
+        <Stack width={120} height={120} borderRadius="full" backgroundColor="rgba(10,10,10,0.12)" alignItems="center" justifyContent="center">
+          <Entypo name="star" size={50} color="#1C1C1C" />
         </Stack>
-        <Text fontSize="20" fontWeight="700" color="#F2F8F3">Zero Waste! ðŸŽ‰</Text>
-        <Text fontSize="12" color="#C4D8CB" textAlign="center">You finished everything on your plate. Amazing!</Text>
+        <Text fontSize="20" fontWeight="700" color="#0A0A0A">Zero Waste! ðŸŽ‰</Text>
+        <Text fontSize="12" color="#444444" textAlign="center">You finished everything on your plate. Amazing!</Text>
         <Button variant="primary" fullWidth onPress={onSubmit}>
           <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
             <Entypo name="star" size={20} />
@@ -273,8 +273,8 @@ const PhotoStep = ({ title, subtitle, image, onPick, type, mealType, showZeroWas
         <Stack width={56} height={56} borderRadius="lg" backgroundColor={mealTypeConfig.color + '20'} alignItems="center" justifyContent="center" marginBottom="3">
           <mealTypeConfig.component name={mealTypeConfig.icon} size={28} color={mealTypeConfig.color} />
         </Stack>
-        <Text fontSize="16" fontWeight="600" color="#F2F8F3">{title}</Text>
-        <Text fontSize="8" color="#C4D8CB" textAlign="center">{subtitle}</Text>
+        <Text fontSize="16" fontWeight="600" color="#0A0A0A">{title}</Text>
+        <Text fontSize="8" color="#444444" textAlign="center">{subtitle}</Text>
       </Card>
 
       {image ? (
@@ -306,11 +306,11 @@ const PhotoStep = ({ title, subtitle, image, onPick, type, mealType, showZeroWas
         </Card>
       ) : (
         <Card variant="outlined" padding="xl" alignItems="center" style={styles.cameraCard}>
-          <Stack width={80} height={80} borderRadius="full" backgroundColor="rgba(34,197,94,0.1)" alignItems="center" justifyContent="center" marginBottom="4">
-            <Ionicons name="camera" size={40} color="#57C58A" />
+          <Stack width={80} height={80} borderRadius="full" backgroundColor="rgba(10,10,10,0.08)" alignItems="center" justifyContent="center" marginBottom="4">
+            <Ionicons name="camera" size={40} color="#1C1C1C" />
           </Stack>
-          <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="1">No Photo Yet</Text>
-          <Text fontSize="8" color="#C4D8CB" textAlign="center" marginBottom="6">Tap to add photo</Text>
+          <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="1">No Photo Yet</Text>
+          <Text fontSize="8" color="#444444" textAlign="center" marginBottom="6">Tap to add photo</Text>
           <Stack flexDirection="row" gap="3">
             <Button variant="secondary" onPress={() => onPick(type)}>
               <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
@@ -344,7 +344,7 @@ const ReviewStep = ({ mealType, mealImage, wasteImage, onBack, onSubmit, submitt
 
   return (
     <Stack gap="lg">
-      <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="md">Review Your Log</Text>
+      <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="md">Review Your Log</Text>
 
       <Card variant="default" padding="0" overflow="hidden" style={styles.reviewImages}>
         <Stack flexDirection="row">
@@ -353,25 +353,25 @@ const ReviewStep = ({ mealType, mealImage, wasteImage, onBack, onSubmit, submitt
             <Stack style={styles.reviewImageLabel}>
               <Stack flexDirection="row" alignItems="center" gap="1">
                 <Stack width={8} height={8} borderRadius="full" backgroundColor={mealTypeConfig.color} />
-                <Text fontSize="8" fontWeight="600" color="#F2F8F3">{mealTypeConfig.label}</Text>
+                <Text fontSize="8" fontWeight="600" color="#0A0A0A">{mealTypeConfig.label}</Text>
               </Stack>
-              <Text fontSize="4" color="#C4D8CB">Meal Photo</Text>
+              <Text fontSize="4" color="#444444">Meal Photo</Text>
             </Stack>
           </Stack>
-          <Stack width={1} backgroundColor="#234736" />
+          <Stack width={1} backgroundColor="#DADADA" />
           <Stack flex={1} style={styles.reviewImageSlot}>
             {wasteImage === 'zero-waste' ? (
-              <Stack style={[styles.reviewImage, { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(34,197,94,0.05)' }]}>
-                <Entypo name="star" size={60} color="#57C58A" />
-                <Text fontSize="12" fontWeight="600" color="#57C58A" marginTop="3">Zero Waste!</Text>
-                <Text fontSize="4" color="#C4D8CB">No waste photo needed</Text>
+              <Stack style={[styles.reviewImage, { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(10,10,10,0.05)' }]}>
+                <Entypo name="star" size={60} color="#1C1C1C" />
+                <Text fontSize="12" fontWeight="600" color="#1C1C1C" marginTop="3">Zero Waste!</Text>
+                <Text fontSize="4" color="#444444">No waste photo needed</Text>
               </Stack>
             ) : (
               <>
                 <Image source={{ uri: wasteImage }} style={styles.reviewImage} resizeMode="cover" />
                 <Stack style={styles.reviewImageLabel}>
-                  <Text fontSize="8" fontWeight="600" color="#E97966" marginBottom="1">Waste Photo</Text>
-                  <Text fontSize="4" color="#C4D8CB">Leftovers & Scraps</Text>
+                  <Text fontSize="8" fontWeight="600" color="#444444" marginBottom="1">Waste Photo</Text>
+                  <Text fontSize="4" color="#444444">Leftovers & Scraps</Text>
                 </Stack>
               </>
             )}
@@ -380,13 +380,13 @@ const ReviewStep = ({ mealType, mealImage, wasteImage, onBack, onSubmit, submitt
       </Card>
 
       <Card variant="elevated" padding="lg" style={styles.estimateCard}>
-        <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="lg">Estimated Impact</Text>
+        <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="lg">Estimated Impact</Text>
         <Stack flexDirection="row" gap="4">
-          <EstimateItem label="Avoidable Waste" value="~200g" color="#E97966" icon={<Ionicons name="trash" size={22} />} />
-          <EstimateItem label="Cost" value="~8.50" color="#F2B85B" icon={<Ionicons name="cash" size={22} />} />
-          <EstimateItem label="COâ‚‚e" value="~1.2 kg" color="#57C58A" icon={<Ionicons name="leaf" size={22} />} />
+          <EstimateItem label="Avoidable Waste" value="~200g" color="#444444" icon={<Ionicons name="trash" size={22} />} />
+          <EstimateItem label="Cost" value="~8.50" color="#6B6B6B" icon={<Ionicons name="cash" size={22} />} />
+          <EstimateItem label="COâ‚‚e" value="~1.2 kg" color="#1C1C1C" icon={<Ionicons name="leaf" size={22} />} />
         </Stack>
-        <Text fontSize="4" color="#C4D8CB" marginTop="4" textAlign="center">Estimates based on AI analysis</Text>
+        <Text fontSize="4" color="#444444" marginTop="4" textAlign="center">Estimates based on AI analysis</Text>
       </Card>
 
       <Stack gap="3" style={styles.actions}>
@@ -413,28 +413,28 @@ const EstimateItem = ({ label, value, color, icon }: any) => (
       {icon}
     </Stack>
     <Text fontSize="16" fontWeight="700" color={color}>{value}</Text>
-    <Text fontSize="4" color="#C4D8CB">{label}</Text>
+    <Text fontSize="4" color="#444444">{label}</Text>
   </Stack>
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#081A14' },
-  content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  progressCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 24 },
+  progressCard: { backgroundColor: 'rgba(10,10,10,0.05)' },
   progressStep: { alignItems: 'center' },
-  mealTypeButton: { flex: 1, minWidth: 70, padding: 16, borderRadius: 16, backgroundColor: '#193A2A', alignItems: 'center' },
+  mealTypeButton: { flex: 1, minWidth: 70, padding: 16, borderRadius: 16, backgroundColor: '#F5F5F4', alignItems: 'center' },
   zeroWasteCard: { padding: 32 },
   imagePreview: { overflow: 'hidden' },
   imageContainer: { position: 'relative' },
   previewImage: { width: '100%', height: 200 },
   imageOverlay: { position: 'absolute', top: 12, right: 12 },
-  imageActions: { flexDirection: 'row', gap: 12, padding: 16, borderTopWidth: 1, borderTopColor: '#234736' },
+  imageActions: { flexDirection: 'row', gap: 12, padding: 16, borderTopWidth: 1, borderTopColor: '#DADADA' },
   cameraCard: { minHeight: 280 },
   reviewImages: { overflow: 'hidden' },
   reviewImageSlot: { position: 'relative' },
   reviewImage: { width: '100%', height: 140 },
   reviewImageLabel: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 12, backgroundColor: 'rgba(0,0,0,0.7)' },
-  estimateCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
+  estimateCard: { backgroundColor: 'rgba(10,10,10,0.05)' },
   actions: { marginTop: 8 },
   analyzingOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', padding: 16, backgroundColor: 'rgba(0,0,0,0.5)' },
   analyzingCard: { width: '90%', maxWidth: 320 },

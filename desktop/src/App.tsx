@@ -31,6 +31,7 @@ import AgriSensePage from './pages/AgriSense';
 import PlantSensePage from './pages/PlantSense';
 import ThemeToggle from './components/ui/ThemeToggle';
 import { store } from './lib/store';
+import softwareLogo from './assets/logo.png';
 
 interface NavItem {
   path: string;
@@ -85,9 +86,7 @@ function Sidebar() {
   return (
     <aside className="w-64 h-screen bg-dark-700 border-r border-dark-500 flex flex-col shrink-0">
       <div className="p-5 flex items-center gap-3 border-b border-dark-500">
-        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-          <Leaf className="w-6 h-6 on-primary-chip" />
-        </div>
+        <img src={softwareLogo} alt="Sustainability Hub logo" className="w-10 h-10 rounded-xl object-cover" />
         <div className="min-w-0">
           <h1 className="text-lg font-bold text-dark-50">Sustainability</h1>
           <p className="text-xs text-dark-200">Hub Desktop</p>

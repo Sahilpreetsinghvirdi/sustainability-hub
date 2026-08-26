@@ -79,10 +79,10 @@ export const CarbonScreen: React.FC = () => {
       <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="xl">
         <Stack>
           <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
-            <Stack width={40} height={40} borderRadius="md" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
-              <Ionicons name="leaf" size={24} color="#57C58A" />
+            <Stack width={40} height={40} borderRadius="md" backgroundColor="rgba(10,10,10,0.12)" alignItems="center" justifyContent="center">
+              <Ionicons name="leaf" size={24} color="#1C1C1C" />
             </Stack>
-            <Text fontSize="28" fontWeight="800" color="#F2F8F3">Carbon Tracker</Text>
+            <Text fontSize="28" fontWeight="800" color="#0A0A0A">Carbon Tracker</Text>
           </Stack>
         </Stack>
       </Stack>
@@ -90,12 +90,12 @@ export const CarbonScreen: React.FC = () => {
       {/* Summary Card */}
       <Card variant="elevated" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" alignItems="center" gap="4">
-          <Stack width={56} height={56} borderRadius="lg" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
-            <Ionicons name="analytics" size={28} color="#57C58A" />
+          <Stack width={56} height={56} borderRadius="lg" backgroundColor="rgba(10,10,10,0.12)" alignItems="center" justifyContent="center">
+            <Ionicons name="analytics" size={28} color="#1C1C1C" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="8" color="#C4D8CB" textTransform="uppercase" letterSpacing={1}>This Month</Text>
-            <Text fontSize="32" fontWeight="800" color="#F2F8F3" marginTop="1">{formatCarbon(totalCarbon)}</Text>
+            <Text fontSize="8" color="#444444" textTransform="uppercase" letterSpacing={1}>This Month</Text>
+            <Text fontSize="32" fontWeight="800" color="#0A0A0A" marginTop="1">{formatCarbon(totalCarbon)}</Text>
             <ProgressBar
               progress={Math.min(100, (totalCarbon / 200) * 100)}
               variant={totalCarbon > 180 ? 'danger' : totalCarbon > 140 ? 'warning' : 'success'}
@@ -110,9 +110,9 @@ export const CarbonScreen: React.FC = () => {
 
       {/* Quick Stats */}
       <Stack flexDirection="row" gap="3" marginBottom="lg">
-        <StatCard label="Scans" value={scans.length} icon={<Ionicons name="document-text" size={20} />} color="#5DA9C5" />
-        <StatCard label="Completed" value={completedScans} icon={<Ionicons name="checkmark-circle" size={20} />} color="#57C58A" />
-        <StatCard label="Avg/Scan" value={scans.length ? formatCarbon(totalCarbon / scans.length) : '0 kg'} icon={<Ionicons name="calculator" size={20} />} color="#F2B85B" />
+        <StatCard label="Scans" value={scans.length} icon={<Ionicons name="document-text" size={20} />} color="#6B6B6B" />
+        <StatCard label="Completed" value={completedScans} icon={<Ionicons name="checkmark-circle" size={20} />} color="#1C1C1C" />
+        <StatCard label="Avg/Scan" value={scans.length ? formatCarbon(totalCarbon / scans.length) : '0 kg'} icon={<Ionicons name="calculator" size={20} />} color="#6B6B6B" />
       </Stack>
 
       {/* Action Buttons */}
@@ -124,12 +124,12 @@ export const CarbonScreen: React.FC = () => {
 
       {/* Scanning Progress */}
       {isScanning && (
-        <Card variant="default" padding="md" marginBottom="lg" borderColor="#57C58A" borderWidth={2}>
+        <Card variant="default" padding="md" marginBottom="lg" borderColor="#1C1C1C" borderWidth={2}>
           <Stack flexDirection="row" alignItems="center" gap="3">
-            <Ionicons name="sync" size={28} color="#57C58A" />
+            <Ionicons name="sync" size={28} color="#1C1C1C" />
             <Stack flex={1}>
-              <Text fontSize="16" fontWeight="600" color="#F2F8F3">Processing Receipt...</Text>
-              <Text fontSize="8" color="#C4D8CB">{scanProgress > 0 ? `${scanProgress}% complete` : 'Extracting text & matching items'}</Text>
+              <Text fontSize="16" fontWeight="600" color="#0A0A0A">Processing Receipt...</Text>
+              <Text fontSize="8" color="#444444">{scanProgress > 0 ? `${scanProgress}% complete` : 'Extracting text & matching items'}</Text>
             </Stack>
             <ProgressBar progress={scanProgress} variant="primary" size="md" style={{ width: 100 }} />
           </Stack>
@@ -138,15 +138,15 @@ export const CarbonScreen: React.FC = () => {
 
       {/* Scans List */}
       <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-        <Text fontSize="20" fontWeight="700" color="#F2F8F3">Recent Scans</Text>
+        <Text fontSize="20" fontWeight="700" color="#0A0A0A">Recent Scans</Text>
         {scans.length > 0 && <Badge variant="outline" size="sm">{scans.length} total</Badge>}
       </Stack>
 
       {scans.length === 0 ? (
         <Card variant="filled" padding="xl" alignItems="center" style={styles.emptyCard}>
-          <Ionicons name="receipt" size={56} color="#C4D8CB" />
-          <Text fontSize="20" fontWeight="600" color="#F2F8F3" marginTop="3" marginBottom="1">No scans yet</Text>
-          <Text fontSize="12" color="#C4D8CB" textAlign="center" marginBottom="4">Start tracking your carbon footprint</Text>
+          <Ionicons name="receipt" size={56} color="#444444" />
+          <Text fontSize="20" fontWeight="600" color="#0A0A0A" marginTop="3" marginBottom="1">No scans yet</Text>
+          <Text fontSize="12" color="#444444" textAlign="center" marginBottom="4">Start tracking your carbon footprint</Text>
           <Button variant="primary" onPress={handleCameraPress}>Scan First Receipt</Button>
         </Card>
       ) : (
@@ -165,8 +165,8 @@ const StatCard = ({ label, value, icon, color }: any) => (
     <Stack width={36} height={36} borderRadius="md" backgroundColor={color + '20'} alignItems="center" justifyContent="center" marginBottom="2">
       {icon}
     </Stack>
-    <Text fontSize="20" fontWeight="700" color="#F2F8F3">{value}</Text>
-    <Text fontSize="4" color="#C4D8CB">{label}</Text>
+    <Text fontSize="20" fontWeight="700" color="#0A0A0A">{value}</Text>
+    <Text fontSize="4" color="#444444">{label}</Text>
   </Stack>
 );
 
@@ -188,12 +188,12 @@ const ScanCard = ({ scan, index }: any) => (
   <Card variant="default" padding="md" style={styles.scanCard}>
     <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
       <Stack flexDirection="row" alignItems="center" gap="3" flex={1}>
-        <Stack width={44} height={44} borderRadius="lg" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
-          <Ionicons name="receipt" size={20} color="#57C58A" />
+        <Stack width={44} height={44} borderRadius="lg" backgroundColor="rgba(10,10,10,0.12)" alignItems="center" justifyContent="center">
+          <Ionicons name="receipt" size={20} color="#1C1C1C" />
         </Stack>
         <Stack>
           <Stack flexDirection="row" alignItems="center" gap="2">
-            <Text fontSize="12" fontWeight="600" color="#F2F8F3">{scan.store_name || 'Unknown Store'}</Text>
+            <Text fontSize="12" fontWeight="600" color="#0A0A0A">{scan.store_name || 'Unknown Store'}</Text>
             <Badge
               variant={
                 scan.status === 'completed' ? 'success' :
@@ -205,22 +205,22 @@ const ScanCard = ({ scan, index }: any) => (
               {scan.status}
             </Badge>
           </Stack>
-          <Text fontSize="4" color="#C4D8CB">{formatDate(scan.scanned_at)}</Text>
+          <Text fontSize="4" color="#444444">{formatDate(scan.scanned_at)}</Text>
         </Stack>
       </Stack>
       <Stack alignItems="flex-end" gap="1">
-        <Text fontSize="20" fontWeight="700" color="#57C58A">{formatCarbon(scan.total_carbon_kg)}</Text>
-        <Text fontSize="4" color="#C4D8CB">{formatCurrency(scan.total_amount)}</Text>
-        <Ionicons name="chevron-forward" size={20} color="#C4D8CB" />
+        <Text fontSize="20" fontWeight="700" color="#1C1C1C">{formatCarbon(scan.total_carbon_kg)}</Text>
+        <Text fontSize="4" color="#444444">{formatCurrency(scan.total_amount)}</Text>
+        <Ionicons name="chevron-forward" size={20} color="#444444" />
       </Stack>
     </Stack>
   </Card>
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#081A14' },
-  content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  statCard: { padding: 16, borderRadius: 16, backgroundColor: '#193A2A' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 24 },
+  statCard: { padding: 16, borderRadius: 16, backgroundColor: '#F5F5F4' },
   scanCard: {},
   emptyCard: { gap: 16 },
 };

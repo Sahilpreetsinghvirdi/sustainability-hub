@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
   historySummary: { fontSize: typography.fontSize.sm, color: colors.text.primary, lineHeight: 18 },
   historyMeta: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   historyTime: { fontSize: typography.fontSize.xs, color: colors.text.tertiary },
-  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, paddingBottom: 100 },
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, paddingBottom: 32 },
   emptyText: { fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.semibold, color: colors.text.primary },
   emptySubtext: { fontSize: typography.fontSize.md, color: colors.text.tertiary },
 });

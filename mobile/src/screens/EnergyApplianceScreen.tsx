@@ -8,14 +8,14 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 const APPLIANCE_CATEGORIES = [
-  { value: 'refrigeration', label: 'Refrigeration', icon: 'snow', color: '#06B6D4', component: Ionicons },
-  { value: 'heating_cooling', label: 'Heating & Cooling', icon: 'thermometer', color: '#E97966', component: Ionicons },
-  { value: 'laundry', label: 'Laundry', icon: 'shirt', color: '#9B7BD5', component: Ionicons },
-  { value: 'kitchen', label: 'Kitchen', icon: 'restaurant', color: '#F2B85B', component: Ionicons },
-  { value: 'entertainment', label: 'Entertainment', icon: 'tv', color: '#EC4899', component: Ionicons },
-  { value: 'lighting', label: 'Lighting', icon: 'bulb', color: '#FBBF24', component: Ionicons },
-  { value: 'water_heating', label: 'Water Heating', icon: 'water', color: '#72A8E5', component: Ionicons },
-  { value: 'other', label: 'Other', icon: 'extension', color: '#8EAA99', component: Ionicons },
+  { value: 'refrigeration', label: 'Refrigeration', icon: 'snow', color: '#6B6B6B', component: Ionicons },
+  { value: 'heating_cooling', label: 'Heating & Cooling', icon: 'thermometer', color: '#444444', component: Ionicons },
+  { value: 'laundry', label: 'Laundry', icon: 'shirt', color: '#6B6B6B', component: Ionicons },
+  { value: 'kitchen', label: 'Kitchen', icon: 'restaurant', color: '#6B6B6B', component: Ionicons },
+  { value: 'entertainment', label: 'Entertainment', icon: 'tv', color: '#6B6B6B', component: Ionicons },
+  { value: 'lighting', label: 'Lighting', icon: 'bulb', color: '#6B6B6B', component: Ionicons },
+  { value: 'water_heating', label: 'Water Heating', icon: 'water', color: '#6B6B6B', component: Ionicons },
+  { value: 'other', label: 'Other', icon: 'extension', color: '#6B6B6B', component: Ionicons },
 ];
 
 const AGE_OPTIONS = ['<1 yr', '1-3 yrs', '3-5 yrs', '5-10 yrs', '10-15 yrs', '15-20 yrs', '20+ yrs'];
@@ -78,10 +78,10 @@ export const EnergyApplianceScreen: React.FC = () => {
   const getEfficiencyScore = (appliance: any) => {
     const ageYears = appliance.age_years || 0;
     const wattage = appliance.wattage || 0;
-    if (ageYears > 15) return { stars: 1, label: 'Poor', color: '#E97966' };
-    if (ageYears > 10) return { stars: 2, label: 'Fair', color: '#F2B85B' };
-    if (ageYears > 5) return { stars: 3, label: 'Good', color: '#57C58A' };
-    return { stars: 4, label: 'Excellent', color: '#57C58A' };
+    if (ageYears > 15) return { stars: 1, label: 'Poor', color: '#444444' };
+    if (ageYears > 10) return { stars: 2, label: 'Fair', color: '#6B6B6B' };
+    if (ageYears > 5) return { stars: 3, label: 'Good', color: '#1C1C1C' };
+    return { stars: 4, label: 'Excellent', color: '#1C1C1C' };
   };
 
   const getEfficiencyStars = (count: number) => {
@@ -90,7 +90,7 @@ export const EnergyApplianceScreen: React.FC = () => {
         key={i}
         name={i < count ? 'star' : 'star-outline'}
         size={12}
-        color={i < count ? '#FBBF24' : '#8EAA99'}
+        color={i < count ? '#6B6B6B' : '#6B6B6B'}
       />
     ));
   };
@@ -98,7 +98,7 @@ export const EnergyApplianceScreen: React.FC = () => {
   const renderAddForm = () => (
     <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.addForm}>
       <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-        <Text fontSize="16" fontWeight="600" color="#F2F8F3">Add Appliance</Text>
+        <Text fontSize="16" fontWeight="600" color="#0A0A0A">Add Appliance</Text>
         <Button variant="ghost" size="sm" onPress={() => { setIsAdding(false); resetForm(); }}>
           <Ionicons name="close" size={24} />
         </Button>
@@ -110,11 +110,11 @@ export const EnergyApplianceScreen: React.FC = () => {
           placeholder="e.g., Samsung Refrigerator"
           value={name}
           onChangeText={setName}
-          leftIcon={<Ionicons name="cube" size={20} color="#C4D8CB" />}
+          leftIcon={<Ionicons name="cube" size={20} color="#444444" />}
         />
 
         <Stack>
-          <Text fontSize="12" fontWeight="600" color="#F2F8F3" marginBottom="1">Category</Text>
+          <Text fontSize="12" fontWeight="600" color="#0A0A0A" marginBottom="1">Category</Text>
           <Stack flexDirection="row" flexWrap="wrap" gap="2">
             {APPLIANCE_CATEGORIES.map(cat => (
               <Button
@@ -156,7 +156,7 @@ export const EnergyApplianceScreen: React.FC = () => {
             value={wattage}
             onChangeText={setWattage}
             type="decimal"
-            rightComponent={<Text fontSize="8" color="#C4D8CB">W</Text>}
+            rightComponent={<Text fontSize="8" color="#444444">W</Text>}
             style={{ flex: 1 }}
           />
           <Input
@@ -165,13 +165,13 @@ export const EnergyApplianceScreen: React.FC = () => {
             value={hoursPerDay}
             onChangeText={setHoursPerDay}
             type="decimal"
-            rightComponent={<Text fontSize="8" color="#C4D8CB">hrs</Text>}
+            rightComponent={<Text fontSize="8" color="#444444">hrs</Text>}
             style={{ flex: 1 }}
           />
         </Stack>
 
         <Stack>
-          <Text fontSize="12" fontWeight="600" color="#F2F8F3" marginBottom="1">Age</Text>
+          <Text fontSize="12" fontWeight="600" color="#0A0A0A" marginBottom="1">Age</Text>
           <Stack flexDirection="row" flexWrap="wrap" gap="2">
             {AGE_OPTIONS.map(opt => (
               <Button
@@ -203,7 +203,7 @@ export const EnergyApplianceScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="20" fontWeight="700" color="#F2F8F3">Appliances</Text>
+        <Text fontSize="20" fontWeight="700" color="#0A0A0A">Appliances</Text>
         <Button variant="primary" size="sm" onPress={() => setIsAdding(true)}>
           <Ionicons name="add" size={20} />
         </Button>
@@ -213,18 +213,18 @@ export const EnergyApplianceScreen: React.FC = () => {
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.statsCard}>
         <Stack flexDirection="row" gap="4">
           <Stack flex={1} alignItems="center">
-            <Text fontSize="24" fontWeight="800" color="#F2F8F3">{appliances.length}</Text>
-            <Text fontSize="8" color="#C4D8CB">Total</Text>
+            <Text fontSize="24" fontWeight="800" color="#0A0A0A">{appliances.length}</Text>
+            <Text fontSize="8" color="#444444">Total</Text>
           </Stack>
-          <Stack width={1} backgroundColor="#234736" />
+          <Stack width={1} backgroundColor="#DADADA" />
           <Stack flex={1} alignItems="center">
-            <Text fontSize="24" fontWeight="800" color="#F2B85B">{totalWattage.toLocaleString()}</Text>
-            <Text fontSize="8" color="#C4D8CB">Total Watts</Text>
+            <Text fontSize="24" fontWeight="800" color="#6B6B6B">{totalWattage.toLocaleString()}</Text>
+            <Text fontSize="8" color="#444444">Total Watts</Text>
           </Stack>
-          <Stack width={1} backgroundColor="#234736" />
+          <Stack width={1} backgroundColor="#DADADA" />
           <Stack flex={1} alignItems="center">
-            <Text fontSize="24" fontWeight="800" color="#E97966">{formatCurrency(totalCost)}</Text>
-            <Text fontSize="8" color="#C4D8CB">Est. Annual</Text>
+            <Text fontSize="24" fontWeight="800" color="#444444">{formatCurrency(totalCost)}</Text>
+            <Text fontSize="8" color="#444444">Est. Annual</Text>
           </Stack>
         </Stack>
       </Card>
@@ -236,11 +236,11 @@ export const EnergyApplianceScreen: React.FC = () => {
       <Stack gap="3">
         {appliances.length === 0 && !isAdding ? (
           <Card variant="outlined" padding="xl" alignItems="center">
-            <Stack width={64} height={64} borderRadius="full" backgroundColor="#193A2A" alignItems="center" justifyContent="center" marginBottom="3">
-              <Ionicons name="cube-outline" size={32} color="#C4D8CB" />
+            <Stack width={64} height={64} borderRadius="full" backgroundColor="#F5F5F4" alignItems="center" justifyContent="center" marginBottom="3">
+              <Ionicons name="cube-outline" size={32} color="#444444" />
             </Stack>
-            <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="1">No appliances yet</Text>
-            <Text fontSize="8" color="#C4D8CB" textAlign="center" marginBottom="4">Add your household appliances to track energy usage</Text>
+            <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="1">No appliances yet</Text>
+            <Text fontSize="8" color="#444444" textAlign="center" marginBottom="4">Add your household appliances to track energy usage</Text>
             <Button variant="primary" onPress={() => setIsAdding(true)}>
               <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
                 <Ionicons name="add" size={20} />
@@ -263,15 +263,15 @@ export const EnergyApplianceScreen: React.FC = () => {
                   </Stack>
                   <Stack flex={1}>
                     <Stack flexDirection="row" alignItems="center" gap="2">
-                      <Text fontSize="12" fontWeight="600" color="#F2F8F3">{appliance.name}</Text>
+                      <Text fontSize="12" fontWeight="600" color="#0A0A0A">{appliance.name}</Text>
                       <Stack flexDirection="row" gap="0.5">{getEfficiencyStars(efficiency.stars)}</Stack>
                     </Stack>
-                    <Text fontSize="8" color="#C4D8CB">{cat.label} Â· {appliance.wattage}W Â· {appliance.age_years || 0} yrs old</Text>
-                    <Text fontSize="8" color="#C4D8CB">{appliance.usage_hours_per_day || 0} hrs/day</Text>
+                    <Text fontSize="8" color="#444444">{cat.label} Â· {appliance.wattage}W Â· {appliance.age_years || 0} yrs old</Text>
+                    <Text fontSize="8" color="#444444">{appliance.usage_hours_per_day || 0} hrs/day</Text>
                   </Stack>
                   <Stack alignItems="flex-end" gap="1">
-                    <Text fontSize="12" fontWeight="700" color="#F2B85B">{formatCurrency(monthlyCost)}/mo</Text>
-                    <Text fontSize="8" color="#C4D8CB">{monthlyKwh.toFixed(1)} kWh/mo</Text>
+                    <Text fontSize="12" fontWeight="700" color="#6B6B6B">{formatCurrency(monthlyCost)}/mo</Text>
+                    <Text fontSize="8" color="#444444">{monthlyKwh.toFixed(1)} kWh/mo</Text>
                     <Badge variant={efficiency.stars >= 3 ? 'success' : efficiency.stars >= 2 ? 'warning' : 'danger'} size="sm">
                       {efficiency.label}
                     </Badge>
@@ -287,9 +287,9 @@ export const EnergyApplianceScreen: React.FC = () => {
 };
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#081A14' },
-  content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  statsCard: { backgroundColor: 'rgba(245,158,11,0.05)' },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 24 },
+  statsCard: { backgroundColor: 'rgba(10,10,10,0.05)' },
   addForm: {},
   applianceCard: {},
 };

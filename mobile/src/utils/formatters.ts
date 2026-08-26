@@ -99,43 +99,43 @@ export function camelToTitle(text: string): string {
 
 export function getCategoryColor(category: string): string {
   const colors: Record<string, string> = {
-    meat_beef: '#DC2626',
-    meat_pork: '#EF4444',
-    meat_poultry: '#F97316',
-    meat_lamb: '#B91C1C',
-    seafood: '#0EA5E9',
-    dairy_milk: '#F59E0B',
-    dairy_cheese: '#FBBF24',
-    eggs: '#FDE047',
-    produce_fruit: '#22C55E',
-    produce_vegetable: '#16A34A',
-    grains_bread: '#84CC16',
-    grains_pasta: '#65A30D',
-    grains_rice: '#4D7C0F',
-    beverages_alcoholic: '#8B5CF6',
-    beverages_nonalcoholic: '#06B6D4',
-    transport_fuel: '#64748B',
-    other: '#94A3B8',
+    meat_beef: '#262626',
+    meat_pork: '#262626',
+    meat_poultry: '#444444',
+    meat_lamb: '#262626',
+    seafood: '#444444',
+    dairy_milk: '#444444',
+    dairy_cheese: '#6B6B6B',
+    eggs: '#9A9A9A',
+    produce_fruit: '#444444',
+    produce_vegetable: '#1C1C1C',
+    grains_bread: '#6B6B6B',
+    grains_pasta: '#444444',
+    grains_rice: '#262626',
+    beverages_alcoholic: '#444444',
+    beverages_nonalcoholic: '#6B6B6B',
+    transport_fuel: '#6B6B6B',
+    other: '#9A9A9A',
   };
-  return colors[category] || '#94A3B8';
+  return colors[category] || '#9A9A9A';
 }
 
 export function getMealColor(mealType: string): string {
   const colors: Record<string, string> = {
-    breakfast: '#F59E0B',
-    lunch: '#EF4444',
-    dinner: '#8B5CF6',
-    snack: '#EC4899',
+    breakfast: '#444444',
+    lunch: '#262626',
+    dinner: '#444444',
+    snack: '#6B6B6B',
   };
-  return colors[mealType] || '#94A3B8';
+  return colors[mealType] || '#9A9A9A';
 }
 
 export function getStatusColor(status: string): string {
   const colors: Record<string, string> = {
-    pending: '#F59E0B',
-    processing: '#3B82F6',
-    completed: '#22C55E',
-    failed: '#EF4444',
+    pending: '#444444',
+    processing: '#444444',
+    completed: '#444444',
+    failed: '#262626',
   };
-  return colors[status] || '#94A3B8';
+  return colors[status] || '#9A9A9A';
 }

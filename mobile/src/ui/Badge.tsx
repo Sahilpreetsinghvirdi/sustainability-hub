@@ -12,13 +12,13 @@ interface BadgeProps {
 
 const palette: Record<string, { bg: string; text: string }> = {
   default: { bg: colors.background.tertiary, text: colors.text.secondary },
-  success: { bg: 'rgba(87,197,138,0.16)', text: colors.primary[300] },
-  warning: { bg: 'rgba(242,184,91,0.16)', text: colors.warning },
-  error: { bg: 'rgba(233,121,102,0.16)', text: colors.error },
-  danger: { bg: 'rgba(233,121,102,0.16)', text: colors.error },
-  info: { bg: 'rgba(114,168,229,0.16)', text: colors.info },
+  success: { bg: 'rgba(10,10,10,0.1)', text: colors.primary[300] },
+  warning: { bg: 'rgba(10,10,10,0.08)', text: colors.warning },
+  error: { bg: 'rgba(10,10,10,0.08)', text: colors.error },
+  danger: { bg: 'rgba(10,10,10,0.08)', text: colors.error },
+  info: { bg: 'rgba(10,10,10,0.08)', text: colors.info },
   outline: { bg: 'transparent', text: colors.text.secondary },
-  primary: { bg: 'rgba(87,197,138,0.16)', text: colors.primary[300] },
+  primary: { bg: 'rgba(10,10,10,0.1)', text: colors.primary[300] },
 };
 
 const sizes = {

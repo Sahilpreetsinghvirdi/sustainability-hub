@@ -21,7 +21,7 @@ export const Modal: React.FC<ModalProps> = ({ visible, onClose, title, children 
 );
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(3,12,8,0.78)', justifyContent: 'center', alignItems: 'center', padding: spacing.lg },
+  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.78)', justifyContent: 'center', alignItems: 'center', padding: spacing.lg },
   content: { width: '100%', maxWidth: 420, backgroundColor: colors.background.elevated, borderRadius: borderRadius.xl, padding: spacing.lg, ...shadows.lg },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
   title: { color: colors.text.primary, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.bold },

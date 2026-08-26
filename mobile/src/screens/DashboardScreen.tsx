@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Alert, Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useDashboard } from '@/hooks/useDashboard';
@@ -9,6 +9,7 @@ import { useFoodWaste } from '@/hooks/useFoodWaste';
 import { Card, Badge, ProgressBar, SparklineChart } from '@/components';
 import { borderRadius, colors, shadows, spacing, typography } from '@/constants/theme';
 import { formatCarbon, formatEnergy, formatPercentage, formatTrend, formatWeight, getCategoryColor } from '@/utils/formatters';
+import softwareLogo from '@/assets/logo.png';
 
 export const DashboardScreen: React.FC = () => {
   const { width } = useWindowDimensions();
@@ -39,7 +40,7 @@ export const DashboardScreen: React.FC = () => {
     >
       <View style={styles.header}>
         <View style={styles.eyebrowRow}>
-          <View style={styles.logoMark}><Ionicons name="leaf" size={16} color={colors.background.primary} /></View>
+          <Image source={softwareLogo} style={styles.logoMark} />
           <Text style={styles.eyebrow}>SUSTAINABILITY HUB</Text>
         </View>
         <Pressable style={styles.notificationButton} onPress={() => Alert.alert('Notifications', 'No new notifications')}>
@@ -80,7 +81,7 @@ export const DashboardScreen: React.FC = () => {
         <Text style={styles.heroFootnote}>Target is less than 2.0 t CO₂e per year</Text>
       </View>
 
-      <SectionHeading title="Monthly pulse" action="View details" onPress={() => router.push('/dashboard')} />
+      <SectionHeading title="Monthly pulse" action="View details" onPress={() => router.push('/')} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.metricRail}>
         <MetricCard title="Carbon" value={formatCarbon(totalCarbon)} target={`${formatCarbon(carbonBudget)} budget`} progress={(totalCarbon / carbonBudget) * 100} trend={formatTrend(totalCarbon, carbonBudget * 0.083)} color={colors.primary[400]} icon="leaf-outline" />
         <MetricCard title="Energy" value={formatEnergy(totalEnergy)} target={`${energyTarget} kWh target`} progress={(totalEnergy / energyTarget) * 100} trend={formatTrend(totalEnergy, energyTarget * 0.083)} color={colors.warning} icon="flash-outline" />
@@ -203,10 +204,10 @@ const DashboardSkeleton = () => (
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background.primary },
-  content: { paddingHorizontal: spacing.md, paddingTop: spacing.md, paddingBottom: 118, gap: spacing.lg },
+  content: { paddingHorizontal: spacing.md, paddingTop: spacing.md, paddingBottom: 32, gap: spacing.lg },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   eyebrowRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  logoMark: { width: 30, height: 30, borderRadius: borderRadius.sm, backgroundColor: colors.primary[400], alignItems: 'center', justifyContent: 'center' },
+  logoMark: { width: 30, height: 30, borderRadius: borderRadius.sm },
   eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: colors.text.tertiary },
   notificationButton: { width: 42, height: 42, borderRadius: borderRadius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.border.light },
   notificationDot: { position: 'absolute', top: 10, right: 10, width: 6, height: 6, borderRadius: 3, backgroundColor: colors.warning },
@@ -214,8 +215,8 @@ const styles = StyleSheet.create({
   title: { color: colors.text.primary, fontSize: 30, lineHeight: 36, fontWeight: '800', letterSpacing: -0.6 },
   subtitle: { color: colors.text.tertiary, fontSize: 15, lineHeight: 22, maxWidth: 310 },
   heroCard: { minHeight: 196, overflow: 'hidden', borderRadius: borderRadius.xl, padding: spacing.lg, backgroundColor: colors.primary[800], ...shadows.lg },
-  heroOrbLarge: { position: 'absolute', width: 210, height: 210, borderRadius: 105, right: -82, top: -82, backgroundColor: 'rgba(87,197,138,0.16)' },
-  heroOrbSmall: { position: 'absolute', width: 96, height: 96, borderRadius: 48, right: 46, bottom: -52, backgroundColor: 'rgba(242,184,91,0.13)' },
+  heroOrbLarge: { position: 'absolute', width: 210, height: 210, borderRadius: 105, right: -82, top: -82, backgroundColor: 'rgba(10,10,10,0.1)' },
+  heroOrbSmall: { position: 'absolute', width: 96, height: 96, borderRadius: 48, right: 46, bottom: -52, backgroundColor: 'rgba(255,255,255,0.12)' },
   heroTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   heroKicker: { color: colors.primary[200], fontSize: 10, fontWeight: '700', letterSpacing: 1.25 },
   heroValue: { color: colors.neutral[0], fontSize: 36, lineHeight: 44, fontWeight: '800', marginTop: spacing.xs },
@@ -236,7 +237,7 @@ const styles = StyleSheet.create({
   metricValue: { color: colors.text.primary, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
   metricTarget: { color: colors.text.tertiary, fontSize: 11, marginTop: -2 },
   focusCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.background.secondary, borderColor: colors.border.medium },
-  focusIcon: { width: 38, height: 38, borderRadius: borderRadius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(242,184,91,0.14)' },
+  focusIcon: { width: 38, height: 38, borderRadius: borderRadius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
   focusCopy: { flex: 1, gap: 3 },
   cardEyebrow: { color: colors.warning, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   focusTitle: { color: colors.text.primary, fontSize: 14, lineHeight: 20, fontWeight: '600' },
@@ -258,9 +259,9 @@ const styles = StyleSheet.create({
   achievementIcon: { fontSize: 24 },
   achievementName: { color: colors.text.secondary, fontSize: 11, fontWeight: '600', textAlign: 'center' },
   streakCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, borderRadius: borderRadius.lg, backgroundColor: colors.warning },
-  streakIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,26,20,0.16)' },
+  streakIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.16)' },
   streakCopy: { flex: 1, gap: 2 },
-  streakKicker: { color: 'rgba(8,26,20,0.65)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  streakKicker: { color: 'rgba(255,255,255,0.72)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   streakValue: { color: colors.background.primary, fontSize: 15, lineHeight: 20, fontWeight: '800' },
   streakButton: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: spacing.sm, paddingVertical: spacing.sm, borderRadius: borderRadius.full, backgroundColor: colors.neutral[0] },
   streakButtonText: { color: colors.background.primary, fontSize: 12, fontWeight: '800' },

@@ -71,17 +71,17 @@ export const SettingsProfileScreen: React.FC = () => {
         <Button variant="ghost" size="sm" onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} />
         </Button>
-        <Text fontSize="20" fontWeight="700" color="#F2F8F3">Profile</Text>
+        <Text fontSize="20" fontWeight="700" color="#0A0A0A">Profile</Text>
         <Stack width={40} />
       </Stack>
 
       {/* Avatar Section */}
       <Card variant="elevated" padding="lg" alignItems="center" marginBottom="lg">
-        <Avatar size="3xl" backgroundColor="#57C58A">
+        <Avatar size="3xl" backgroundColor="#1C1C1C">
           {user?.name?.charAt(0) || 'U'}
         </Avatar>
-        <Text fontSize="20" fontWeight="700" color="#F2F8F3" marginTop="3">{user?.name || 'User'}</Text>
-        <Text fontSize="12" color="#C4D8CB">{user?.email || 'user@example.com'}</Text>
+        <Text fontSize="20" fontWeight="700" color="#0A0A0A" marginTop="3">{user?.name || 'User'}</Text>
+        <Text fontSize="12" color="#444444">{user?.email || 'user@example.com'}</Text>
         <Badge variant="success" size="sm" marginTop="2">
           {user?.is_active ? 'Active Account' : 'Inactive'}
         </Badge>
@@ -96,7 +96,7 @@ export const SettingsProfileScreen: React.FC = () => {
       {/* Personal Info */}
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-          <Text fontSize="16" fontWeight="600" color="#F2F8F3">Personal Information</Text>
+          <Text fontSize="16" fontWeight="600" color="#0A0A0A">Personal Information</Text>
           <Button variant="ghost" size="sm" onPress={() => setIsEditing(!isEditing)}>
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name={isEditing ? 'close' : 'pencil'} size={16} />
@@ -111,7 +111,7 @@ export const SettingsProfileScreen: React.FC = () => {
             value={name}
             onChangeText={setName}
             editable={isEditing}
-            leftIcon={<Ionicons name="person" size={20} color="#C4D8CB" />}
+            leftIcon={<Ionicons name="person" size={20} color="#444444" />}
           />
           <Input
             label="Email"
@@ -119,14 +119,14 @@ export const SettingsProfileScreen: React.FC = () => {
             onChangeText={setEmail}
             editable={isEditing}
             type="email"
-            leftIcon={<Ionicons name="mail" size={20} color="#C4D8CB" />}
+            leftIcon={<Ionicons name="mail" size={20} color="#444444" />}
           />
           <Input
             label="Timezone"
             value={timezone}
             onChangeText={setTimezone}
             editable={isEditing}
-            leftIcon={<Ionicons name="globe" size={20} color="#C4D8CB" />}
+            leftIcon={<Ionicons name="globe" size={20} color="#444444" />}
           />
         </Stack>
 
@@ -143,7 +143,7 @@ export const SettingsProfileScreen: React.FC = () => {
       {/* Change Password */}
       <Card variant="default" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-          <Text fontSize="16" fontWeight="600" color="#F2F8F3">Change Password</Text>
+          <Text fontSize="16" fontWeight="600" color="#0A0A0A">Change Password</Text>
           <Button variant="ghost" size="sm" onPress={() => setIsChangingPassword(!isChangingPassword)}>
             <Stack flexDirection="row" alignItems="center" gap="1">
               <Ionicons name={isChangingPassword ? 'close' : 'key'} size={16} />
@@ -160,7 +160,7 @@ export const SettingsProfileScreen: React.FC = () => {
               onChangeText={setCurrentPassword}
               type="password"
               secureTextEntry
-              leftIcon={<Ionicons name="lock-closed" size={20} color="#C4D8CB" />}
+              leftIcon={<Ionicons name="lock-closed" size={20} color="#444444" />}
             />
             <Input
               label="New Password"
@@ -168,7 +168,7 @@ export const SettingsProfileScreen: React.FC = () => {
               onChangeText={setNewPassword}
               type="password"
               secureTextEntry
-              leftIcon={<Ionicons name="key" size={20} color="#C4D8CB" />}
+              leftIcon={<Ionicons name="key" size={20} color="#444444" />}
             />
             <Input
               label="Confirm Password"
@@ -176,7 +176,7 @@ export const SettingsProfileScreen: React.FC = () => {
               onChangeText={setConfirmPassword}
               type="password"
               secureTextEntry
-              leftIcon={<Ionicons name="key" size={20} color="#C4D8CB" />}
+              leftIcon={<Ionicons name="key" size={20} color="#444444" />}
             />
             <Button variant="primary" fullWidth loading={submitting} onPress={handleChangePassword}>
               <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
@@ -190,23 +190,23 @@ export const SettingsProfileScreen: React.FC = () => {
 
       {/* Account Stats */}
       <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="lg">Account Statistics</Text>
+        <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="lg">Account Statistics</Text>
         <Stack gap="3">
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="12" color="#C4D8CB">Member Since</Text>
-            <Text fontSize="12" fontWeight="600" color="#F2F8F3">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</Text>
+            <Text fontSize="12" color="#444444">Member Since</Text>
+            <Text fontSize="12" fontWeight="600" color="#0A0A0A">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</Text>
           </Stack>
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="12" color="#C4D8CB">Total Scans</Text>
-            <Text fontSize="12" fontWeight="600" color="#F2F8F3">{user?.total_scans || 0}</Text>
+            <Text fontSize="12" color="#444444">Total Scans</Text>
+            <Text fontSize="12" fontWeight="600" color="#0A0A0A">{user?.total_scans || 0}</Text>
           </Stack>
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="12" color="#C4D8CB">Carbon Saved</Text>
-            <Text fontSize="12" fontWeight="600" color="#57C58A">{user?.carbon_saved || 0} kg</Text>
+            <Text fontSize="12" color="#444444">Carbon Saved</Text>
+            <Text fontSize="12" fontWeight="600" color="#1C1C1C">{user?.carbon_saved || 0} kg</Text>
           </Stack>
           <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="12" color="#C4D8CB">Streak</Text>
-            <Text fontSize="12" fontWeight="600" color="#F2B85B">{user?.current_streak || 0} days</Text>
+            <Text fontSize="12" color="#444444">Streak</Text>
+            <Text fontSize="12" fontWeight="600" color="#6B6B6B">{user?.current_streak || 0} days</Text>
           </Stack>
         </Stack>
       </Card>
@@ -215,6 +215,6 @@ export const SettingsProfileScreen: React.FC = () => {
 };
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#081A14' },
-  content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 24 },
 };

@@ -57,9 +57,9 @@ export const Avatar: React.FC<AvatarProps> = ({
       colors.warning,
       colors.error,
       colors.info,
-      '#8B5CF6',
-      '#EC4899',
-      '#06B6D4',
+      '#444444',
+      '#6B6B6B',
+      '#6B6B6B',
     ];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
