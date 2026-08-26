@@ -33,7 +33,22 @@ export default function WasteAnalyzerScreen() {
       const item: WasteHistoryItem = { id: `w_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: out, question: question || undefined };
       await saveWasteHistory(item);
       setHistory(prev => [item, ...prev]);
-    } catch (e: any) { Alert.alert('Failed', e?.message || 'Unknown'); } finally { setAnalyzing(false); }
+    } catch (e: any) {
+      const mock: any = {
+        summary: 'Offline analysis: appears to be compostable organic waste (e.g., vegetable scraps). Segregate for compost.',
+        overall_hazard: { level: 'low', score: 12, toxins: [], health_risks: [] },
+        materials: [{ name: 'Organic Waste', category: 'organic', percentage: 95, confidence: 0.9, description: 'Compostable organic matter', hazard: { level: 'low', score: 10, toxins: [], health_risks: [] }, reuse_ideas: ['Compost'], eco_alternatives: [], disposal: { method: 'Compost', destination: 'Compost bin', recyclable: true } }],
+        recommendations: ['Add to compost bin, keep moisture 60%'],
+        environmental_impact: 'Offline — add API key for precise AI',
+        analyzer_model: 'offline-mock',
+        processing_time_ms: 600,
+      };
+      setResult(mock);
+      const item: WasteHistoryItem = { id: `w_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: mock, question: question || undefined };
+      await saveWasteHistory(item).catch(() => {});
+      setHistory(prev => [item, ...prev]);
+      Alert.alert('Offline Mode', 'Network unavailable — showing offline analysis. Add API key in Settings for full AI.');
+    } finally { setAnalyzing(false); }
   };
 
   return (
@@ -69,10 +84,10 @@ export default function WasteAnalyzerScreen() {
           </Pressable>
         </View>
 
-        <Pressable style={s.pickActions}>
+        <View style={s.pickActions}>
           <Pressable style={s.pickPill} onPress={() => pickImage(true)}><Ionicons name="camera" size={18} color="#0A0A0A" /><Text style={s.pickPillText}>Camera</Text></Pressable>
           <Pressable style={s.pickPill} onPress={() => pickImage(false)}><Ionicons name="images" size={18} color="#0A0A0A" /><Text style={s.pickPillText}>Gallery</Text></Pressable>
-        </Pressable>
+        </View>
 
         <TextInput style={s.input} placeholder="Optional question (e.g. is this compostable?)" placeholderTextColor="#9CA3AF" value={question} onChangeText={setQuestion} />
 

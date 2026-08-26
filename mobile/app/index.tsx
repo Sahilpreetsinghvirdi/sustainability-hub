@@ -1,1 +1,2 @@
-export { DashboardScreen as default } from '@/screens/DashboardScreen';
+import { Redirect } from 'expo-router';
+export default function Index() { return <Redirect href="/(tabs)" />; }
