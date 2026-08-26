@@ -36,7 +36,6 @@
       "expo-router",
       "expo-camera",
       "expo-image-picker",
-      "expo-barcode-scanner",
       "expo-file-system",
       "expo-document-picker"
     ],
