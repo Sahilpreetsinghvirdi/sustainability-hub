@@ -46,7 +46,7 @@ export default function PlantSenseScreen() {
       <View style={s.tipBlack}>
         <View style={s.tipHead}><View style={s.tipIcon}><Ionicons name="information-circle-outline" size={14} color="#0A0A0A" /></View><Text style={s.tipKicker}>OPTIMIZATION TIP</Text></View>
         <Text style={s.tipText}>Light levels are slightly below target. Move the plant 1.5 meters closer to the south-facing window to boost photosynthesis.</Text>
-        <Pressable style={s.tipBtn} onPress={() => Alert.alert('Schedule', 'Detailed schedule coming soon')}><Text style={s.tipBtnText}>View Detailed Schedule</Text></Pressable>
+        <Pressable style={s.tipBtn} onPress={() => Alert.alert('Weekly Schedule','Mon: Check soil moisture (target 60-70%)\nTue: Rotate 15° toward sun\nWed: Mist leaves, 250ml water\nThu: Inspect underside for pests\nFri: Water 300ml if soil <65%\nSat: 1.5m closer to south window (800→1000 lux)\nSun: Rest — no action')}><Text style={s.tipBtnText}>View Detailed Schedule</Text></Pressable>
       </View>
 
       {/* Scan */}

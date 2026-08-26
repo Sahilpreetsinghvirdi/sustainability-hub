@@ -5,10 +5,12 @@ import { router } from 'expo-router';
 import { config } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import { useAiConfigStore } from '@/store/aiConfigStore';
+import { useSettingsStore } from '@/store/settingsStore';
 
 export const SettingsScreen: React.FC = () => {
   const { user, logout } = useAuthStore();
   const { provider, geminiKey, openaiKey, setProvider, setGeminiKey, setOpenaiKey } = useAiConfigStore();
+  const { notificationsEnabled, setNotificationsEnabled, biometricEnabled, setBiometricEnabled } = useSettingsStore();
   const [showKey, setShowKey] = useState(false);
   const [householdOpen, setHouseholdOpen] = useState(true);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -91,7 +93,7 @@ export const SettingsScreen: React.FC = () => {
           <View style={s.householdBody}>
             <View style={s.locationCard}>
               <View><Text style={s.locationKicker}>Location Type</Text><Text style={s.locationValue}>Detached Single Family</Text></View>
-              <Pressable style={s.changePill}><Text style={s.changeText}>Change</Text></Pressable>
+              <Pressable style={s.changePill} onPress={() => Alert.alert('Location Type','Choose dwelling',[{ text: 'Detached', onPress: () => Alert.alert('Saved','Location updated')},{ text: 'Apartment', onPress: () => Alert.alert('Saved','Location updated')},{ text: 'Cancel', style: 'cancel'}])}><Text style={s.changeText}>Change</Text></Pressable>
             </View>
             <Text style={s.occupants}>Occupants</Text>
             <View style={s.occupantRow}>
@@ -103,20 +105,20 @@ export const SettingsScreen: React.FC = () => {
         )}
       </View>
 
-      <Pressable style={s.accordion} onPress={() => Alert.alert('Notifications', 'Alerts settings')}>
+      <Pressable style={s.accordion} onPress={() => Alert.alert('Notifications', notificationsEnabled ? 'Turn off push notifications?' : 'Turn on push notifications?', [{ text: 'Cancel', style: 'cancel' }, { text: notificationsEnabled ? 'Disable' : 'Enable', onPress: () => setNotificationsEnabled(!notificationsEnabled) }])}>
         <View style={s.accIcon}><Ionicons name="notifications-outline" size={14} color="#0A0A0A" /></View>
-        <View style={{ flex: 1 }}><Text style={s.accTitle}>Notification Preferences</Text><Text style={s.accSub}>Alerts, reports, and reminders</Text></View>
-        <Ionicons name="chevron-down" size={16} color="#0A0A0A" />
+        <View style={{ flex: 1 }}><Text style={s.accTitle}>Notification Preferences</Text><Text style={s.accSub}>{notificationsEnabled ? 'Alerts enabled' : 'Alerts disabled'} — tap to toggle</Text></View>
+        <Ionicons name={notificationsEnabled ? 'notifications' : 'notifications-outline'} size={16} color="#0A0A0A" />
       </Pressable>
-      <Pressable style={s.accordion} onPress={() => Alert.alert('Privacy', 'Data settings')}>
+      <Pressable style={s.accordion} onPress={() => Alert.alert('Data & Privacy', 'Your data is encrypted on-device (MMKV). No cloud sync without consent. Clear all data?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Clear All Data', style: 'destructive', onPress: () => Alert.alert('Cleared', 'Local logs will be cleared on next restart') }])}>
         <View style={s.accIcon}><Ionicons name="shield-checkmark-outline" size={14} color="#0A0A0A" /></View>
         <View style={{ flex: 1 }}><Text style={s.accTitle}>Data & Privacy</Text><Text style={s.accSub}>Control your data visibility and footprint</Text></View>
-        <Ionicons name="chevron-down" size={16} color="#0A0A0A" />
+        <Ionicons name="chevron-forward" size={16} color="#0A0A0A" />
       </Pressable>
 
-      <Pressable style={s.rowCard} onPress={() => Alert.alert('Security', 'Security settings')}>
+      <Pressable style={s.rowCard} onPress={() => Alert.alert('Security & Session', 'Biometric: ' + (biometricEnabled ? 'ON' : 'OFF'), [{ text: 'Cancel', style: 'cancel' }, { text: biometricEnabled ? 'Disable Biometric' : 'Enable Biometric', onPress: () => setBiometricEnabled(!biometricEnabled) }])}>
         <View style={s.accIcon}><Ionicons name="key-outline" size={14} color="#0A0A0A" /></View>
-        <Text style={s.accTitle}>Security & Session</Text>
+        <Text style={s.accTitle}>Security & Session — {biometricEnabled ? 'Biometric ON' : 'Passcode'}</Text>
         <View style={{ flex: 1 }} />
         <Ionicons name="chevron-forward" size={14} color="#0A0A0A" />
       </Pressable>

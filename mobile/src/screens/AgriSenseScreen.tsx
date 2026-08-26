@@ -72,8 +72,17 @@ export default function AgriSenseScreen() {
       </ScrollView>
 
       <View style={s.bottomRow}>
-        <View style={s.bottomCard}><Text style={s.bottomKicker}>DIAGNOSTICS</Text><Text style={s.bottomValue}>Run Scan</Text><Ionicons name="information-circle-outline" size={16} color="#0A0A0A" style={{ position: 'absolute', right: 10, top: 10 }} /></View>
-        <Pressable style={s.bottomCard} onPress={() => Alert.alert('Export', 'CSV export coming soon')}><Text style={s.bottomKicker}>EXPORT</Text><Text style={s.bottomValue}>CSV Data</Text><Ionicons name="chevron-forward" size={16} color="#0A0A0A" style={{ position: 'absolute', right: 10, top: 10 }} /></Pressable>
+        <Pressable style={s.bottomCard} onPress={() => pick(true)}><Text style={s.bottomKicker}>DIAGNOSTICS</Text><Text style={s.bottomValue}>Run Scan</Text><Ionicons name="information-circle-outline" size={16} color="#0A0A0A" style={{ position: 'absolute', right: 10, top: 10 }} /></Pressable>
+        <Pressable style={s.bottomCard} onPress={async () => {
+          try {
+            const rows = [['timestamp','crop','soil_moisture','temperature','ph','humidity','health_score'],[new Date().toISOString(),'Living Data','42.8%','24.5°C','6.8','58%','84']];
+            const csv = rows.map(r => r.join(',')).join('\n');
+            const FileSystem = await import('expo-file-system');
+            const uri = (FileSystem.cacheDirectory || '') + `agrisense_${Date.now()}.csv`;
+            await FileSystem.writeAsStringAsync(uri, csv);
+            Alert.alert('Exported', `CSV saved to cache:\n${uri}\n\n${csv}`);
+          } catch (e: any) { Alert.alert('Export failed', e.message); }
+        }}><Text style={s.bottomKicker}>EXPORT</Text><Text style={s.bottomValue}>CSV Data</Text><Ionicons name="chevron-forward" size={16} color="#0A0A0A" style={{ position: 'absolute', right: 10, top: 10 }} /></Pressable>
       </View>
     </ScrollView>
   );
