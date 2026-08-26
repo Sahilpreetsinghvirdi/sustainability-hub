@@ -28,7 +28,9 @@
         "backgroundColor": "#0A1628"
       },
       "package": "com.sustainabilityhub.app",
-      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+      "versionCode": 1,
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"],
+      "edgeToEdgeEnabled": true
     },
     "plugins": [
       "expo-router",
