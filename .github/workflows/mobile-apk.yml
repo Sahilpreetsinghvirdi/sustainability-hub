@@ -47,6 +47,8 @@ jobs:
 
       - name: Build signed APK
         working-directory: mobile
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
         run: |
           keytool -genkey -v -keystore android/app/release.keystore -alias sustainability -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Sustainability Hub, OU=ISC, O=Sustainability, L=City, S=State, C=IN" -noprompt
           echo "MYAPP_UPLOAD_STORE_FILE=release.keystore" >> android/gradle.properties

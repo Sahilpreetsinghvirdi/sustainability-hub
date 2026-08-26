@@ -1,39 +1,77 @@
 import React, { useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { config } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
+import { useAiConfigStore } from '@/store/aiConfigStore';
 
 export const SettingsScreen: React.FC = () => {
   const { user, logout } = useAuthStore();
-  const [apiKey, setApiKey] = useState('sk-proj-7x923kLpQ8...R3z');
+  const { provider, geminiKey, openaiKey, setProvider, setGeminiKey, setOpenaiKey } = useAiConfigStore();
   const [showKey, setShowKey] = useState(false);
   const [householdOpen, setHouseholdOpen] = useState(true);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [draftKey, setDraftKey] = useState(provider === 'gemini' ? geminiKey : openaiKey);
+  // sync draft when provider changes
+  React.useEffect(() => { setDraftKey(provider === 'gemini' ? geminiKey : openaiKey); }, [provider, geminiKey, openaiKey]);
 
   return (
     <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
       {/* Profile */}
-      <View style={s.profileCard}>
-        <Image source={{ uri: 'https://i.pravatar.cc/100?img=5' }} style={s.avatar} />
+      <Pressable style={s.profileCard} onPress={() => router.push('/settings/avatar' as any)}>
+        <Image source={{ uri: (user as any)?.avatar || 'https://i.pravatar.cc/100?img=5' }} style={s.avatar} />
         <View style={{ flex: 1 }}>
-          <Text style={s.name}>Alex Rivers</Text>
+          <Text style={s.name}>{user?.name || 'Alex Rivers'}</Text>
           <Text style={s.role}>Eco-Conscious Voyager</Text>
           <View style={s.idPill}><Text style={s.idText}>ID: SH-88219</Text></View>
         </View>
         <Ionicons name="chevron-forward" size={16} color="#0A0A0A" />
-      </View>
+      </Pressable>
 
       {/* AI Engine & Configuration */}
       <View style={s.secHead}><Ionicons name="hardware-chip-outline" size={16} color="#0A0A0A" /><Text style={s.secTitle}>AI ENGINE & CONFIGURATION</Text></View>
       <View style={s.groupCard}>
         <Text style={s.groupKicker}>PRIMARY WASTE ANALYSIS MODEL</Text>
-        <View style={s.dropdown}><Text style={s.dropdownText}>GPT-4 Turbo (Precise)</Text><View style={s.dropIcons}><Ionicons name="chevron-down" size={14} color="#0A0A0A" /><Ionicons name="checkmark" size={14} color="#0A0A0A" /></View></View>
-        <Text style={s.help}>Higher precision models consume more tokens but provide better waste classification.</Text>
-        <View style={s.keyHead}><Text style={s.groupKicker}>PERSONAL API KEY</Text><Text style={s.encrypted}>ENCRYPTED</Text></View>
-        <View style={s.keyRow}><TextInput style={s.keyInput} value={showKey ? apiKey : 'sk-proj-7x923kLpQ8...R3z'} secureTextEntry={!showKey} editable={false} /><Pressable onPress={() => setShowKey(!showKey)} style={s.eye}><Ionicons name={showKey ? 'eye-off-outline' : 'eye-outline'} size={16} color="#0A0A0A" /></Pressable></View>
-        <View style={s.btnRow}><Pressable style={s.outlineBtn} onPress={() => Alert.alert('Verify', 'Key verified')}><Text style={s.outlineText}>Verify Key</Text></Pressable><Pressable style={s.outlineBtn} onPress={() => setApiKey('')}><Text style={s.outlineText}>Reset</Text></Pressable></View>
+        <Pressable style={s.dropdown} onPress={() => setPickerOpen(true)}>
+          <Text style={s.dropdownText}>{provider === 'gemini' ? 'Gemini 2.0 Flash (Vision)' : 'GPT-4 Turbo (Precise)'}</Text>
+          <View style={s.dropIcons}><Ionicons name="chevron-down" size={14} color="#0A0A0A" /><Ionicons name="checkmark" size={14} color="#0A0A0A" /></View>
+        </Pressable>
+        <Text style={s.help}>Higher precision models consume more tokens but provide better waste classification. Tap to switch between Gemini and OpenAI.</Text>
+        <View style={s.keyHead}><Text style={s.groupKicker}>PERSONAL API KEY {provider === 'gemini' ? '( GEMINI )' : '( OPENAI )'}</Text><Text style={s.encrypted}>ENCRYPTED</Text></View>
+        <View style={s.keyRow}><TextInput style={s.keyInput} value={draftKey} onChangeText={setDraftKey} placeholder={provider === 'gemini' ? 'AIza...' : 'sk-proj-...'} placeholderTextColor="#9CA3AF" secureTextEntry={!showKey} autoCapitalize="none" /><Pressable onPress={() => setShowKey(!showKey)} style={s.eye}><Ionicons name={showKey ? 'eye-off-outline' : 'eye-outline'} size={16} color="#0A0A0A" /></Pressable></View>
+        <View style={s.btnRow}>
+          <Pressable style={s.outlineBtn} onPress={() => {
+            const k = draftKey.trim();
+            if (!k) { Alert.alert('Key required'); return; }
+            if (provider === 'gemini') setGeminiKey(k); else setOpenaiKey(k);
+            Alert.alert('Saved', `${provider === 'gemini' ? 'Gemini' : 'OpenAI'} key saved`);
+          }}><Text style={s.outlineText}>Verify & Save</Text></Pressable>
+          <Pressable style={s.outlineBtn} onPress={() => {
+            setDraftKey(''); if (provider === 'gemini') setGeminiKey(''); else setOpenaiKey('');
+            Alert.alert('Reset', 'Key cleared');
+          }}><Text style={s.outlineText}>Reset</Text></Pressable>
+        </View>
       </View>
+
+      <Modal visible={pickerOpen} transparent animationType="fade" onRequestClose={() => setPickerOpen(false)}>
+        <Pressable style={s.modalBackdrop} onPress={() => setPickerOpen(false)}>
+          <View style={s.modalCard} onStartShouldSetResponder={() => true}>
+            <Text style={s.modalTitle}>Choose AI Provider</Text>
+            <Pressable style={[s.modalItem, provider === 'gemini' && s.modalItemActive]} onPress={() => { setProvider('gemini'); setPickerOpen(false); }}>
+              <Ionicons name="sparkles" size={16} color={provider === 'gemini' ? '#FFFFFF' : '#0A0A0A'} />
+              <View style={{ flex: 1 }}><Text style={[s.modalItemTitle, provider === 'gemini' && s.modalItemTitleActive]}>Gemini</Text><Text style={s.modalItemSub}>2.0 Flash — Vision & multimodal (Recommended)</Text></View>
+              {provider === 'gemini' && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
+            </Pressable>
+            <Pressable style={[s.modalItem, provider === 'openai' && s.modalItemActive]} onPress={() => { setProvider('openai'); setPickerOpen(false); }}>
+              <Ionicons name="chatbubble-ellipses-outline" size={16} color={provider === 'openai' ? '#FFFFFF' : '#0A0A0A'} />
+              <View style={{ flex: 1 }}><Text style={[s.modalItemTitle, provider === 'openai' && s.modalItemTitleActive]}>OpenAI</Text><Text style={s.modalItemSub}>GPT-4 Turbo — Precise waste classification</Text></View>
+              {provider === 'openai' && <Ionicons name="checkmark" size={16} color="#FFFFFF" />}
+            </Pressable>
+            <Pressable style={s.modalCancel} onPress={() => setPickerOpen(false)}><Text style={s.modalCancelText}>Close</Text></Pressable>
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* Management */}
       <View style={s.secHead}><Ionicons name="settings-outline" size={16} color="#0A0A0A" /><Text style={s.secTitle}>MANAGEMENT</Text></View>
@@ -138,4 +176,14 @@ const s = StyleSheet.create({
   signOut: { flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, paddingVertical: 14, backgroundColor: '#FFFFFF' },
   signOutText: { fontSize: 12, fontWeight: '800', color: '#0A0A0A', letterSpacing: 0.6 },
   footer: { fontSize: 10, fontWeight: '700', color: '#9CA3AF', textAlign: 'center', letterSpacing: 0.8, marginTop: 8 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.32)', alignItems: 'center', justifyContent: 'center', padding: 20 },
+  modalCard: { width: '100%', maxWidth: 360, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, gap: 10, borderWidth: 1, borderColor: '#E5E5E5' },
+  modalTitle: { fontSize: 13, fontWeight: '800', color: '#0A0A0A', textAlign: 'center', marginBottom: 4 },
+  modalItem: { flexDirection: 'row', gap: 10, alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#F9FAFA' },
+  modalItemActive: { backgroundColor: '#0A0A0A', borderColor: '#0A0A0A' },
+  modalItemTitle: { fontSize: 13, fontWeight: '800', color: '#0A0A0A' },
+  modalItemTitleActive: { color: '#FFFFFF' },
+  modalItemSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  modalCancel: { alignItems: 'center', paddingVertical: 10, marginTop: 4 },
+  modalCancelText: { fontSize: 12, fontWeight: '700', color: '#6B7280' },
 });

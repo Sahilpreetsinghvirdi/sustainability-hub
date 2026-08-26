@@ -1,220 +1,92 @@
-// mobile/src/screens/SettingsProfileScreen.tsx
 import React, { useState } from 'react';
-import { ScrollView, Alert } from 'react-native';
-import { Stack, Text, Button, Card, Input, Avatar, Badge } from '@/ui';
-import { useAuth } from '@/hooks/useAuth';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useAuthStore } from '@/store/authStore';
 
 export const SettingsProfileScreen: React.FC = () => {
-  const { user, updateProfile, changePassword } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [timezone, setTimezone] = useState(user?.timezone || 'America/New_York');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const user = useAuthStore(s => s.user);
+  const updateUser = useAuthStore(s => s.updateUser);
+  const [name, setName] = useState(user?.name || 'Alex Rivers');
+  const [email, setEmail] = useState(user?.email || 'alex.rivers@eco-hub.com');
+  const [region, setRegion] = useState('Brooklyn, New York, USA');
 
-  const handleSaveProfile = async () => {
-    if (!name.trim() || !email.trim()) {
-      Alert.alert('Error', 'Name and email are required');
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await updateProfile({ name: name.trim(), email: email.trim(), timezone });
-      setIsEditing(false);
-      Alert.alert('Success', 'Profile updated');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update profile');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleChangePassword = async () => {
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert('Error', 'All password fields are required');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'New passwords do not match');
-      return;
-    }
-    if (newPassword.length < 8) {
-      Alert.alert('Error', 'Password must be at least 8 characters');
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await changePassword({ current_password: currentPassword, new_password: newPassword });
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setIsChangingPassword(false);
-      Alert.alert('Success', 'Password changed successfully');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to change password');
-    } finally {
-      setSubmitting(false);
-    }
+  const onSave = () => {
+    updateUser({ name: name.trim(), email: email.trim() } as any);
+    Alert.alert('Saved', 'Profile updated', [{ text: 'OK', onPress: () => router.back() }]);
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="xl">
-        <Button variant="ghost" size="sm" onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} />
-        </Button>
-        <Text fontSize="20" fontWeight="700" color="#0A0A0A">Profile</Text>
-        <Stack width={40} />
-      </Stack>
+    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <View style={s.headRow}><Pressable onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={18} color="#0A0A0A" /></Pressable><View style={{ width: 32 }} /></View>
 
-      {/* Avatar Section */}
-      <Card variant="elevated" padding="lg" alignItems="center" marginBottom="lg">
-        <Avatar size="3xl" backgroundColor="#1C1C1C">
-          {user?.name?.charAt(0) || 'U'}
-        </Avatar>
-        <Text fontSize="20" fontWeight="700" color="#0A0A0A" marginTop="3">{user?.name || 'User'}</Text>
-        <Text fontSize="12" color="#444444">{user?.email || 'user@example.com'}</Text>
-        <Badge variant="success" size="sm" marginTop="2">
-          {user?.is_active ? 'Active Account' : 'Inactive'}
-        </Badge>
-        <Button variant="outline" size="sm" marginTop="3" onPress={() => Alert.alert('Change Photo', 'Camera or gallery photo selection coming soon')}>
-          <Stack flexDirection="row" alignItems="center" gap="1">
-            <Ionicons name="camera" size={16} />
-            <Text>Change Photo</Text>
-          </Stack>
-        </Button>
-      </Card>
+      <View style={s.avatarWrap}>
+        <View style={s.avatarCircle}>
+          {(user as any)?.avatar ? <Image source={{ uri: (user as any).avatar }} style={s.avatarImg} /> : <View style={s.avatarSilhouette}><Ionicons name="person" size={48} color="#FFFFFF" /></View>}
+          <Pressable style={s.camBadge} onPress={() => router.push('/settings/avatar' as any)}><Ionicons name="camera-outline" size={14} color="#FFFFFF" /></Pressable>
+        </View>
+        <Text style={s.name}>{name.toUpperCase()}</Text>
+        <Text style={s.rank}>Eco-Guardian Rank: Platinum</Text>
+      </View>
 
-      {/* Personal Info */}
-      <Card variant="default" padding="lg" marginBottom="lg">
-        <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-          <Text fontSize="16" fontWeight="600" color="#0A0A0A">Personal Information</Text>
-          <Button variant="ghost" size="sm" onPress={() => setIsEditing(!isEditing)}>
-            <Stack flexDirection="row" alignItems="center" gap="1">
-              <Ionicons name={isEditing ? 'close' : 'pencil'} size={16} />
-              <Text>{isEditing ? 'Cancel' : 'Edit'}</Text>
-            </Stack>
-          </Button>
-        </Stack>
+      <View style={s.kickerRow}><Ionicons name="person-outline" size={12} color="#0A0A0A" /><Text style={s.kicker}>PERSONAL METADATA</Text></View>
 
-        <Stack gap="4">
-          <Input
-            label="Full Name"
-            value={name}
-            onChangeText={setName}
-            editable={isEditing}
-            leftIcon={<Ionicons name="person" size={20} color="#444444" />}
-          />
-          <Input
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            editable={isEditing}
-            type="email"
-            leftIcon={<Ionicons name="mail" size={20} color="#444444" />}
-          />
-          <Input
-            label="Timezone"
-            value={timezone}
-            onChangeText={setTimezone}
-            editable={isEditing}
-            leftIcon={<Ionicons name="globe" size={20} color="#444444" />}
-          />
-        </Stack>
+      <View style={s.card}>
+        <Text style={s.label}>FULL IDENTIFICATION NAME</Text>
+        <View style={s.inputWrap}><Ionicons name="person-outline" size={16} color="#6B7280" /><TextInput style={s.input} value={name} onChangeText={setName} placeholder="Full name" placeholderTextColor="#9CA3AF" /></View>
+        <Text style={s.label}>VERIFIED CONTACT ADDRESS</Text>
+        <View style={s.inputWrap}><Ionicons name="mail-outline" size={16} color="#6B7280" /><TextInput style={s.input} value={email} onChangeText={setEmail} placeholder="email" placeholderTextColor="#9CA3AF" autoCapitalize="none" /><View style={s.verified}><Text style={s.verifiedText}>VERIFIED</Text></View></View>
+        <Text style={s.label}>SUSTAINABILITY REGION</Text>
+        <View style={s.inputWrap}><Ionicons name="location-outline" size={16} color="#6B7280" /><TextInput style={s.input} value={region} onChangeText={setRegion} placeholder="Region" placeholderTextColor="#9CA3AF" /></View>
+      </View>
 
-        {isEditing && (
-          <Button variant="primary" fullWidth loading={submitting} onPress={handleSaveProfile} marginTop="lg">
-            <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
-              <Ionicons name="checkmark" size={20} />
-              <Text>Save Changes</Text>
-            </Stack>
-          </Button>
-        )}
-      </Card>
+      <View style={s.kickerRow}><Ionicons name="shield-checkmark-outline" size={12} color="#0A0A0A" /><Text style={s.kicker}>ACCOUNT REGISTRY</Text></View>
+      <View style={s.row}>
+        <View style={s.regCard}><Text style={s.regKicker}>USER ID</Text><Text style={s.regValue}>SH-88219-PRO</Text></View>
+        <View style={s.regCard}><Text style={s.regKicker}>MEMBER SINCE</Text><Text style={s.regValue}>JAN 2024</Text></View>
+      </View>
 
-      {/* Change Password */}
-      <Card variant="default" padding="lg" marginBottom="lg">
-        <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="lg">
-          <Text fontSize="16" fontWeight="600" color="#0A0A0A">Change Password</Text>
-          <Button variant="ghost" size="sm" onPress={() => setIsChangingPassword(!isChangingPassword)}>
-            <Stack flexDirection="row" alignItems="center" gap="1">
-              <Ionicons name={isChangingPassword ? 'close' : 'key'} size={16} />
-              <Text>{isChangingPassword ? 'Cancel' : 'Change'}</Text>
-            </Stack>
-          </Button>
-        </Stack>
+      <View style={s.sessionCard}><View style={s.sessionIcon}><Ionicons name="time-outline" size={16} color="#0A0A0A" /></View><View style={{ flex: 1 }}><Text style={s.sessionTitle}>Session Data Persistence</Text><Text style={s.sessionSub}>Your profile metadata is encrypted and synced across all Hub-enabled devices. Updates may take 1-2 minutes to propagate.</Text></View></View>
 
-        {isChangingPassword && (
-          <Stack gap="4">
-            <Input
-              label="Current Password"
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-              type="password"
-              secureTextEntry
-              leftIcon={<Ionicons name="lock-closed" size={20} color="#444444" />}
-            />
-            <Input
-              label="New Password"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              type="password"
-              secureTextEntry
-              leftIcon={<Ionicons name="key" size={20} color="#444444" />}
-            />
-            <Input
-              label="Confirm Password"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              type="password"
-              secureTextEntry
-              leftIcon={<Ionicons name="key" size={20} color="#444444" />}
-            />
-            <Button variant="primary" fullWidth loading={submitting} onPress={handleChangePassword}>
-              <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
-                <Ionicons name="checkmark" size={20} />
-                <Text>Update Password</Text>
-              </Stack>
-            </Button>
-          </Stack>
-        )}
-      </Card>
+      <Pressable style={s.saveBtn} onPress={onSave}><Ionicons name="save-outline" size={16} color="#fff" /><Text style={s.saveText}>SAVE CHANGES</Text></Pressable>
+      <Pressable style={s.discard} onPress={() => router.back()}><Ionicons name="chevron-back" size={12} color="#6B7280" /><Text style={s.discardText}>Discard and return to Settings</Text></Pressable>
 
-      {/* Account Stats */}
-      <Card variant="default" padding="lg" marginBottom="lg">
-        <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="lg">Account Statistics</Text>
-        <Stack gap="3">
-          <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="12" color="#444444">Member Since</Text>
-            <Text fontSize="12" fontWeight="600" color="#0A0A0A">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}</Text>
-          </Stack>
-          <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="12" color="#444444">Total Scans</Text>
-            <Text fontSize="12" fontWeight="600" color="#0A0A0A">{user?.total_scans || 0}</Text>
-          </Stack>
-          <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="12" color="#444444">Carbon Saved</Text>
-            <Text fontSize="12" fontWeight="600" color="#1C1C1C">{user?.carbon_saved || 0} kg</Text>
-          </Stack>
-          <Stack flexDirection="row" justifyContent="space-between">
-            <Text fontSize="12" color="#444444">Streak</Text>
-            <Text fontSize="12" fontWeight="600" color="#6B6B6B">{user?.current_streak || 0} days</Text>
-          </Stack>
-        </Stack>
-      </Card>
+      <Text style={s.footer}>PROFILE REGISTRY PROTOCOL V2.4.1</Text>
     </ScrollView>
   );
 };
 
-const styles = {
+const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 24 },
-};
+  content: { padding: 16, gap: 12, paddingBottom: 28 },
+  headRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  back: { width: 32, height: 32, borderRadius: 16, borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  avatarWrap: { alignItems: 'center', gap: 8, paddingVertical: 12 },
+  avatarCircle: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center', overflow: 'visible' },
+  avatarSilhouette: { width: 90, height: 90, borderRadius: 45, backgroundColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center' },
+  avatarImg: { width: 90, height: 90, borderRadius: 45 },
+  camBadge: { position: 'absolute', right: -2, bottom: -2, width: 26, height: 26, borderRadius: 13, backgroundColor: '#0A0A0A', borderWidth: 2, borderColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+  name: { fontSize: 16, fontWeight: '900', color: '#0A0A0A', letterSpacing: 0.4 },
+  rank: { fontSize: 11, color: '#6B7280', marginTop: -4 },
+  kickerRow: { flexDirection: 'row', gap: 6, alignItems: 'center', marginTop: 6 },
+  kicker: { fontSize: 11, fontWeight: '800', color: '#0A0A0A', letterSpacing: 0.6 },
+  card: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 14, padding: 14, gap: 10, backgroundColor: '#F9FAFA' },
+  label: { fontSize: 10, fontWeight: '700', color: '#6B7280', letterSpacing: 0.6 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, paddingHorizontal: 12, backgroundColor: '#FFFFFF', height: 44 },
+  input: { flex: 1, fontSize: 13, color: '#0A0A0A', paddingVertical: 0 },
+  verified: { backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E5E5', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 9999 },
+  verifiedText: { fontSize: 9, fontWeight: '800', color: '#0A0A0A' },
+  row: { flexDirection: 'row', gap: 10 },
+  regCard: { flex: 1, borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#F9FAFA', gap: 4 },
+  regKicker: { fontSize: 10, fontWeight: '700', color: '#6B7280', letterSpacing: 0.6 },
+  regValue: { fontSize: 11, fontWeight: '800', color: '#0A0A0A' },
+  sessionCard: { flexDirection: 'row', gap: 10, borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#F9FAFA' },
+  sessionIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  sessionTitle: { fontSize: 11, fontWeight: '800', color: '#0A0A0A' },
+  sessionSub: { fontSize: 11, lineHeight: 16, color: '#6B7280', marginTop: 2 },
+  saveBtn: { backgroundColor: '#0A0A0A', borderRadius: 12, paddingVertical: 14, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
+  saveText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
+  discard: { flexDirection: 'row', gap: 4, alignItems: 'center', justifyContent: 'center', paddingVertical: 8 },
+  discardText: { fontSize: 11, fontWeight: '600', color: '#6B7280' },
+  footer: { fontSize: 9, color: '#9CA3AF', textAlign: 'center', letterSpacing: 0.8, marginTop: 8 },
+});

@@ -2,8 +2,20 @@ import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useCarbonStore } from '@/store/carbonStore';
+import { useEnergyStore } from '@/store/energyStore';
+import { useFoodWasteStore } from '@/store/foodWasteStore';
 
 export const DashboardScreen: React.FC = () => {
+  const scans = useCarbonStore(s => s.scans);
+  const bills = useEnergyStore(s => s.bills);
+  const logs = useFoodWasteStore(s => s.logs);
+  const streak = useFoodWasteStore(s => s.streak);
+  const totalCarbon = scans.reduce((sum: number, s: any) => sum + (s.total_carbon_kg || 0), 0);
+  const totalEnergy = bills.reduce((sum: number, b: any) => sum + (b.electricity_kwh || 0), 0);
+  const totalWaste = logs.reduce((sum: number, l: any) => sum + (l.avoidable_waste_kg || 0), 0);
+  const days = streak?.current_streak_days || 0;
+  const hasData = scans.length > 0 || bills.length > 0 || logs.length > 0;
   return (
     <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
       {/* DAILY STREAK */}
@@ -15,13 +27,13 @@ export const DashboardScreen: React.FC = () => {
           <Ionicons name="flame-outline" size={14} color="#FFFFFF" />
           <Text style={s.streakKicker}>DAILY STREAK</Text>
         </View>
-        <Text style={s.streakValue}>12 Days</Text>
+        <Text style={s.streakValue}>{days} {days === 1 ? 'Day' : 'Days'}</Text>
         <View style={s.streakMetaRow}>
-          <Text style={s.streakLevel}>Level 4 Sustainability Guardian</Text>
-          <Text style={s.streakXp}>450 / 600 XP</Text>
+          <Text style={s.streakLevel}>Level {Math.min(4, Math.floor(days / 3) + 1)} Sustainability Guardian</Text>
+          <Text style={s.streakXp}>{days * 38} / 600 XP</Text>
         </View>
         <View style={s.xpTrack}>
-          <View style={[s.xpFill, { width: '75%' }]} />
+          <View style={[s.xpFill, { width: `${Math.min(100, (days * 38 / 600) * 100)}%` }]} />
         </View>
       </View>
 
@@ -41,26 +53,26 @@ export const DashboardScreen: React.FC = () => {
               <Text style={s.overviewLabel}>CARBON</Text>
               <View style={s.badgeBlack}><Text style={s.badgeBlackText}>-15%</Text></View>
             </View>
-            <Text style={s.overviewValue}>12.4<Text style={s.overviewUnit}> kg CO2e</Text></Text>
-            <Text style={s.overviewSub}>Down from last week</Text>
+            <Text style={s.overviewValue}>{totalCarbon.toFixed(1)}<Text style={s.overviewUnit}> kg CO2e</Text></Text>
+            <Text style={s.overviewSub}>{hasData ? 'This week' : 'No data yet — log consumption'}</Text>
           </View>
           <View style={s.overviewCard}>
             <View style={s.overviewHead}>
               <View style={s.iconCircle}><Ionicons name="flash" size={14} color="#0A0A0A" /></View>
               <Text style={s.overviewLabel}>ENERGY</Text>
-              <View style={s.badgeBlack}><Text style={s.badgeBlackText}>-4%</Text></View>
+              <View style={s.badgeBlack}><Text style={s.badgeBlackText}>{totalEnergy > 0 ? '-' : '0%'}</Text></View>
             </View>
-            <Text style={s.overviewValue}>48.2<Text style={s.overviewUnit}> kWh</Text></Text>
-            <Text style={s.overviewSub}>Optimized heating</Text>
+            <Text style={s.overviewValue}>{totalEnergy.toFixed(1)}<Text style={s.overviewUnit}> kWh</Text></Text>
+            <Text style={s.overviewSub}>{hasData ? 'Optimized heating' : 'No data yet'}</Text>
           </View>
           <View style={[s.overviewCard, { width: '100%' }]}>
             <View style={s.overviewHead}>
               <View style={s.iconCircle}><Ionicons name="trash-outline" size={14} color="#0A0A0A" /></View>
               <Text style={s.overviewLabel}>FOOD WASTE</Text>
-              <View style={s.badgeLight}><Text style={s.badgeLightText}>+8%</Text></View>
+              <View style={s.badgeLight}><Text style={s.badgeLightText}>{totalWaste > 0 ? '+8%' : '0%'}</Text></View>
             </View>
-            <Text style={s.overviewValue}>1.8<Text style={s.overviewUnit}> kg</Text></Text>
-            <Text style={s.overviewSub}>Meal prep planned</Text>
+            <Text style={s.overviewValue}>{totalWaste.toFixed(1)}<Text style={s.overviewUnit}> kg</Text></Text>
+            <Text style={s.overviewSub}>{hasData ? 'Meal prep planned' : 'No waste logged yet'}</Text>
           </View>
         </View>
       </View>
@@ -90,57 +102,73 @@ export const DashboardScreen: React.FC = () => {
       <View style={s.section}>
         <View style={s.sectionHead}>
           <Text style={s.sectionTitle}>Recent Activity</Text>
-          <Text style={s.viewAll}>View All</Text>
+          <Pressable onPress={() => { if (logs.length > 0) router.push('/food-waste' as any); }}><Text style={s.viewAll}>View All</Text></Pressable>
         </View>
-        <View style={s.activityCard}>
-          <View style={s.activityRow}>
-            <View style={s.activityIcon}><Ionicons name="trash-outline" size={14} color="#0A0A0A" /></View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.activityTitle}>COMPOSTED APPLE CORE</Text>
-              <Text style={s.activityTime}>2 hours ago</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={s.activityRight}>0.2  kg</Text>
-              <Text style={s.activityMetaGreen}>SYNCED</Text>
+        {hasData ? (
+          <View style={s.activityCard}>
+            {scans.slice(0, 1).map((sc: any) => (
+              <View key={sc.id} style={s.activityRow}>
+                <View style={s.activityIcon}><Ionicons name="leaf-outline" size={14} color="#0A0A0A" /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.activityTitle}>{(sc.store_name || 'CARBON ENTRY').toUpperCase()}</Text>
+                  <Text style={s.activityTime}>Just now</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={s.activityRight}>{sc.total_carbon_kg.toFixed(1)} kg</Text>
+                  <Text style={s.activityMetaGreen}>SYNCED</Text>
+                </View>
+              </View>
+            ))}
+            {bills.slice(0, 1).map((b: any) => (
+              <View key={b.id} style={s.activityRow}>
+                <View style={s.activityIcon}><Ionicons name="flash-outline" size={14} color="#0A0A0A" /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.activityTitle}>{(b.utility_provider || 'ENERGY ENTRY').toUpperCase()}</Text>
+                  <Text style={s.activityTime}>Just now</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={s.activityRight}>{b.electricity_kwh.toFixed(1)} kWh</Text>
+                  <Text style={s.activityMetaGreen}>SAVED</Text>
+                </View>
+              </View>
+            ))}
+            {logs.slice(0, 2).map((l: any) => (
+              <View key={l.id} style={s.activityRow}>
+                <View style={s.activityIcon}><Ionicons name="trash-outline" size={14} color="#0A0A0A" /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.activityTitle}>{l.meal_type.toUpperCase()} WASTE</Text>
+                  <Text style={s.activityTime}>Just now</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={s.activityRight}>{l.avoidable_waste_kg.toFixed(1)} kg</Text>
+                  <Text style={s.activityMetaGreen}>LOGGED</Text>
+                </View>
+              </View>
+            ))}
+            {scans.length === 0 && bills.length === 0 && logs.length === 0 && (
+              <View style={s.activityRow}>
+                <View style={s.activityIcon}><Ionicons name="information-circle-outline" size={14} color="#0A0A0A" /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.activityTitle}>WELCOME TO SUSTAINABILITY HUB</Text>
+                  <Text style={s.activityTime}>Start by logging consumption</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={s.activityRight}>0.0 kg</Text>
+                  <Text style={s.activityMetaGreen}>NEW</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        ) : (
+          <View style={s.activityCard}>
+            <View style={{ alignItems: 'center', paddingVertical: 20, gap: 8 }}>
+              <Ionicons name="leaf-outline" size={28} color="#9CA3AF" />
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#0A0A0A' }}>No activity yet</Text>
+              <Text style={{ fontSize: 11, color: '#6B7280', textAlign: 'center' }}>Log your first consumption, energy bill or waste meal to see activity here.</Text>
+              <Pressable style={{ marginTop: 8, backgroundColor: '#0A0A0A', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 9999 }} onPress={() => router.push('/carbon/manual' as any)}><Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Log First Entry</Text></Pressable>
             </View>
           </View>
-          <View style={s.divider} />
-          <View style={s.activityRow}>
-            <View style={s.activityIcon}><Ionicons name="flash-outline" size={14} color="#0A0A0A" /></View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.activityTitle}>SMART PLUG AUTO-OFF</Text>
-              <Text style={s.activityTime}>5 hours ago</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={s.activityRight}>0.45  kWh</Text>
-              <Text style={s.activityMetaGreen}>SAVED</Text>
-            </View>
-          </View>
-          <View style={s.divider} />
-          <View style={s.activityRow}>
-            <View style={s.activityIcon}><Ionicons name="trending-down" size={14} color="#0A0A0A" /></View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.activityTitle}>WEEKLY REPORT READY</Text>
-              <Text style={s.activityTime}>Yesterday</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={s.activityRight}>Overall -12%</Text>
-              <Text style={s.activityMetaGreen}> </Text>
-            </View>
-          </View>
-          <View style={s.divider} />
-          <View style={s.activityRow}>
-            <View style={s.activityIcon}><Ionicons name="checkmark-circle-outline" size={14} color="#0A0A0A" /></View>
-            <View style={{ flex: 1 }}>
-              <Text style={s.activityTitle}>DAILY GOAL REACHED</Text>
-              <Text style={s.activityTime}>Yesterday</Text>
-            </View>
-            <View style={{ alignItems: 'flex-end' }}>
-              <Text style={s.activityRight}>+50  XP</Text>
-              <Text style={s.activityMetaGreen}> </Text>
-            </View>
-          </View>
-        </View>
+        )}
       </View>
 
       {/* Eco Tip */}
