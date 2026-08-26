@@ -1,8 +1,8 @@
 // mobile/src/components/common/Modal.tsx
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Modal as RNModal, ViewStyle, Animated, Platform } from 'react-native';
-import { colors, spacing, borderRadius, shadows, animation } from '@/constants/theme';
-import { Portal } from 'react-native-portal';
+import { colors, spacing, borderRadius, shadows, animation, typography } from '@/constants/theme';
+
 
 export interface ModalProps {
   visible: boolean;
@@ -72,50 +72,48 @@ export const Modal: React.FC<ModalProps> = ({
   if (!visible) return null;
 
   return (
-    <Portal>
-      <RNModal
-        visible={visible}
-        transparent
-        animationType="none"
-        onRequestClose={onClose}
-        contentContainerStyle={styles.modalContainer}
+    <RNModal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}
+      contentContainerStyle={styles.modalContainer}
+    >
+      <Animated.View
+        style={[
+          styles.overlay,
+          { opacity: fadeAnim },
+        ]}
+        onStartShouldSetResponder={closeOnOverlayPress ? () => true : () => false}
+        onResponderRelease={closeOnOverlayPress ? onClose : undefined}
+        pointerEvents={visible ? 'auto' : 'none'}
+      />
+      <Animated.View
+        style={[
+          styles.modalWrapper,
+          { transform: [{ translateY: slideAnim }] },
+        ]}
       >
-        <Animated.View
-          style={[
-            styles.overlay,
-            { opacity: fadeAnim },
-          ]}
-          onStartShouldSetResponder={closeOnOverlayPress ? () => true : () => false}
-          onResponderRelease={closeOnOverlayPress ? onClose : undefined}
-          pointerEvents={visible ? 'auto' : 'none'}
-        />
-        <Animated.View
-          style={[
-            styles.modalWrapper,
-            { transform: [{ translateY: slideAnim }] },
-          ]}
-        >
-          <View style={[styles.modal, sizeStyles[size], style]}>
-            {(title || showCloseButton) && (
-              <View style={styles.header}>
-                {title && <Text style={styles.title}>{title}</Text>}
-                {showCloseButton && (
-                  <Pressable
-                    onPress={onClose}
-                    style={styles.closeButton}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                    accessibilityLabel="Close modal"
-                  >
-                    <Text style={styles.closeIcon}>\u00D7</Text>
-                  </Pressable>
-                )}
-              </View>
-            )}
-            <View style={styles.content}>{children}</View>
-          </View>
-        </Animated.View>
-      </RNModal>
-    </Portal>
+        <View style={[styles.modal, sizeStyles[size], style]}>
+          {(title || showCloseButton) && (
+            <View style={styles.header}>
+              {title && <Text style={styles.title}>{title}</Text>}
+              {showCloseButton && (
+                <Pressable
+                  onPress={onClose}
+                  style={styles.closeButton}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityLabel="Close modal"
+                >
+                  <Text style={styles.closeIcon}>\u00D7</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+          <View style={styles.content}>{children}</View>
+        </View>
+      </Animated.View>
+    </RNModal>
   );
 };
 
