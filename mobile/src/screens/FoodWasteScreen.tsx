@@ -1,250 +1,121 @@
-// mobile/src/screens/FoodWasteScreen.tsx
-import React, { useState } from 'react';
-import { ScrollView, RefreshControl, Alert } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { Stack, Text, Button, Card, Badge, ProgressBar, PieChart, BarChart } from '@/ui';
-import { useFoodWaste } from '@/hooks/useFoodWaste';
-import { formatWeight, formatCurrency, formatDate, formatPercentage, getMealColor } from '@/utils/formatters';
-import { Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
+import React from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
 export const FoodWasteScreen: React.FC = () => {
-  const { logs, streak, summary, isLoading, isAnalyzing, analysisProgress, fetchLogs, fetchStreak, logWaste } = useFoodWaste();
-  const [refreshing, setRefreshing] = useState(false);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await Promise.all([fetchLogs(), fetchStreak()]);
-    setRefreshing(false);
-  };
-
-  const handleLogPress = () => router.push('/food-waste/log');
-
-  const handleZeroWastePress = () => {
-    Alert.alert(
-      'Zero Waste Meal! ðŸŽ‰',
-      'Log a meal with zero waste to continue your streak.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Log Zero Waste', onPress: () => router.push('/food-waste/log?zeroWaste=true') },
-      ]
-    );
-  };
-
-  const totalWaste = logs.reduce((sum, l) => sum + l.avoidable_waste_kg + l.unavoidable_waste_kg, 0);
-  const avoidableWaste = logs.reduce((sum, l) => sum + l.avoidable_waste_kg, 0);
-  const wasteCost = logs.reduce((sum, l) => sum + l.cost_usd, 0);
-  const zeroWasteMeals = logs.filter(l => l.avoidable_waste_kg === 0).length;
-
-  const mealData = [
-    { label: 'Breakfast', value: logs.filter(l => l.meal_type === 'breakfast').reduce((s, l) => s + l.avoidable_waste_kg, 0), color: getMealColor('breakfast') },
-    { label: 'Lunch', value: logs.filter(l => l.meal_type === 'lunch').reduce((s, l) => s + l.avoidable_waste_kg, 0), color: getMealColor('lunch') },
-    { label: 'Dinner', value: logs.filter(l => l.meal_type === 'dinner').reduce((s, l) => s + l.avoidable_waste_kg, 0), color: getMealColor('dinner') },
-    { label: 'Snack', value: logs.filter(l => l.meal_type === 'snack').reduce((s, l) => s + l.avoidable_waste_kg, 0), color: getMealColor('snack') },
-  ].filter(d => d.value > 0);
-
-  const weeklyTrend = generateWeeklyTrendData(logs);
-
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-      contentContainerStyle={styles.content}
-    >
-      {/* Header */}
-      <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="xl">
-        <Stack>
-          <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
-            <Stack width={40} height={40} borderRadius="md" backgroundColor="rgba(10,10,10,0.12)" alignItems="center" justifyContent="center">
-              <Ionicons name="restaurant" size={24} color="#444444" />
-            </Stack>
-            <Text fontSize="28" fontWeight="800" color="#0A0A0A">Food Waste</Text>
-          </Stack>
-        </Stack>
-      </Stack>
+    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      <View style={s.hero}>
+        <View style={s.livePill}><View style={s.dot} /><Text style={s.liveText}>Live Tracking</Text></View>
+        <View style={s.binCircle}><Ionicons name="trash-outline" size={48} color="#0A0A0A" /><View style={s.appleBadge}><Text style={s.apple}>🍎</Text></View></View>
+      </View>
+      <Text style={s.title}>Waste Analytics</Text>
+      <Text style={s.sub}>Monitor your organic cycle efficiency.</Text>
+      <Pressable style={s.blackBtn} onPress={() => router.push('/food-waste/log' as any)}><Ionicons name="add" size={16} color="#FFFFFF" /><Text style={s.blackBtnText}>LOG NEW WASTE</Text></Pressable>
 
-      {/* Streak Card */}
-      <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.streakCard}>
-        <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom="lg">
-          <Stack flexDirection="row" alignItems="center" gap="4">
-            <Stack width={64} height={64} borderRadius="full" backgroundColor="#6B6B6B" alignItems="center" justifyContent="center">
-              <Entypo name="flame" size={36} color="#6B6B6B" />
-            </Stack>
-            <Stack>
-              <Text fontSize="36" fontWeight="800" color="#0A0A0A">{streak?.current_streak_days || 0}</Text>
-              <Text fontSize="12" color="#444444">Day Streak</Text>
-            </Stack>
-          </Stack>
-          <Stack flexDirection="row" gap="6">
-            <StatItem label="Best" value={`${streak?.longest_streak_days || 0}d`} />
-            <StatItem label="Saved" value={formatWeight(streak?.total_waste_avoided_kg || 0)} />
-            <StatItem label="Money" value={formatCurrency(streak?.total_money_saved_usd || 0)} />
-          </Stack>
-        </Stack>
-        <Stack flexDirection="row" gap="3">
-          <Button variant="primary" flex={1} onPress={handleLogPress}>
-            <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
-              <Ionicons name="add" size={20} />
-              <Text>Log Meal</Text>
-            </Stack>
-          </Button>
-          <Button variant="outline" flex={1} onPress={handleZeroWastePress}>
-            <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
-              <Entypo name="star" size={20} />
-              <Text>Zero Waste</Text>
-            </Stack>
-          </Button>
-        </Stack>
-      </Card>
+      <View style={s.secHead}><Ionicons name="leaf-outline" size={14} color="#0A0A0A" /><Text style={s.secTitle}>Compost Health</Text><Text style={s.secRight}>BIN #01 - ACTIVE</Text></View>
+      <View style={s.healthRow}>
+        <View style={s.healthCard}><View style={s.healthIcon}><Ionicons name="water-outline" size={16} color="#0A0A0A" /></View><Text style={s.healthKicker}>MOISTURE</Text><Text style={s.healthValue}>64%</Text><View style={s.healthBadge}><Text style={s.healthBadgeText}>OPTIMAL</Text></View></View>
+        <View style={s.healthCard}><View style={s.healthIcon}><Ionicons name="thermometer-outline" size={16} color="#0A0A0A" /></View><Text style={s.healthKicker}>TEMP</Text><Text style={s.healthValue}>52°C</Text><View style={[s.healthBadge, { backgroundColor: '#0A0A0A' }]}><Text style={[s.healthBadgeText, { color: '#FFFFFF' }]}>HIGH</Text></View></View>
+        <View style={s.healthCard}><View style={s.healthIcon}><Ionicons name="filter-outline" size={16} color="#0A0A0A" /></View><Text style={s.healthKicker}>AIRFLOW</Text><Text style={s.healthValue}>Good</Text><View style={s.healthBadge}><Text style={s.healthBadgeText}>STABLE</Text></View></View>
+      </View>
+      <View style={s.progressCard}>
+        <View style={s.progressHead}><Text style={s.progressKicker}>DECOMPOSITION PROGRESS</Text><Text style={s.progressVal}>72%</Text></View>
+        <View style={s.track}><View style={[s.fill, { width: '72%' }]} /></View>
+        <View style={s.progressNote}><Ionicons name="information-circle-outline" size={12} color="#6B7280" /><Text style={s.progressNoteText}>Optimal temperature reached. Estimated completion in 12 days.</Text></View>
+      </View>
 
-      {/* Summary Cards */}
-      <Stack flexDirection="row" gap="3" marginBottom="lg">
-        <SummaryCard
-          title="This Week"
-          value={formatWeight(avoidableWaste)}
-          subtitle={`${formatCurrency(wasteCost)} wasted`}
-          icon={<Ionicons name="trash" size={22} />}
-          color="#444444"
-        />
-        <SummaryCard
-          title="Meals Logged"
-          value={`${logs.length}`}
-          subtitle={logs.length > 0 ? `${Math.round((zeroWasteMeals / logs.length) * 100)}% zero waste` : 'Start logging'}
-          icon={<Ionicons name="restaurant" size={22} />}
-          color="#1C1C1C"
-        />
-        <SummaryCard
-          title="Weekly Target"
-          value={formatWeight(3.5 / 4)}
-          subtitle={`${Math.min(100, (avoidableWaste / (3.5 / 4)) * 100).toFixed(0)}% used`}
-          icon={<Ionicons name="target" size={22} />}
-          color="#6B6B6B"
-        />
-      </Stack>
+      <View style={s.chartCard}>
+        <View style={s.chartHead}><View style={s.chartTitleRow}><Ionicons name="stats-chart-outline" size={14} color="#0A0A0A" /><Text style={s.chartTitle}> Weekly Trends</Text></View><View style={s.datePill}><Text style={s.dateText}>OCT 18-24</Text></View></View>
+        <View style={s.barArea}>
+          {[
+            { w: 18, g: 8 }, { w: 10, g: 16 }, { w: 30, g: 6 }, { w: 22, g: 10 }, { w: 12, g: 4 }, { w: 26, g: 6 }, { w: 20, g: 8 },
+          ].map((b, i) => (
+            <View key={i} style={s.barGroup}>
+              <View style={s.barStack}>
+                <View style={[s.barDark, { height: b.w * 2 }]} />
+                <View style={[s.barLight, { height: b.g * 2 }]} />
+              </View>
+              <Text style={s.barLabel}>{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]}</Text>
+            </View>
+          ))}
+        </View>
+        <View style={s.legend}><View style={s.legendDotDark} /><Text style={s.legendText}>Composted</Text><View style={s.legendDotLight} /><Text style={s.legendText}>Landfill</Text></View>
+      </View>
 
-      {/* Charts */}
-      <Stack flexDirection="row" gap="3" marginBottom="lg">
-        <Card variant="default" padding="lg" flex={1} style={styles.chartCard}>
-          <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="lg">Waste by Meal</Text>
-          {mealData.length > 0 ? (
-            <PieChart data={mealData} size={160} innerRadius={50} showLegend={false} />
-          ) : (
-            <Stack alignItems="center" justifyContent="center" style={{ height: 160 }}>
-              <Ionicons name="restaurant" size={40} color="#444444" />
-              <Text fontSize="8" color="#444444" marginTop="2" textAlign="center">Log meals to see breakdown</Text>
-            </Stack>
-          )}
-        </Card>
-        <Card variant="default" padding="lg" flex={1} style={styles.chartCard}>
-          <Text fontSize="16" fontWeight="600" color="#0A0A0A" marginBottom="lg">Weekly Trend</Text>
-          <BarChart data={weeklyTrend} width={160} height={120} showLabels barWidth={16} barGap={8} />
-        </Card>
-      </Stack>
+      <View style={s.secHead}><Ionicons name="time-outline" size={14} color="#0A0A0A" /><Text style={s.secTitle}>Recent Logs</Text><Text style={s.viewAll}>VIEW ALL</Text></View>
+      <View style={s.logCard}><View style={s.logIconDark}><Ionicons name="leaf-outline" size={16} color="#FFFFFF" /></View><View style={{ flex: 1 }}><View style={s.logHead}><Text style={s.logTitle}>VEGETABLE SCRAPS</Text><Text style={s.logRight}>-0.8KG CO2</Text></View><Text style={s.logSub}>Oct 24 • 1.2 kg</Text></View><Ionicons name="chevron-forward" size={14} color="#9CA3AF" /></View>
+      <View style={s.logCard}><View style={s.logIconLight}><Ionicons name="trash-outline" size={16} color="#0A0A0A" /></View><View style={{ flex: 1 }}><View style={s.logHead}><Text style={s.logTitle}>EXPIRED DAIRY</Text><Text style={[s.logRight, { color: '#0A0A0A' }]}>+1.2KG CO2</Text></View><Text style={s.logSub}>Oct 22 • 0.4 kg</Text></View><Ionicons name="chevron-forward" size={14} color="#9CA3AF" /></View>
+      <View style={s.logCard}><View style={s.logIconDark}><Ionicons name="leaf-outline" size={16} color="#FFFFFF" /></View><View style={{ flex: 1 }}><View style={s.logHead}><Text style={s.logTitle}>FRUIT PEELS</Text><Text style={s.logRight}>-0.5KG CO2</Text></View><Text style={s.logSub}>Oct 21 • 0.8 kg</Text></View><Ionicons name="chevron-forward" size={14} color="#9CA3AF" /></View>
 
-      {/* Logs List */}
-      <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-        <Text fontSize="20" fontWeight="700" color="#0A0A0A">Recent Meals</Text>
-      </Stack>
+      <View style={s.switchRow}><Pressable style={s.switchPill} onPress={() => router.replace('/carbon' as any)}><Text style={s.switchText}>Carbon</Text></Pressable><Pressable style={s.switchPill} onPress={() => router.replace('/energy' as any)}><Text style={s.switchText}>Energy</Text></Pressable><Pressable style={[s.switchPill, s.switchActive]}><Text style={[s.switchText, s.switchTextActive]}>Waste</Text></Pressable></View>
 
-      {logs.length === 0 ? (
-        <Card variant="filled" padding="xl" alignItems="center" style={styles.emptyCard}>
-          <Ionicons name="restaurant" size={56} color="#444444" />
-          <Text fontSize="20" fontWeight="600" color="#0A0A0A" marginTop="3" marginBottom="1">No meals logged yet</Text>
-          <Text fontSize="12" color="#444444" textAlign="center" marginBottom="4">Start tracking your food waste</Text>
-          <Button variant="primary" onPress={handleLogPress}>Log First Meal</Button>
-        </Card>
-      ) : (
-        <Stack gap="2">
-          {logs.map((log) => <LogCard key={log.id} log={log} />)}
-        </Stack>
-      )}
-
-      {/* Analyzing Progress */}
-      {isAnalyzing && (
-        <Card variant="default" padding="md" marginTop="lg" borderColor="#1C1C1C" borderWidth={2}>
-          <Stack flexDirection="row" alignItems="center" gap="3">
-            <Ionicons name="sync" size={28} color="#1C1C1C" />
-            <Stack flex={1}>
-              <Text fontSize="16" fontWeight="600" color="#0A0A0A">Analyzing Photos...</Text>
-              <Text fontSize="8" color="#444444">{analysisProgress > 0 ? `${analysisProgress}% complete` : 'Identifying food & waste'}</Text>
-            </Stack>
-            <ProgressBar progress={analysisProgress} variant="primary" size="md" style={{ width: 100 }} />
-          </Stack>
-        </Card>
-      )}
+      <Pressable style={s.fab} onPress={() => router.push('/food-waste/log' as any)}><Ionicons name="add" size={20} color="#FFFFFF" /></Pressable>
     </ScrollView>
   );
 };
 
-const StatItem = ({ label, value }: any) => (
-  <Stack alignItems="center">
-    <Text fontSize="12" fontWeight="700" color="#0A0A0A">{value}</Text>
-    <Text fontSize="4" color="#444444">{label}</Text>
-  </Stack>
-);
-
-const SummaryCard = ({ title, value, subtitle, icon, color }: any) => (
-  <Stack flex={1} style={styles.summaryCard}>
-    <Stack width={44} height={44} borderRadius="lg" backgroundColor={color + '20'} alignItems="center" justifyContent="center" marginBottom="2">
-      {icon}
-    </Stack>
-    <Text fontSize="8" color="#444444" textTransform="uppercase" letterSpacing={1}>{title}</Text>
-    <Text fontSize="24" fontWeight="800" color="#0A0A0A" marginTop="1">{value}</Text>
-    <Text fontSize="4" color="#444444">{subtitle}</Text>
-  </Stack>
-);
-
-const LogCard = ({ log }: any) => (
-  <Card variant="default" padding="md" style={styles.logCard}>
-    <Stack flexDirection="row" alignItems="center" gap="3">
-      <Stack width={40} height={40} borderRadius="full" backgroundColor={getMealColor(log.meal_type) + '20'} alignItems="center" justifyContent="center">
-        <Text fontSize="12" fontWeight="700" color={getMealColor(log.meal_type)}>{log.meal_type.charAt(0).toUpperCase()}</Text>
-      </Stack>
-      <Stack flex={1}>
-        <Stack flexDirection="row" justifyContent="space-between" marginBottom="2">
-          <Text fontSize="12" fontWeight="600" color="#0A0A0A">{log.meal_type.charAt(0).toUpperCase() + log.meal_type.slice(1)}</Text>
-          <Text fontSize="4" color="#444444">{formatDate(log.logged_at)}</Text>
-        </Stack>
-        <Stack flexDirection="row" gap="4">
-          <Stack style={styles.logMetric} borderRightWidth={1} borderRightColor="#DADADA">
-            <Text fontSize="8" fontWeight="600" color="#0A0A0A">{formatWeight(log.avoidable_waste_kg + log.unavoidable_waste_kg)}</Text>
-            <Text fontSize="4" color="#444444">Total</Text>
-          </Stack>
-          <Stack style={styles.logMetric} borderRightWidth={1} borderRightColor="#DADADA">
-            <Text fontSize="8" fontWeight="600" color="#0A0A0A">{formatWeight(log.avoidable_waste_kg)}</Text>
-            <Text fontSize="4" color="#444444">Avoidable</Text>
-          </Stack>
-          <Stack style={styles.logMetric}>
-            <Text fontSize="8" fontWeight="600" color="#0A0A0A">{formatCurrency(log.cost_usd)}</Text>
-            <Text fontSize="4" color="#444444">Cost</Text>
-          </Stack>
-        </Stack>
-      </Stack>
-      <Stack alignItems="flex-end">
-        <Text fontSize="16" fontWeight="700" color="#444444">{formatPercentage(log.avoidable_waste_kg, log.avoidable_waste_kg + log.unavoidable_waste_kg)}</Text>
-        <Text fontSize="4" color="#444444">Waste Rate</Text>
-      </Stack>
-    </Stack>
-  </Card>
-);
-
-const generateWeeklyTrendData = (logs: any[]) => {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  return days.map(day => ({
-    label: day,
-    value: logs.filter(l => new Date(l.logged_at).getDay() === days.indexOf(day))
-      .reduce((s, l) => s + l.avoidable_waste_kg, 0) / Math.max(1, logs.filter(l => new Date(l.logged_at).getDay() === days.indexOf(day)).length) || Math.random() * 0.3,
-    color: '#1C1C1C',
-  }));
-};
-
-const styles = {
+const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 24 },
-  streakCard: { backgroundColor: 'rgba(10,10,10,0.05)' },
-  summaryCard: { padding: 16, borderRadius: 16, backgroundColor: '#F5F5F4' },
-  chartCard: { minHeight: 200 },
-  logCard: {},
-  emptyCard: { gap: 16 },
-  logMetric: { flex: 1, alignItems: 'center', paddingHorizontal: 8 },
-};
+  content: { padding: 16, gap: 14, paddingBottom: 28 },
+  hero: { height: 160, backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  livePill: { position: 'absolute', left: 10, top: 10, flexDirection: 'row', gap: 4, alignItems: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' },
+  liveText: { fontSize: 10, fontWeight: '800', color: '#0A0A0A' },
+  binCircle: { width: 100, height: 100, borderRadius: 50, borderWidth: 1.5, borderColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
+  appleBadge: { position: 'absolute', width: 26, height: 26, borderRadius: 13, backgroundColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center', bottom: -2, right: -2 },
+  apple: { fontSize: 14 },
+  title: { fontSize: 18, fontWeight: '800', color: '#0A0A0A' },
+  sub: { fontSize: 11, color: '#6B7280', marginTop: -8 },
+  blackBtn: { backgroundColor: '#0A0A0A', borderRadius: 12, paddingVertical: 14, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' },
+  blackBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', letterSpacing: 0.6 },
+  secHead: { flexDirection: 'row', gap: 6, alignItems: 'center', marginTop: 4 },
+  secTitle: { fontSize: 13, fontWeight: '800', color: '#0A0A0A', flex: 1 },
+  secRight: { fontSize: 10, fontWeight: '700', color: '#6B7280' },
+  healthRow: { flexDirection: 'row', gap: 8 },
+  healthCard: { flex: 1, backgroundColor: '#F9FAFA', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 10, gap: 6, alignItems: 'center' },
+  healthIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  healthKicker: { fontSize: 10, fontWeight: '700', color: '#6B7280', letterSpacing: 0.6 },
+  healthValue: { fontSize: 16, fontWeight: '800', color: '#0A0A0A' },
+  healthBadge: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 9999 },
+  healthBadgeText: { fontSize: 9, fontWeight: '700', color: '#0A0A0A' },
+  progressCard: { backgroundColor: '#F9FAFA', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, gap: 8 },
+  progressHead: { flexDirection: 'row', justifyContent: 'space-between' },
+  progressKicker: { fontSize: 10, fontWeight: '700', color: '#0A0A0A', letterSpacing: 0.6 },
+  progressVal: { fontSize: 12, fontWeight: '800', color: '#0A0A0A' },
+  track: { height: 6, backgroundColor: '#EAEAEA', borderRadius: 9999, overflow: 'hidden' },
+  fill: { height: 6, backgroundColor: '#0A0A0A' },
+  progressNote: { flexDirection: 'row', gap: 4, alignItems: 'center' },
+  progressNoteText: { fontSize: 10, color: '#6B7280', flex: 1 },
+  chartCard: { backgroundColor: '#F9FAFA', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 16, padding: 14, gap: 10 },
+  chartHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  chartTitleRow: { flexDirection: 'row', alignItems: 'center' },
+  chartTitle: { fontSize: 14, fontWeight: '800', color: '#0A0A0A' },
+  datePill: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999 },
+  dateText: { fontSize: 10, fontWeight: '700', color: '#0A0A0A' },
+  barArea: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', height: 90, paddingHorizontal: 6 },
+  barGroup: { alignItems: 'center', gap: 4, flex: 1 },
+  barStack: { flexDirection: 'column', gap: 2, alignItems: 'center', justifyContent: 'flex-end', height: 70 },
+  barDark: { width: 12, backgroundColor: '#0A0A0A', borderRadius: 4 },
+  barLight: { width: 12, backgroundColor: '#D1D5DB', borderRadius: 4 },
+  barLabel: { fontSize: 10, color: '#6B7280' },
+  legend: { flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
+  legendDotDark: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#0A0A0A' },
+  legendDotLight: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#D1D5DB' },
+  legendText: { fontSize: 11, color: '#6B7280', marginRight: 8 },
+  logCard: { flexDirection: 'row', gap: 10, alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#FFFFFF' },
+  logIconDark: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center' },
+  logIconLight: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  logHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  logTitle: { fontSize: 11, fontWeight: '800', color: '#0A0A0A' },
+  logRight: { fontSize: 10, fontWeight: '700', color: '#0A0A0A' },
+  logSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  switchRow: { flexDirection: 'row', gap: 8, justifyContent: 'center', marginTop: 4 },
+  switchPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 9999, borderWidth: 1, borderColor: '#E5E5E5', backgroundColor: '#FFFFFF' },
+  switchActive: { backgroundColor: '#0A0A0A', borderColor: '#0A0A0A' },
+  switchText: { fontSize: 11, fontWeight: '700', color: '#0A0A0A' },
+  switchTextActive: { color: '#FFFFFF' },
+  fab: { position: 'absolute', right: 16, bottom: 16, width: 48, height: 48, borderRadius: 24, backgroundColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center', elevation: 6 },
+  viewAll: { fontSize: 11, fontWeight: '700', color: '#0A0A0A' },
+});

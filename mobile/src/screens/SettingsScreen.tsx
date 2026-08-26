@@ -1,358 +1,141 @@
-// mobile/src/screens/SettingsScreen.tsx
-import React from 'react';
-import { ScrollView, Alert, Switch, View, TouchableOpacity } from 'react-native';
-import { Stack, Text, Button, Card, Badge, Avatar } from '@/ui';
-import { useSettingsStore } from '@/store/settingsStore';
-import { useAuthStore } from '@/store/authStore';
-import { useSyncStore } from '@/store/syncStore';
-import { config } from '@/constants/config';
-import { Ionicons, MaterialIcons, Entypo, FontAwesome5 } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { config } from '@/constants/config';
+import { useAuthStore } from '@/store/authStore';
 
 export const SettingsScreen: React.FC = () => {
-  const {
-    preferences,
-    theme,
-    notificationsEnabled,
-    biometricEnabled,
-    autoSyncEnabled,
-    syncFrequency,
-    dataSaverMode,
-    units,
-    setPreferences,
-    setTheme,
-    setNotificationsEnabled,
-    setBiometricEnabled,
-    setAutoSyncEnabled,
-    setSyncFrequency,
-    setDataSaverMode,
-    setUnits,
-  } = useSettingsStore();
-
   const { user, logout } = useAuthStore();
-  const { lastSyncAt, fetchStatus } = useSyncStore();
-
-  const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Logout', style: 'destructive', onPress: logout },
-    ]);
-  };
-
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      'Delete Account',
-      'This action cannot be undone. All your data will be permanently deleted.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => Alert.alert('Not implemented yet') },
-      ]
-    );
-  };
+  const [apiKey, setApiKey] = useState('sk-proj-7x923kLpQ8...R3z');
+  const [showKey, setShowKey] = useState(false);
+  const [householdOpen, setHouseholdOpen] = useState(true);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Profile Header */}
-      <Card variant="elevated" padding="lg" style={styles.profileCard}>
-        <Stack flexDirection="row" alignItems="center" gap="4" marginBottom="lg">
-          <Avatar size="xl" name={user?.name || 'User'} source={user?.avatar ? { uri: user.avatar } : undefined} status="online" />
-          <Stack flex={1}>
-            <Text fontSize="24" fontWeight="800" color="#0A0A0A">{user?.name || 'User'}</Text>
-            <Text fontSize="8" color="#444444">{user?.email || 'email@example.com'}</Text>
-          </Stack>
-        </Stack>
-        <Stack flexDirection="row" justifyContent="space-around" paddingTop="lg" borderTopWidth={1} borderTopColor="#DADADA">
-          <StatItem label="Carbon" value="187 kg" />
-          <StatItem label="Energy" value="423 kWh" />
-          <StatItem label="Waste" value="4.2 kg" />
-        </Stack>
-      </Card>
-
-      {/* Preferences */}
-      <Section title="Targets & Preferences">
-        <Card>
-          <SettingRow
-            title="Monthly Carbon Budget"
-            subtitle="Target kg COâ‚‚e per month"
-            value={`${preferences.carbon_budget_monthly_kg} kg`}
-            icon={<Ionicons name="leaf" size={22} color="#1C1C1C" />}
-            onPress={() => showNumberInput('Carbon Budget', 'carbon_budget_monthly_kg', preferences.carbon_budget_monthly_kg)}
-          />
-          <Divider />
-          <SettingRow
-            title="Monthly Energy Target"
-            subtitle="Target kWh per month"
-            value={`${preferences.energy_target_kwh_monthly} kWh`}
-            icon={<Ionicons name="flash" size={22} color="#6B6B6B" />}
-            onPress={() => showNumberInput('Energy Target', 'energy_target_kwh_monthly', preferences.energy_target_kwh_monthly)}
-          />
-          <Divider />
-          <SettingRow
-            title="Monthly Food Waste Target"
-            subtitle="Target kg of avoidable waste"
-            value={`${preferences.food_waste_target_kg_monthly} kg`}
-            icon={<Ionicons name="restaurant" size={22} color="#444444" />}
-            onPress={() => showNumberInput('Waste Target', 'food_waste_target_kg_monthly', preferences.food_waste_target_kg_monthly)}
-          />
-        </Card>
-      </Section>
-
-      {/* Appearance */}
-      <Section title="Appearance">
-        <Card>
-          <SettingRow
-            title="Theme"
-            subtitle="Choose app appearance"
-            value={theme.charAt(0).toUpperCase() + theme.slice(1)}
-            icon={<MaterialIcons name="palette" size={22} color="#6B6B6B" />}
-            onPress={showThemePicker}
-          />
-          <Divider />
-          <SettingRow
-            title="Units"
-            subtitle="Measurement system"
-            value={units === 'metric' ? 'Metric (kg, kWh, Â°C)' : 'Imperial (lbs, kWh, Â°F)'}
-            icon={<Ionicons name="swap-horizontal" size={22} color="#6B6B6B" />}
-            onPress={() => setUnits(units === 'metric' ? 'imperial' : 'metric')}
-          />
-        </Card>
-      </Section>
-
-      {/* Notifications */}
-      <Section title="Notifications & Security">
-        <Card>
-          <SettingToggle
-            title="Push Notifications"
-            subtitle="Receive reminders and insights"
-            value={notificationsEnabled}
-            onChange={setNotificationsEnabled}
-            icon={<Ionicons name="notifications" size={22} color="#1C1C1C" />}
-          />
-          <Divider />
-          <SettingToggle
-            title="Biometric Auth"
-            subtitle="Use Face ID / Fingerprint"
-            value={biometricEnabled}
-            onChange={setBiometricEnabled}
-            icon={<MaterialIcons name="fingerprint" size={22} color="#6B6B6B" />}
-          />
-        </Card>
-      </Section>
-
-      {/* Sync & Data */}
-      <Section title="Sync & Data">
-        <Card>
-          <SettingToggle
-            title="Auto Sync"
-            subtitle="Automatically sync with cloud"
-            value={autoSyncEnabled}
-            onChange={setAutoSyncEnabled}
-            icon={<Ionicons name="sync" size={22} color="#1C1C1C" />}
-          />
-          <Divider />
-          <SettingRow
-            title="Sync Frequency"
-            subtitle="How often to sync"
-            value={`${syncFrequency} minutes`}
-            icon={<Ionicons name="timer" size={22} color="#6B6B6B" />}
-            onPress={showSyncFrequencyPicker}
-          />
-          <Divider />
-          <SettingToggle
-            title="Data Saver Mode"
-            subtitle="Reduce data usage on mobile"
-            value={dataSaverMode}
-            onChange={setDataSaverMode}
-            icon={<Ionicons name="wifi" size={22} color="#6B6B6B" />}
-          />
-          <Divider />
-          <SettingRow
-            title="Last Sync"
-            subtitle={lastSyncAt ? formatSyncTime(lastSyncAt) : 'Never synced'}
-            value="Tap to sync now"
-            icon={<Ionicons name="cloud-download" size={22} color="#6B6B6B" />}
-            onPress={fetchStatus}
-          />
-        </Card>
-      </Section>
-
-      {/* Account */}
-      <Section title="Account">
-        <Card>
-          <SettingRow
-            title="Edit Profile"
-            subtitle="Name, email, password"
-            icon={<Ionicons name="person" size={22} color="#1C1C1C" />}
-            onPress={() => router.push('/settings/profile')}
-          />
-          <Divider />
-          <SettingRow
-            title="Household"
-            subtitle="Manage members and settings"
-            icon={<Ionicons name="people" size={22} color="#6B6B6B" />}
-            onPress={() => router.push('/settings/household')}
-          />
-          <Divider />
-          <SettingRow
-            title="Export Data"
-            subtitle="Download your data as CSV/JSON"
-            icon={<Ionicons name="download" size={22} color="#6B6B6B" />}
-            onPress={() => Alert.alert('Export', 'Feature coming soon')}
-          />
-          <Divider />
-          <SettingRow
-            title="Delete Account"
-            subtitle="Permanently delete your account"
-            icon={<Ionicons name="trash" size={22} color="#444444" />}
-            destructive
-            onPress={handleDeleteAccount}
-          />
-        </Card>
-      </Section>
-
-      {/* About */}
-      <Section title="About">
-        <Card>
-          <SettingRow
-            title="Version"
-            subtitle={`${config.app.version} (Build ${config.app.buildNumber})`}
-            icon={<Ionicons name="information-circle" size={22} color="#6B6B6B" />}
-            onPress={() => Alert.alert('Version', `Sustainability Hub v${config.app.version}\nBuild ${config.app.buildNumber}`)}
-          />
-          <Divider />
-          <SettingRow
-            title="Privacy Policy"
-            icon={<Ionicons name="document-text" size={22} color="#6B6B6B" />}
-            onPress={() => Alert.alert('Privacy Policy', config.app.privacyUrl)}
-          />
-          <Divider />
-          <SettingRow
-            title="Terms of Service"
-            icon={<Ionicons name="document-text" size={22} color="#6B6B6B" />}
-            onPress={() => Alert.alert('Terms of Service', config.app.termsUrl)}
-          />
-          <Divider />
-          <SettingRow
-            title="Contact Support"
-            subtitle={config.app.supportEmail}
-            icon={<Ionicons name="mail" size={22} color="#1C1C1C" />}
-            onPress={() => Alert.alert('Support', config.app.supportEmail)}
-          />
-        </Card>
-      </Section>
-
-      {/* Logout */}
-      <View style={styles.logoutSection}>
-        <Button variant="danger" fullWidth onPress={handleLogout}>
-          <Stack flexDirection="row" alignItems="center" justifyContent="center" gap="2">
-            <Ionicons name="log-out" size={20} />
-            <Text>Logout</Text>
-          </Stack>
-        </Button>
+    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      {/* Profile */}
+      <View style={s.profileCard}>
+        <Image source={{ uri: 'https://i.pravatar.cc/100?img=5' }} style={s.avatar} />
+        <View style={{ flex: 1 }}>
+          <Text style={s.name}>Alex Rivers</Text>
+          <Text style={s.role}>Eco-Conscious Voyager</Text>
+          <View style={s.idPill}><Text style={s.idText}>ID: SH-88219</Text></View>
+        </View>
+        <Ionicons name="chevron-forward" size={16} color="#0A0A0A" />
       </View>
+
+      {/* AI Engine & Configuration */}
+      <View style={s.secHead}><Ionicons name="hardware-chip-outline" size={16} color="#0A0A0A" /><Text style={s.secTitle}>AI ENGINE & CONFIGURATION</Text></View>
+      <View style={s.groupCard}>
+        <Text style={s.groupKicker}>PRIMARY WASTE ANALYSIS MODEL</Text>
+        <View style={s.dropdown}><Text style={s.dropdownText}>GPT-4 Turbo (Precise)</Text><View style={s.dropIcons}><Ionicons name="chevron-down" size={14} color="#0A0A0A" /><Ionicons name="checkmark" size={14} color="#0A0A0A" /></View></View>
+        <Text style={s.help}>Higher precision models consume more tokens but provide better waste classification.</Text>
+        <View style={s.keyHead}><Text style={s.groupKicker}>PERSONAL API KEY</Text><Text style={s.encrypted}>ENCRYPTED</Text></View>
+        <View style={s.keyRow}><TextInput style={s.keyInput} value={showKey ? apiKey : 'sk-proj-7x923kLpQ8...R3z'} secureTextEntry={!showKey} editable={false} /><Pressable onPress={() => setShowKey(!showKey)} style={s.eye}><Ionicons name={showKey ? 'eye-off-outline' : 'eye-outline'} size={16} color="#0A0A0A" /></Pressable></View>
+        <View style={s.btnRow}><Pressable style={s.outlineBtn} onPress={() => Alert.alert('Verify', 'Key verified')}><Text style={s.outlineText}>Verify Key</Text></Pressable><Pressable style={s.outlineBtn} onPress={() => setApiKey('')}><Text style={s.outlineText}>Reset</Text></Pressable></View>
+      </View>
+
+      {/* Management */}
+      <View style={s.secHead}><Ionicons name="settings-outline" size={16} color="#0A0A0A" /><Text style={s.secTitle}>MANAGEMENT</Text></View>
+      <Pressable style={s.accordion} onPress={() => router.push('/settings/profile' as any)}>
+        <View style={s.accIcon}><Ionicons name="person-outline" size={14} color="#0A0A0A" /></View>
+        <View style={{ flex: 1 }}><Text style={s.accTitle}>Account Information</Text><Text style={s.accSub}>Email, password, and public name</Text></View>
+        <Ionicons name="chevron-down" size={16} color="#0A0A0A" />
+      </Pressable>
+
+      <View style={[s.accordion, { flexDirection: 'column', alignItems: 'stretch' }]}>
+        <Pressable style={s.accHeadRow} onPress={() => setHouseholdOpen(!householdOpen)}>
+          <View style={s.accIcon}><Ionicons name="home-outline" size={14} color="#0A0A0A" /></View>
+          <View style={{ flex: 1 }}><Text style={s.accTitle}>Household Settings</Text><Text style={s.accSub}>Manage members and location type</Text></View>
+          <Ionicons name={householdOpen ? 'chevron-up' : 'chevron-down'} size={16} color="#0A0A0A" />
+        </Pressable>
+        {householdOpen && (
+          <View style={s.householdBody}>
+            <View style={s.locationCard}>
+              <View><Text style={s.locationKicker}>Location Type</Text><Text style={s.locationValue}>Detached Single Family</Text></View>
+              <Pressable style={s.changePill}><Text style={s.changeText}>Change</Text></Pressable>
+            </View>
+            <Text style={s.occupants}>Occupants</Text>
+            <View style={s.occupantRow}>
+              <View style={s.occupantIcon}><Ionicons name="home" size={14} color="#9CA3AF" /></View>
+              <Image source={{ uri: 'https://i.pravatar.cc/100?img=12' }} style={s.occupantAvatar} />
+              <View style={s.addOccupant}><Ionicons name="add" size={16} color="#0A0A0A" /></View>
+            </View>
+          </View>
+        )}
+      </View>
+
+      <Pressable style={s.accordion} onPress={() => Alert.alert('Notifications', 'Alerts settings')}>
+        <View style={s.accIcon}><Ionicons name="notifications-outline" size={14} color="#0A0A0A" /></View>
+        <View style={{ flex: 1 }}><Text style={s.accTitle}>Notification Preferences</Text><Text style={s.accSub}>Alerts, reports, and reminders</Text></View>
+        <Ionicons name="chevron-down" size={16} color="#0A0A0A" />
+      </Pressable>
+      <Pressable style={s.accordion} onPress={() => Alert.alert('Privacy', 'Data settings')}>
+        <View style={s.accIcon}><Ionicons name="shield-checkmark-outline" size={14} color="#0A0A0A" /></View>
+        <View style={{ flex: 1 }}><Text style={s.accTitle}>Data & Privacy</Text><Text style={s.accSub}>Control your data visibility and footprint</Text></View>
+        <Ionicons name="chevron-down" size={16} color="#0A0A0A" />
+      </Pressable>
+
+      <Pressable style={s.rowCard} onPress={() => Alert.alert('Security', 'Security settings')}>
+        <View style={s.accIcon}><Ionicons name="key-outline" size={14} color="#0A0A0A" /></View>
+        <Text style={s.accTitle}>Security & Session</Text>
+        <View style={{ flex: 1 }} />
+        <Ionicons name="chevron-forward" size={14} color="#0A0A0A" />
+      </Pressable>
+
+      <Pressable style={s.signOut} onPress={() => Alert.alert('Sign out', 'Sign out?', [{ text: 'Cancel', style: 'cancel' }, { text: 'Sign out', style: 'destructive', onPress: logout }])}>
+        <Ionicons name="log-out-outline" size={16} color="#0A0A0A" />
+        <Text style={s.signOutText}>SIGN OUT OF DEVICE</Text>
+      </Pressable>
+
+      <Text style={s.footer}>SUSTAINABILITY HUB V2.4.0-MONOCHROME</Text>
     </ScrollView>
   );
 };
 
-const showNumberInput = (title: string, key: string, currentValue: number) => {
-  Alert.alert(
-    title,
-    `Current: ${currentValue}`,
-    [
-      { text: 'Cancel', style: 'cancel' },
-      { text: '+10', onPress: () => useSettingsStore.getState().setPreferences({ [key]: currentValue + 10 }) },
-      { text: '+50', onPress: () => useSettingsStore.getState().setPreferences({ [key]: currentValue + 50 }) },
-      { text: 'Reset', onPress: () => useSettingsStore.getState().setPreferences({ [key]: key.includes('carbon') ? 200 : key.includes('energy') ? 400 : 3.5 }) },
-    ]
-  );
-};
-
-const showThemePicker = () => {
-  Alert.alert('Theme', 'Select theme', [
-    { text: 'Light', onPress: () => useSettingsStore.getState().setTheme('light') },
-    { text: 'Dark', onPress: () => useSettingsStore.getState().setTheme('dark') },
-    { text: 'System', onPress: () => useSettingsStore.getState().setTheme('system') },
-    { text: 'Cancel', style: 'cancel' },
-  ]);
-};
-
-const showSyncFrequencyPicker = () => {
-  Alert.alert('Sync Frequency', 'Choose how often to sync', [
-    { text: '1 minute', onPress: () => useSettingsStore.getState().setSyncFrequency(1) },
-    { text: '5 minutes', onPress: () => useSettingsStore.getState().setSyncFrequency(5) },
-    { text: '15 minutes', onPress: () => useSettingsStore.getState().setSyncFrequency(15) },
-    { text: '30 minutes', onPress: () => useSettingsStore.getState().setSyncFrequency(30) },
-    { text: '1 hour', onPress: () => useSettingsStore.getState().setSyncFrequency(60) },
-    { text: 'Cancel', style: 'cancel' },
-  ]);
-};
-
-const formatSyncTime = (isoString: string) => {
-  const date = new Date(isoString);
-  return date.toLocaleString();
-};
-
-const Section = ({ title, children }: any) => (
-  <View style={styles.section}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {children}
-  </View>
-);
-
-const SettingRow = ({ title, subtitle, value, icon, destructive, onPress }: any) => (
-  <TouchableOpacity onPress={onPress} style={styles.settingRow}>
-    {icon && <Stack marginRight={16}>{icon}</Stack>}
-    <Stack flex={1}>
-      <Text style={[styles.settingTitle, destructive && styles.settingTitleDestructive]}>{title}</Text>
-      {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
-    </Stack>
-    <Stack flexDirection="row" alignItems="center" gap="2">
-      {value && <Text style={[styles.settingValueText, destructive && styles.settingValueDestructive]}>{value}</Text>}
-      <Ionicons name="chevron-forward" size={20} color="#444444" />
-    </Stack>
-  </TouchableOpacity>
-);
-
-const SettingToggle = ({ title, subtitle, value, onChange, icon }: any) => (
-  <View style={styles.settingRow}>
-    {icon && <Stack marginRight={16}>{icon}</Stack>}
-    <Stack flex={1}>
-      <Text style={styles.settingTitle}>{title}</Text>
-      {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
-    </Stack>
-    <Switch
-      value={value}
-      onValueChange={onChange}
-      trackColor={{ false: '#DADADA', true: '#1C1C1C' }}
-      thumbColor="#FFFFFF"
-    />
-  </View>
-);
-
-const Divider = () => <View style={styles.divider} />;
-
-const StatItem = ({ label, value }: any) => (
-  <View style={styles.statItem}>
-    <Text style={styles.statValue}>{value}</Text>
-    <Text style={styles.statLabel}>{label}</Text>
-  </View>
-);
-
-const styles = {
+const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF' },
-  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 24 },
-  section: { gap: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#0A0A0A', marginBottom: 12 },
-  profileCard: { backgroundColor: 'rgba(10,10,10,0.05)' },
-  settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16 },
-  settingTitle: { fontSize: 16, color: '#0A0A0A', fontWeight: '500' },
-  settingTitleDestructive: { color: '#444444' },
-  settingSubtitle: { fontSize: 13, color: '#444444', marginTop: 4 },
-  settingValueText: { fontSize: 16, color: '#444444' },
-  settingValueDestructive: { color: '#444444' },
-  divider: { height: 1, backgroundColor: '#DADADA', marginHorizontal: 16 },
-  logoutSection: { marginTop: 24, paddingHorizontal: 16 },
-  statItem: { alignItems: 'center' },
-  statValue: { fontSize: 16, fontWeight: '700', color: '#0A0A0A' },
-  statLabel: { fontSize: 11, color: '#444444' },
-};
+  content: { padding: 16, gap: 14, paddingBottom: 28 },
+  profileCard: { flexDirection: 'row', gap: 12, alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 16, padding: 14, backgroundColor: '#F9FAFA' },
+  avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#EAEAEA' },
+  name: { fontSize: 15, fontWeight: '800', color: '#0A0A0A' },
+  role: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  idPill: { marginTop: 6, alignSelf: 'flex-start', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 9999, paddingHorizontal: 8, paddingVertical: 2, backgroundColor: '#FFFFFF' },
+  idText: { fontSize: 10, fontWeight: '700', color: '#0A0A0A' },
+  secHead: { flexDirection: 'row', gap: 6, alignItems: 'center', marginTop: 6 },
+  secTitle: { fontSize: 11, fontWeight: '800', color: '#0A0A0A', letterSpacing: 0.6 },
+  groupCard: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 14, padding: 14, gap: 10, backgroundColor: '#F9FAFA' },
+  groupKicker: { fontSize: 10, fontWeight: '800', color: '#0A0A0A', letterSpacing: 0.6 },
+  dropdown: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 9999, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#FFFFFF' },
+  dropdownText: { fontSize: 12, fontWeight: '600', color: '#0A0A0A' },
+  dropIcons: { flexDirection: 'row', gap: 6 },
+  help: { fontSize: 10, lineHeight: 14, color: '#6B7280' },
+  keyHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  encrypted: { fontSize: 10, fontWeight: '700', color: '#0A0A0A' },
+  keyRow: { flexDirection: 'row', gap: 8, alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 9999, paddingHorizontal: 12, backgroundColor: '#FFFFFF' },
+  keyInput: { flex: 1, fontSize: 12, color: '#0A0A0A', paddingVertical: 10 },
+  eye: { padding: 4 },
+  btnRow: { flexDirection: 'row', gap: 10 },
+  outlineBtn: { flex: 1, borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 9999, paddingVertical: 10, alignItems: 'center', backgroundColor: '#FFFFFF' },
+  outlineText: { fontSize: 12, fontWeight: '700', color: '#0A0A0A' },
+  accordion: { flexDirection: 'row', gap: 10, alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#F9FAFA' },
+  accIcon: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  accTitle: { fontSize: 12, fontWeight: '800', color: '#0A0A0A' },
+  accSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  accHeadRow: { flexDirection: 'row', gap: 10, alignItems: 'center', width: '100%' },
+  householdBody: { marginTop: 12, gap: 10, width: '100%' },
+  locationCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 10, backgroundColor: '#FFFFFF' },
+  locationKicker: { fontSize: 10, fontWeight: '700', color: '#6B7280' },
+  locationValue: { fontSize: 11, fontWeight: '700', color: '#0A0A0A', marginTop: 2 },
+  changePill: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 9999, paddingHorizontal: 10, paddingVertical: 4, backgroundColor: '#F9FAFA' },
+  changeText: { fontSize: 11, fontWeight: '700', color: '#0A0A0A' },
+  occupants: { fontSize: 11, fontWeight: '700', color: '#0A0A0A', marginTop: 4 },
+  occupantRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
+  occupantIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  occupantAvatar: { width: 32, height: 32, borderRadius: 16 },
+  addOccupant: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  rowCard: { flexDirection: 'row', gap: 10, alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#F9FAFA' },
+  signOut: { flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, paddingVertical: 14, backgroundColor: '#FFFFFF' },
+  signOutText: { fontSize: 12, fontWeight: '800', color: '#0A0A0A', letterSpacing: 0.6 },
+  footer: { fontSize: 10, fontWeight: '700', color: '#9CA3AF', textAlign: 'center', letterSpacing: 0.8, marginTop: 8 },
+});

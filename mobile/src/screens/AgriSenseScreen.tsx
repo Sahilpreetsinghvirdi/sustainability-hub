@@ -1,332 +1,142 @@
-// mobile/src/screens/AgriSenseScreen.tsx
-import React, { useState, useEffect } from 'react';
-import {
-  View, ScrollView, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator,
-  TextInput, Image, FlatList,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { Card, Badge, ProgressBar } from '@/components';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
-import {
-  analyzeFertilizer, getWasteStatus, getAgriHistory, saveAgriHistory, clearAgriHistory,
-  AgriAnalysisResponse, AgriHistoryItem, relTime,
-} from '@/services/ai';
-import { router } from 'expo-router';
-
-type Tab = 'analyzer' | 'history';
+import { analyzeFertilizer, getAgriHistory } from '@/services/ai';
 
 export default function AgriSenseScreen() {
-  const [tab, setTab] = useState<Tab>('analyzer');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [crop, setCrop] = useState('');
-  const [growthStage, setGrowthStage] = useState('');
-  const [soilType, setSoilType] = useState('');
-  const [notes, setNotes] = useState('');
   const [analyzing, setAnalyzing] = useState(false);
-  const [result, setResult] = useState<AgriAnalysisResponse | null>(null);
-  const [history, setHistory] = useState<AgriHistoryItem[]>([]);
-  const [statusOk, setStatusOk] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    getWasteStatus().then(s => setStatusOk(s.ai_configured)).catch(() => setStatusOk(false));
-    getAgriHistory().then(setHistory);
-  }, []);
-
-  const pickImage = async (useCamera: boolean) => {
-    const perm = useCamera
-      ? await ImagePicker.requestCameraPermissionsAsync()
-      : await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) {
-      Alert.alert('Permission required', `Please allow ${useCamera ? 'camera' : 'photo library'} access.`);
-      return;
-    }
-    const res = useCamera
-      ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 })
-      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85 });
-    if (!res.canceled && res.assets[0]) {
-      setImageUri(res.assets[0].uri);
-      setResult(null);
-    }
+  const [result, setResult] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  useEffect(() => { getAgriHistory().then(setHistory).catch(() => null); }, []);
+  const pick = async (cam: boolean) => {
+    const perm = cam ? await ImagePicker.requestCameraPermissionsAsync() : await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+    const res = cam ? await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.85 }) : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.85 });
+    if (!res.canceled && res.assets[0]) setImageUri(res.assets[0].uri);
   };
-
-  const runAnalysis = async () => {
-    if (!imageUri) { Alert.alert('No image', 'Capture or pick an image first.'); return; }
-    if (!crop.trim()) { Alert.alert('Crop required', 'Enter the crop/plant name.'); return; }
+  const run = async () => {
+    if (!imageUri) { Alert.alert('No image'); return; }
+    if (!crop.trim()) { Alert.alert('Crop required'); return; }
     setAnalyzing(true);
-    try {
-      const out = await analyzeFertilizer(imageUri, {
-        crop: crop.trim(),
-        growth_stage: growthStage.trim() || undefined,
-        soil_type: soilType.trim() || undefined,
-        notes: notes.trim() || undefined,
-      });
-      setResult(out);
-      const item: AgriHistoryItem = {
-        id: `ag_${Date.now()}`,
-        timestamp: new Date().toISOString(),
-        previewUrl: imageUri,
-        outcome: out,
-        crop: crop.trim(),
-      };
-      await saveAgriHistory(item);
-      setHistory(prev => [item, ...prev.filter(e => e.id !== item.id)]);
-    } catch (e: any) {
-      Alert.alert('Analysis failed', e?.message || 'Unknown error');
-    } finally {
-      setAnalyzing(false);
-    }
+    try { const out = await analyzeFertilizer(imageUri, { crop }); setResult(out); } catch (e: any) { Alert.alert('Failed', e.message); } finally { setAnalyzing(false); }
   };
-
-  const openHistoryItem = (item: AgriHistoryItem) => {
-    setImageUri(item.previewUrl);
-    setCrop(item.crop);
-    setResult(item.outcome);
-    setTab('analyzer');
-  };
-
-  const handleClearHistory = () => {
-    Alert.alert('Clear history', 'Delete all AgriSense history?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Clear', style: 'destructive', onPress: async () => { await clearAgriHistory(); setHistory([]); } },
-    ]);
-  };
-
-  const suitabilityColor = (score: number) => score >= 70 ? colors.success : score >= 40 ? colors.warning : colors.error;
-  const effectiveSuitability = (result: AgriAnalysisResponse): { score: number; label: string; color: string } => {
-    const s = result.verdict.suitability;
-    const score = result.verdict.score;
-    if (s === 'harmful' || score <= 15) return { score: 0, label: 'DO NOT APPLY', color: colors.error };
-    return { score, label: s.replace(/_/g, ' '), color: suitabilityColor(score) };
-  };
-
   return (
-    <View style={styles.container}>
-      <View style={styles.tabBar}>
-        <TouchableOpacity style={[styles.tab, tab === 'analyzer' && styles.tabActive]} onPress={() => setTab('analyzer')}>
-          <Ionicons name="leaf" size={18} color={tab === 'analyzer' ? colors.primary[500] : colors.text.tertiary} />
-          <Text style={[styles.tabText, tab === 'analyzer' && styles.tabTextActive]}>Analyzer</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, tab === 'history' && styles.tabActive]} onPress={() => setTab('history')}>
-          <Ionicons name="time-outline" size={18} color={tab === 'history' ? colors.primary[500] : colors.text.tertiary} />
-          <Text style={[styles.tabText, tab === 'history' && styles.tabTextActive]}>History ({history.length})</Text>
-        </TouchableOpacity>
+    <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+      {/* Top image */}
+      <View style={s.imageWrap}>
+        {imageUri ? <Image source={{ uri: imageUri }} style={s.topImg} /> : <View style={s.topPlaceholder}><Ionicons name="leaf" size={36} color="#0A0A0A" /><Text style={s.topPlaceholderText}>Plant in mug • Sensor Hub</Text></View>}
+      </View>
+      <Text style={s.title}>AGRISENSE CORE</Text>
+      <Text style={s.sub}>Real-time subsurface monitoring and AI-driven soil health analysis.</Text>
+
+      <View style={s.secHead}><View style={s.secIcon}><Ionicons name="layers-outline" size={12} color="#0A0A0A" /></View><Text style={s.secTitle}>AI PROVIDERS</Text><View style={s.pill}><Text style={s.pillText}>4 Active Nodes</Text></View></View>
+      <View style={s.providerRow}><View style={s.providerIcon}><Ionicons name="wifi" size={16} color="#0A0A0A" /></View><View style={{ flex: 1 }}><Text style={s.providerKicker}>TERRAFORM AI</Text><Text style={s.providerValue}>Active</Text></View><Text style={s.providerMs}>12ms</Text></View>
+      <View style={s.providerRow}><View style={s.providerIcon}><Ionicons name="sync" size={16} color="#0A0A0A" /></View><View style={{ flex: 1 }}><Text style={s.providerKicker}>NEURALCROP V4</Text><Text style={s.providerValue}>Syncing</Text></View><Text style={s.providerMs}>--</Text></View>
+      <View style={s.providerRow}><View style={s.providerIcon}><Ionicons name="wifi" size={16} color="#0A0A0A" /></View><View style={{ flex: 1 }}><Text style={s.providerKicker}>AGRICOMPUTE CLOUD</Text><Text style={s.providerValue}>Active</Text></View><Text style={s.providerMs}>45ms</Text></View>
+
+      <View style={s.secHead}><Ionicons name="pulse-outline" size={14} color="#0A0A0A" /><Text style={s.secTitle}>LIVING DATA</Text></View>
+      <View style={s.livingGrid}>
+        <View style={s.livingCard}><View style={s.livingIcon}><Ionicons name="water-outline" size={16} color="#FFFFFF" /></View><View style={s.livingBadge}><Text style={s.livingBadgeText}>+21%</Text></View><Text style={s.livingKicker}>SOIL MOISTURE</Text><Text style={s.livingValue}>42.8<Text style={s.livingUnit}> %</Text></Text></View>
+        <View style={s.livingCard}><View style={[s.livingIcon, { backgroundColor: '#0A0A0A' }]}><Ionicons name="thermometer-outline" size={16} color="#FFFFFF" /></View><View style={[s.livingBadge, { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5' }]}><Text style={{ fontSize: 10, fontWeight: '700', color: '#0A0A0A' }}>-0.5°</Text></View><Text style={s.livingKicker}>TEMPERATURE</Text><Text style={s.livingValue}>24.5<Text style={s.livingUnit}> °C</Text></Text></View>
+        <View style={s.livingCard}><View style={s.livingIcon}><Ionicons name="flash-outline" size={16} color="#FFFFFF" /></View><Text style={s.livingKicker}>PH LEVELS</Text><Text style={s.livingValue}>6.8<Text style={s.livingUnit}> pH</Text></Text></View>
+        <View style={s.livingCard}><View style={s.livingIcon}><Ionicons name="water-outline" size={16} color="#FFFFFF" /></View><View style={s.livingBadge}><Text style={s.livingBadgeText}>+12%</Text></View><Text style={s.livingKicker}>HUMIDITY</Text><Text style={s.livingValue}>58<Text style={s.livingUnit}> %</Text></Text></View>
       </View>
 
-      {tab === 'analyzer' ? (
-        <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-          {statusOk === false && (
-            <Card variant="filled" padding="md" style={styles.statusCard}>
-              <Ionicons name="warning" size={20} color={colors.warning} />
-              <Text style={styles.statusText}>AI not configured. Set API key in Settings.</Text>
-            </Card>
-          )}
+      <View style={s.healthCard}>
+        <View style={s.healthHead}><View><Text style={s.healthTitle}>Soil Health Score</Text><Text style={s.healthSub}>Composite AI Assessment</Text></View><View style={s.scoreRing}><Text style={s.scoreText}>84</Text></View></View>
+        <View style={s.npkRow}><Text style={s.npkLabel}>NITROGEN (N)</Text><Text style={s.npkBadge}>OPTIMAL</Text></View><View style={s.track}><View style={[s.fill, { width: '84%' }]} /></View>
+        <View style={s.npkRow}><Text style={s.npkLabel}>PHOSPHORUS (P)</Text><Text style={s.npkBadge}>HIGH</Text></View><View style={s.track}><View style={[s.fill, { width: '92%' }]} /></View>
+        <View style={s.npkRow}><Text style={s.npkLabel}>POTASSIUM (K)</Text><Text style={s.npkBadge}>MODERATE</Text></View><View style={s.track}><View style={[s.fill, { width: '62%' }]} /></View>
+        <Pressable style={s.blackBtn} onPress={run} disabled={analyzing}>
+          {analyzing ? <ActivityIndicator color="#fff" /> : <><Ionicons name="sparkles" size={16} color="#fff" /><Text style={s.blackBtnText}>REQUEST AI RECOMMENDATION</Text></>}
+        </Pressable>
+      </View>
 
-          <View style={styles.pickRow}>
-            <TouchableOpacity style={styles.pickBtn} onPress={() => pickImage(true)}>
-              <Ionicons name="camera" size={28} color={colors.primary[500]} />
-              <Text style={styles.pickLabel}>Camera</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.pickBtn} onPress={() => pickImage(false)}>
-              <Ionicons name="images" size={28} color={colors.secondary[500]} />
-              <Text style={styles.pickLabel}>Gallery</Text>
-            </TouchableOpacity>
-          </View>
+      {/* Fertilizer scan inputs */}
+      <View style={s.scanBox}>
+        <Text style={s.scanTitle}>Fertilizer Scan</Text>
+        <View style={s.pickRow}><Pressable style={s.pickBtn} onPress={() => pick(true)}><Ionicons name="camera" size={18} color="#0A0A0A" /><Text style={s.pickText}>Camera</Text></Pressable><Pressable style={s.pickBtn} onPress={() => pick(false)}><Ionicons name="images" size={18} color="#0A0A0A" /><Text style={s.pickText}>Gallery</Text></Pressable></View>
+        <TextInput style={s.input} placeholder="Crop name *" placeholderTextColor="#9CA3AF" value={crop} onChangeText={setCrop} />
+      </View>
 
-          {imageUri && (
-            <Card variant="elevated" padding="none" style={styles.imageCard}>
-              <Image source={{ uri: imageUri }} style={styles.imagePreview} resizeMode="cover" />
-            </Card>
-          )}
+      {result && <View style={s.resultCard}><Text style={s.resultTitle}>{result.product_identification?.name}</Text><Text style={s.resultText}>{result.summary}</Text></View>}
 
-          <TextInput style={styles.input} placeholder="Crop / Plant name *" placeholderTextColor={colors.text.tertiary} value={crop} onChangeText={setCrop} />
-          <TextInput style={styles.input} placeholder="Growth stage (e.g. seedling, vegetative)" placeholderTextColor={colors.text.tertiary} value={growthStage} onChangeText={setGrowthStage} />
-          <TextInput style={styles.input} placeholder="Soil type (optional)" placeholderTextColor={colors.text.tertiary} value={soilType} onChangeText={setSoilType} />
-          <TextInput style={[styles.input, { minHeight: 60 }]} placeholder="Notes (optional)" placeholderTextColor={colors.text.tertiary} value={notes} onChangeText={setNotes} multiline textAlignVertical="top" />
+      <View style={s.secHead}><View style={s.secIcon}><Ionicons name="layers-outline" size={12} color="#0A0A0A" /></View><Text style={s.secTitle}>SYSTEM REGISTRY</Text><Text style={s.viewAll}>VIEW ALL</Text></View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+        <View style={s.registryCard}><Text style={s.regKicker}>2H AGO</Text><Text style={s.regTitle}>Calibrated S-1</Text><View style={s.regSuccess}><View style={s.dot} /><Text style={s.regSuccessText}>Success</Text></View></View>
+        <View style={s.registryCard}><Text style={s.regKicker}>5H AGO</Text><Text style={s.regTitle}>Data Backup</Text><View style={s.regSuccess}><View style={s.dot} /><Text style={s.regSuccessText}>Success</Text></View></View>
+        <View style={s.registryCard}><Text style={s.regKicker}>1D AGO</Text><Text style={s.regTitle}>Update v2</Text><View style={s.regSuccess}><View style={s.dot} /><Text style={s.regSuccessText}>Success</Text></View></View>
+      </ScrollView>
 
-          <TouchableOpacity
-            style={[styles.analyzeBtn, (!imageUri || !crop.trim() || analyzing) && styles.btnDisabled]}
-            onPress={runAnalysis}
-            disabled={!imageUri || !crop.trim() || analyzing}
-          >
-            {analyzing ? <ActivityIndicator color="#fff" /> : (
-              <>
-                <Ionicons name="sparkles" size={20} color="#fff" />
-                <Text style={styles.analyzeBtnText}>Analyze Fertilizer</Text>
-              </>
-            )}
-          </TouchableOpacity>
-
-          {result && (
-            <View style={styles.resultSection}>
-              {/* Harmful warning banner */}
-              {result.verdict.suitability === 'harmful' && (
-                <View style={styles.harmfulBanner}>
-                  <Ionicons name="warning" size={24} color="#fff" />
-                  <Text style={styles.harmfulText}>DO NOT APPLY — Harmful to this crop</Text>
-                </View>
-              )}
-
-              <Card variant="elevated" padding="lg">
-                <Text style={styles.resultSummary}>{result.summary}</Text>
-                <View style={styles.suitRow}>
-                  <Text style={styles.suitLabel}>Suitability</Text>
-                  <Text style={[styles.suitValue, { color: effectiveSuitability(result).color }]}>
-                    {effectiveSuitability(result).label} ({result.verdict.score}/100)
-                  </Text>
-                </View>
-                <ProgressBar
-                  progress={effectiveSuitability(result).score}
-                  variant={result.verdict.score >= 70 ? 'success' : result.verdict.score >= 40 ? 'warning' : 'danger'}
-                  size="sm"
-                  style={{ marginTop: spacing.sm }}
-                />
-                <Text style={styles.reasoning}>{result.verdict.reasoning}</Text>
-              </Card>
-
-              <Card variant="default" padding="md">
-                <Text style={styles.sectionTitle}>Product: {result.product_identification.name}</Text>
-                <Text style={styles.sectionSub}>{result.product_identification.type} — {result.product_identification.description}</Text>
-                <Text style={styles.npkText}>NPK: {result.nutrient_profile.npk}</Text>
-              </Card>
-
-              {result.benefits.length > 0 && (
-                <Card variant="default" padding="md">
-                  <Text style={styles.sectionTitle}>✅ Benefits</Text>
-                  {result.benefits.map((b, i) => <Text key={i} style={styles.listItem}>• {b}</Text>)}
-                </Card>
-              )}
-
-              {result.risks_cautions.length > 0 && (
-                <Card variant="default" padding="md">
-                  <Text style={styles.sectionTitle}>⚠️ Risks & Cautions</Text>
-                  {result.risks_cautions.map((r, i) => <Text key={i} style={styles.listItem}>• {r}</Text>)}
-                </Card>
-              )}
-
-              {result.application_guidance.length > 0 && (
-                <Card variant="default" padding="md">
-                  <Text style={styles.sectionTitle}>📋 Application Steps</Text>
-                  {result.application_guidance.map((step, i) => (
-                    <View key={i} style={styles.stepRow}>
-                      <Text style={styles.stepNum}>{i + 1}.</Text>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.stepTitle}>{step.title}</Text>
-                        <Text style={styles.stepDetail}>{step.detail}</Text>
-                      </View>
-                    </View>
-                  ))}
-                </Card>
-              )}
-
-              <Card variant="filled" padding="md">
-                <Text style={styles.sectionTitle}>📊 Details</Text>
-                <Text style={styles.detailLine}>Dosage: {result.dosage}</Text>
-                <Text style={styles.detailLine}>Best timing: {result.best_timing}</Text>
-                <Text style={styles.detailLine}>pH effect: {result.nutrient_profile.ph_effect}</Text>
-                <Text style={styles.detailLine}>Environmental: {result.environmental_notes}</Text>
-              </Card>
-
-              <Card variant="default" padding="md">
-                <Text style={styles.sectionTitle}>💡 Recommendations</Text>
-                {result.recommendations.map((r, i) => <Text key={i} style={styles.listItem}>• {r}</Text>)}
-              </Card>
-            </View>
-          )}
-        </ScrollView>
-      ) : (
-        <View style={styles.historyContainer}>
-          {history.length > 0 && (
-            <View style={styles.historyHeader}>
-              <Text style={styles.historyCount}>{history.length} analyses</Text>
-              <TouchableOpacity onPress={handleClearHistory}>
-                <Text style={styles.clearBtn}>Clear all</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          {history.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="leaf-outline" size={56} color={colors.text.tertiary} />
-              <Text style={styles.emptyText}>No analyses yet</Text>
-              <Text style={styles.emptySubtext}>Snap a fertilizer to get started</Text>
-            </View>
-          ) : (
-            <FlatList
-              data={history}
-              keyExtractor={item => item.id}
-              contentContainerStyle={styles.historyList}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.historyItem} onPress={() => openHistoryItem(item)}>
-                  <Image source={{ uri: item.thumb || item.previewUrl }} style={styles.historyThumb} />
-                  <View style={styles.historyInfo}>
-                    <Text style={styles.historySummary} numberOfLines={1}>{item.crop} — {item.outcome.product_identification.name}</Text>
-                    <View style={styles.historyMeta}>
-                      <Badge variant={item.outcome.verdict.score >= 70 ? 'success' : item.outcome.verdict.score >= 40 ? 'warning' : 'danger'} size="sm">
-                        {item.outcome.verdict.suitability.replace(/_/g, ' ')}
-                      </Badge>
-                      <Text style={styles.historyTime}>{relTime(item.timestamp)}</Text>
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.text.tertiary} />
-                </TouchableOpacity>
-              )}
-            />
-          )}
-        </View>
-      )}
-    </View>
+      <View style={s.bottomRow}>
+        <View style={s.bottomCard}><Text style={s.bottomKicker}>DIAGNOSTICS</Text><Text style={s.bottomValue}>Run Scan</Text><Ionicons name="information-circle-outline" size={16} color="#0A0A0A" style={{ position: 'absolute', right: 10, top: 10 }} /></View>
+        <Pressable style={s.bottomCard} onPress={() => Alert.alert('Export', 'CSV export coming soon')}><Text style={s.bottomKicker}>EXPORT</Text><Text style={s.bottomValue}>CSV Data</Text><Ionicons name="chevron-forward" size={16} color="#0A0A0A" style={{ position: 'absolute', right: 10, top: 10 }} /></Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background.primary },
-  tabBar: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border.light },
-  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs, paddingVertical: spacing.md },
-  tabActive: { borderBottomWidth: 2, borderBottomColor: colors.primary[500] },
-  tabText: { fontSize: typography.fontSize.sm, color: colors.text.tertiary, fontWeight: typography.fontWeight.medium },
-  tabTextActive: { color: colors.primary[500] },
-  scroll: { flex: 1 },
-  content: { padding: spacing.md, paddingBottom: spacing.xxl, gap: spacing.md },
-  statusCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  statusText: { flex: 1, fontSize: typography.fontSize.sm, color: colors.warning },
-  pickRow: { flexDirection: 'row', gap: spacing.md },
-  pickBtn: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: spacing.xl, backgroundColor: colors.background.card, borderRadius: borderRadius.lg, borderWidth: 1, borderStyle: 'dashed', borderColor: colors.border.medium },
-  pickLabel: { marginTop: spacing.xs, fontSize: typography.fontSize.sm, color: colors.text.secondary, fontWeight: typography.fontWeight.medium },
-  imageCard: { overflow: 'hidden', borderRadius: borderRadius.lg },
-  imagePreview: { width: '100%', height: 200, borderRadius: borderRadius.lg },
-  input: { backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.border.light, borderRadius: borderRadius.md, padding: spacing.md, fontSize: typography.fontSize.md, color: colors.text.primary },
-  analyzeBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: colors.primary[500], paddingVertical: spacing.md, borderRadius: borderRadius.md },
-  btnDisabled: { opacity: 0.5 },
-  analyzeBtnText: { color: '#fff', fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold },
-  resultSection: { gap: spacing.md },
-  harmfulBanner: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.error, padding: spacing.md, borderRadius: borderRadius.md },
-  harmfulText: { color: '#fff', fontSize: typography.fontSize.md, fontWeight: typography.fontWeight.bold, flex: 1 },
-  resultSummary: { fontSize: typography.fontSize.md, color: colors.text.primary, lineHeight: 22, marginBottom: spacing.sm },
-  suitRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  suitLabel: { fontSize: typography.fontSize.sm, color: colors.text.tertiary },
-  suitValue: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold },
-  reasoning: { fontSize: typography.fontSize.sm, color: colors.text.secondary, lineHeight: 20, marginTop: spacing.sm },
-  sectionTitle: { fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold, color: colors.text.primary, marginBottom: spacing.sm },
-  sectionSub: { fontSize: typography.fontSize.sm, color: colors.text.secondary, lineHeight: 20 },
-  npkText: { fontSize: typography.fontSize.md, fontWeight: typography.fontWeight.medium, color: colors.primary[500], marginTop: spacing.sm },
-  listItem: { fontSize: typography.fontSize.sm, color: colors.text.secondary, lineHeight: 20, marginBottom: spacing.xs },
-  stepRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
-  stepNum: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, color: colors.primary[500] },
-  stepTitle: { fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.semibold, color: colors.text.primary },
-  stepDetail: { fontSize: typography.fontSize.sm, color: colors.text.secondary, lineHeight: 18 },
-  detailLine: { fontSize: typography.fontSize.sm, color: colors.text.secondary, lineHeight: 20, marginBottom: spacing.xs },
-  historyContainer: { flex: 1 },
-  historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  historyCount: { fontSize: typography.fontSize.sm, color: colors.text.tertiary },
-  clearBtn: { fontSize: typography.fontSize.sm, color: colors.error, fontWeight: typography.fontWeight.medium },
-  historyList: { padding: spacing.md, gap: spacing.sm },
-  historyItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.background.card, borderRadius: borderRadius.md, padding: spacing.sm, gap: spacing.sm },
-  historyThumb: { width: 56, height: 56, borderRadius: borderRadius.sm },
-  historyInfo: { flex: 1, gap: spacing.xs },
-  historySummary: { fontSize: typography.fontSize.sm, color: colors.text.primary, lineHeight: 18 },
-  historyMeta: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  historyTime: { fontSize: typography.fontSize.xs, color: colors.text.tertiary },
-  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: spacing.md, paddingBottom: 32 },
-  emptyText: { fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.semibold, color: colors.text.primary },
-  emptySubtext: { fontSize: typography.fontSize.md, color: colors.text.tertiary },
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
+  content: { padding: 16, gap: 14, paddingBottom: 28 },
+  imageWrap: { height: 180, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 16, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
+  topImg: { width: '100%', height: '100%' },
+  topPlaceholder: { alignItems: 'center', gap: 8 },
+  topPlaceholderText: { fontSize: 12, color: '#6B7280' },
+  title: { fontSize: 22, fontWeight: '800', color: '#0A0A0A', letterSpacing: -0.4 },
+  sub: { fontSize: 12, lineHeight: 18, color: '#6B7280', marginTop: -8 },
+  secHead: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 },
+  secIcon: { width: 20, height: 20, borderRadius: 6, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  secTitle: { fontSize: 11, fontWeight: '800', color: '#0A0A0A', letterSpacing: 0.6, flex: 1 },
+  pill: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 9999, paddingHorizontal: 8, paddingVertical: 3, backgroundColor: '#F9FAFA' },
+  pillText: { fontSize: 10, fontWeight: '700', color: '#0A0A0A' },
+  viewAll: { fontSize: 11, fontWeight: '700', color: '#0A0A0A' },
+  providerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#F9FAFA' },
+  providerIcon: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E5E5E5', alignItems: 'center', justifyContent: 'center' },
+  providerKicker: { fontSize: 10, fontWeight: '700', color: '#6B7280', letterSpacing: 0.6 },
+  providerValue: { fontSize: 13, fontWeight: '700', color: '#0A0A0A' },
+  providerMs: { fontSize: 12, fontWeight: '700', color: '#0A0A0A' },
+  livingGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  livingCard: { width: '48%', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 14, padding: 12, gap: 8, backgroundColor: '#F9FAFA', position: 'relative' },
+  livingIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center' },
+  livingBadge: { position: 'absolute', right: 10, top: 10, backgroundColor: '#0A0A0A', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 9999 },
+  livingBadgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '700' },
+  livingKicker: { fontSize: 10, fontWeight: '700', color: '#6B7280', letterSpacing: 0.6 },
+  livingValue: { fontSize: 18, fontWeight: '800', color: '#0A0A0A' },
+  livingUnit: { fontSize: 12, fontWeight: '600', color: '#6B7280' },
+  healthCard: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 16, padding: 14, gap: 10, backgroundColor: '#F9FAFA' },
+  healthHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  healthTitle: { fontSize: 14, fontWeight: '800', color: '#0A0A0A' },
+  healthSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  scoreRing: { width: 48, height: 48, borderRadius: 24, borderWidth: 2, borderColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' },
+  scoreText: { fontSize: 14, fontWeight: '800', color: '#0A0A0A' },
+  npkRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 6 },
+  npkLabel: { fontSize: 10, fontWeight: '700', color: '#0A0A0A' },
+  npkBadge: { fontSize: 10, fontWeight: '700', color: '#0A0A0A' },
+  track: { height: 6, backgroundColor: '#EAEAEA', borderRadius: 9999, overflow: 'hidden' },
+  fill: { height: 6, backgroundColor: '#0A0A0A', borderRadius: 9999 },
+  blackBtn: { backgroundColor: '#0A0A0A', borderRadius: 12, paddingVertical: 14, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8, marginTop: 6 },
+  blackBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800', letterSpacing: 0.6 },
+  scanBox: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 14, padding: 12, gap: 10, backgroundColor: '#FFFFFF' },
+  scanTitle: { fontSize: 12, fontWeight: '800', color: '#0A0A0A' },
+  pickRow: { flexDirection: 'row', gap: 10 },
+  pickBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: '#E5E5E5', backgroundColor: '#F9FAFA' },
+  pickText: { fontSize: 13, fontWeight: '600', color: '#0A0A0A' },
+  input: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, fontSize: 13, color: '#0A0A0A', backgroundColor: '#FFFFFF' },
+  resultCard: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#FFFFFF', gap: 6 },
+  resultTitle: { fontSize: 13, fontWeight: '800', color: '#0A0A0A' },
+  resultText: { fontSize: 12, lineHeight: 18, color: '#6B7280' },
+  registryCard: { width: 150, borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, gap: 6, backgroundColor: '#F9FAFA' },
+  regKicker: { fontSize: 10, fontWeight: '700', color: '#6B7280' },
+  regTitle: { fontSize: 12, fontWeight: '700', color: '#0A0A0A' },
+  regSuccess: { flexDirection: 'row', gap: 4, alignItems: 'center', marginTop: 4 },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#0A0A0A' },
+  regSuccessText: { fontSize: 11, color: '#6B7280' },
+  bottomRow: { flexDirection: 'row', gap: 10 },
+  bottomCard: { flex: 1, borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, backgroundColor: '#F9FAFA', minHeight: 64 },
+  bottomKicker: { fontSize: 10, fontWeight: '700', color: '#6B7280', letterSpacing: 0.6 },
+  bottomValue: { fontSize: 12, fontWeight: '700', color: '#0A0A0A', marginTop: 6 },
 });
