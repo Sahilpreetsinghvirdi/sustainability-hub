@@ -30,7 +30,7 @@ export interface InputProps {
   testID?: string;
 }
 
-export const Input = React.forwardRef<TextInput, InputProps>(
+export const Input = React.forwardRef<any, InputProps>(
   (
     {
       label,
@@ -103,25 +103,25 @@ export const Input = React.forwardRef<TextInput, InputProps>(
             onSubmitEditing={onSubmitEditing}
             placeholder={placeholder}
             placeholderTextColor={colors.text.tertiary}
-            disabled={disabled}
+            editable={!disabled}
             secureTextEntry={secureTextEntry && type === 'password'}
             multiline={multiline}
             numberOfLines={numberOfLines}
             autoCapitalize={autoCapitalize}
-            autoCompleteType={autoCompleteType}
+            autoComplete={autoCompleteType as any}
             keyboardType={getKeyboardType()}
             returnKeyType={returnKeyType}
             style={[
               styles.input,
               inputStyle,
-              multiline && styles.inputMultiline,
-              leftIcon && styles.inputWithLeftIcon,
-              rightIcon && styles.inputWithRightIcon,
+              multiline ? styles.inputMultiline : undefined,
+              leftIcon ? styles.inputWithLeftIcon : undefined,
+              rightIcon ? styles.inputWithRightIcon : undefined,
             ]}
             testID={testID}
             accessibilityLabel={label}
             accessibilityHint={helperText}
-            accessibilityState={{ disabled, invalid: isError }}
+            accessibilityState={{ disabled }}
           />
           {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
         </View>

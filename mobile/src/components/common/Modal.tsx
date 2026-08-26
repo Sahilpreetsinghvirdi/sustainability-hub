@@ -1,6 +1,6 @@
 // mobile/src/components/common/Modal.tsx
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, Modal as RNModal, ViewStyle, Animated, Platform } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Modal as RNModal, ViewStyle, Animated, Easing } from 'react-native';
 import { colors, spacing, borderRadius, shadows, animation, typography } from '@/constants/theme';
 
 
@@ -34,13 +34,13 @@ export const Modal: React.FC<ModalProps> = ({
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: animation.duration.fast,
-          easing: animation.easing.easeOut,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(slideAnim, {
           toValue: 0,
           duration: animation.duration.normal,
-          easing: animation.easing.easeOut,
+          easing: Easing.out(Easing.cubic),
           useNativeDriver: true,
         }),
       ]).start();
@@ -49,20 +49,20 @@ export const Modal: React.FC<ModalProps> = ({
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: animation.duration.fast,
-          easing: animation.easing.easeIn,
+          easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
         Animated.timing(slideAnim, {
           toValue: 50,
           duration: animation.duration.fast,
-          easing: animation.easing.easeIn,
+          easing: Easing.in(Easing.cubic),
           useNativeDriver: true,
         }),
       ]).start(() => {});
     }
   }, [visible, fadeAnim, slideAnim]);
 
-  const sizeStyles = {
+  const sizeStyles: Record<string, any> = {
     sm: { width: '85%', maxWidth: 320 },
     md: { width: '90%', maxWidth: 400 },
     lg: { width: '95%', maxWidth: 500 },
@@ -77,7 +77,6 @@ export const Modal: React.FC<ModalProps> = ({
       transparent
       animationType="none"
       onRequestClose={onClose}
-      contentContainerStyle={styles.modalContainer}
     >
       <Animated.View
         style={[

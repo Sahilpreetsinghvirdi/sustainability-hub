@@ -1,6 +1,6 @@
 // mobile/src/components/common/Avatar.tsx
 import React from 'react';
-import { View, Text, Image, StyleSheet, ViewStyle, ImageStyle } from 'react-native';
+import { View, Text, Image, StyleSheet, ViewStyle } from 'react-native';
 import { colors, spacing, borderRadius, typography } from '@/constants/theme';
 
 export interface AvatarProps {
@@ -51,7 +51,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   };
 
   const getColorFromName = (name: string) => {
-    const colors = [
+    const avatarPalette = [
       colors.primary[500],
       colors.secondary[500],
       colors.warning,
@@ -65,7 +65,7 @@ export const Avatar: React.FC<AvatarProps> = ({
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);
     }
-    return colors[Math.abs(hash) % colors.length];
+    return avatarPalette[Math.abs(hash) % avatarPalette.length];
   };
 
   const borderRadiusValue = shape === 'circle' ? borderRadius.full : borderRadius.md;
@@ -132,7 +132,6 @@ export const Avatar: React.FC<AvatarProps> = ({
         },
         style,
       ]}
-      onPress={onPress}
       accessibilityLabel={name || 'User avatar'}
     >
       <Text

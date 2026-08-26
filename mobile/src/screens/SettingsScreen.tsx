@@ -1,4 +1,4 @@
-﻿// mobile/src/screens/SettingsScreen.tsx
+// mobile/src/screens/SettingsScreen.tsx
 import React from 'react';
 import { ScrollView, Alert, Switch, View, TouchableOpacity } from 'react-native';
 import { Stack, Text, Button, Card, Badge, Avatar } from '@/ui';
@@ -57,11 +57,11 @@ export const SettingsScreen: React.FC = () => {
         <Stack flexDirection="row" alignItems="center" gap="4" marginBottom="lg">
           <Avatar size="xl" name={user?.name || 'User'} source={user?.avatar ? { uri: user.avatar } : undefined} status="online" />
           <Stack flex={1}>
-            <Text fontSize="24" fontWeight="800" color="#F8FAFC">{user?.name || 'User'}</Text>
-            <Text fontSize="8" color="#CBD5E1">{user?.email || 'email@example.com'}</Text>
+            <Text fontSize="24" fontWeight="800" color="#F2F8F3">{user?.name || 'User'}</Text>
+            <Text fontSize="8" color="#C4D8CB">{user?.email || 'email@example.com'}</Text>
           </Stack>
         </Stack>
-        <Stack flexDirection="row" justifyContent="space-around" paddingTop="lg" borderTopWidth={1} borderTopColor="#334155">
+        <Stack flexDirection="row" justifyContent="space-around" paddingTop="lg" borderTopWidth={1} borderTopColor="#234736">
           <StatItem label="Carbon" value="187 kg" />
           <StatItem label="Energy" value="423 kWh" />
           <StatItem label="Waste" value="4.2 kg" />
@@ -75,7 +75,7 @@ export const SettingsScreen: React.FC = () => {
             title="Monthly Carbon Budget"
             subtitle="Target kg COâ‚‚e per month"
             value={`${preferences.carbon_budget_monthly_kg} kg`}
-            icon={<Ionicons name="leaf" size={22} color="#22C55E" />}
+            icon={<Ionicons name="leaf" size={22} color="#57C58A" />}
             onPress={() => showNumberInput('Carbon Budget', 'carbon_budget_monthly_kg', preferences.carbon_budget_monthly_kg)}
           />
           <Divider />
@@ -83,7 +83,7 @@ export const SettingsScreen: React.FC = () => {
             title="Monthly Energy Target"
             subtitle="Target kWh per month"
             value={`${preferences.energy_target_kwh_monthly} kWh`}
-            icon={<Ionicons name="flash" size={22} color="#F59E0B" />}
+            icon={<Ionicons name="flash" size={22} color="#F2B85B" />}
             onPress={() => showNumberInput('Energy Target', 'energy_target_kwh_monthly', preferences.energy_target_kwh_monthly)}
           />
           <Divider />
@@ -91,7 +91,7 @@ export const SettingsScreen: React.FC = () => {
             title="Monthly Food Waste Target"
             subtitle="Target kg of avoidable waste"
             value={`${preferences.food_waste_target_kg_monthly} kg`}
-            icon={<Ionicons name="restaurant" size={22} color="#EF4444" />}
+            icon={<Ionicons name="restaurant" size={22} color="#E97966" />}
             onPress={() => showNumberInput('Waste Target', 'food_waste_target_kg_monthly', preferences.food_waste_target_kg_monthly)}
           />
         </Card>
@@ -104,7 +104,7 @@ export const SettingsScreen: React.FC = () => {
             title="Theme"
             subtitle="Choose app appearance"
             value={theme.charAt(0).toUpperCase() + theme.slice(1)}
-            icon={<MaterialIcons name="palette" size={22} color="#0EA5E9" />}
+            icon={<MaterialIcons name="palette" size={22} color="#5DA9C5" />}
             onPress={showThemePicker}
           />
           <Divider />
@@ -112,7 +112,7 @@ export const SettingsScreen: React.FC = () => {
             title="Units"
             subtitle="Measurement system"
             value={units === 'metric' ? 'Metric (kg, kWh, Â°C)' : 'Imperial (lbs, kWh, Â°F)'}
-            icon={<Ionicons name="swap-horizontal" size={22} color="#0EA5E9" />}
+            icon={<Ionicons name="swap-horizontal" size={22} color="#5DA9C5" />}
             onPress={() => setUnits(units === 'metric' ? 'imperial' : 'metric')}
           />
         </Card>
@@ -126,7 +126,7 @@ export const SettingsScreen: React.FC = () => {
             subtitle="Receive reminders and insights"
             value={notificationsEnabled}
             onChange={setNotificationsEnabled}
-            icon={<Ionicons name="notifications" size={22} color="#22C55E" />}
+            icon={<Ionicons name="notifications" size={22} color="#57C58A" />}
           />
           <Divider />
           <SettingToggle
@@ -134,7 +134,7 @@ export const SettingsScreen: React.FC = () => {
             subtitle="Use Face ID / Fingerprint"
             value={biometricEnabled}
             onChange={setBiometricEnabled}
-            icon={<MaterialIcons name="fingerprint" size={22} color="#0EA5E9" />}
+            icon={<MaterialIcons name="fingerprint" size={22} color="#5DA9C5" />}
           />
         </Card>
       </Section>
@@ -147,14 +147,14 @@ export const SettingsScreen: React.FC = () => {
             subtitle="Automatically sync with cloud"
             value={autoSyncEnabled}
             onChange={setAutoSyncEnabled}
-            icon={<Ionicons name="sync" size={22} color="#22C55E" />}
+            icon={<Ionicons name="sync" size={22} color="#57C58A" />}
           />
           <Divider />
           <SettingRow
             title="Sync Frequency"
             subtitle="How often to sync"
             value={`${syncFrequency} minutes`}
-            icon={<Ionicons name="timer" size={22} color="#F59E0B" />}
+            icon={<Ionicons name="timer" size={22} color="#F2B85B" />}
             onPress={showSyncFrequencyPicker}
           />
           <Divider />
@@ -163,14 +163,14 @@ export const SettingsScreen: React.FC = () => {
             subtitle="Reduce data usage on mobile"
             value={dataSaverMode}
             onChange={setDataSaverMode}
-            icon={<Ionicons name="wifi" size={22} color="#0EA5E9" />}
+            icon={<Ionicons name="wifi" size={22} color="#5DA9C5" />}
           />
           <Divider />
           <SettingRow
             title="Last Sync"
             subtitle={lastSyncAt ? formatSyncTime(lastSyncAt) : 'Never synced'}
             value="Tap to sync now"
-            icon={<Ionicons name="cloud-download" size={22} color="#0EA5E9" />}
+            icon={<Ionicons name="cloud-download" size={22} color="#5DA9C5" />}
             onPress={fetchStatus}
           />
         </Card>
@@ -182,28 +182,28 @@ export const SettingsScreen: React.FC = () => {
           <SettingRow
             title="Edit Profile"
             subtitle="Name, email, password"
-            icon={<Ionicons name="person" size={22} color="#22C55E" />}
+            icon={<Ionicons name="person" size={22} color="#57C58A" />}
             onPress={() => router.push('/settings/profile')}
           />
           <Divider />
           <SettingRow
             title="Household"
             subtitle="Manage members and settings"
-            icon={<Ionicons name="people" size={22} color="#0EA5E9" />}
+            icon={<Ionicons name="people" size={22} color="#5DA9C5" />}
             onPress={() => router.push('/settings/household')}
           />
           <Divider />
           <SettingRow
             title="Export Data"
             subtitle="Download your data as CSV/JSON"
-            icon={<Ionicons name="download" size={22} color="#F59E0B" />}
+            icon={<Ionicons name="download" size={22} color="#F2B85B" />}
             onPress={() => Alert.alert('Export', 'Feature coming soon')}
           />
           <Divider />
           <SettingRow
             title="Delete Account"
             subtitle="Permanently delete your account"
-            icon={<Ionicons name="trash" size={22} color="#EF4444" />}
+            icon={<Ionicons name="trash" size={22} color="#E97966" />}
             destructive
             onPress={handleDeleteAccount}
           />
@@ -216,26 +216,26 @@ export const SettingsScreen: React.FC = () => {
           <SettingRow
             title="Version"
             subtitle={`${config.app.version} (Build ${config.app.buildNumber})`}
-            icon={<Ionicons name="information-circle" size={22} color="#0EA5E9" />}
+            icon={<Ionicons name="information-circle" size={22} color="#5DA9C5" />}
             onPress={() => Alert.alert('Version', `Sustainability Hub v${config.app.version}\nBuild ${config.app.buildNumber}`)}
           />
           <Divider />
           <SettingRow
             title="Privacy Policy"
-            icon={<Ionicons name="document-text" size={22} color="#0EA5E9" />}
+            icon={<Ionicons name="document-text" size={22} color="#5DA9C5" />}
             onPress={() => Alert.alert('Privacy Policy', config.app.privacyUrl)}
           />
           <Divider />
           <SettingRow
             title="Terms of Service"
-            icon={<Ionicons name="document-text" size={22} color="#0EA5E9" />}
+            icon={<Ionicons name="document-text" size={22} color="#5DA9C5" />}
             onPress={() => Alert.alert('Terms of Service', config.app.termsUrl)}
           />
           <Divider />
           <SettingRow
             title="Contact Support"
             subtitle={config.app.supportEmail}
-            icon={<Ionicons name="mail" size={22} color="#22C55E" />}
+            icon={<Ionicons name="mail" size={22} color="#57C58A" />}
             onPress={() => Alert.alert('Support', config.app.supportEmail)}
           />
         </Card>
@@ -308,7 +308,7 @@ const SettingRow = ({ title, subtitle, value, icon, destructive, onPress }: any)
     </Stack>
     <Stack flexDirection="row" alignItems="center" gap="2">
       {value && <Text style={[styles.settingValueText, destructive && styles.settingValueDestructive]}>{value}</Text>}
-      <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
+      <Ionicons name="chevron-forward" size={20} color="#C4D8CB" />
     </Stack>
   </TouchableOpacity>
 );
@@ -323,8 +323,8 @@ const SettingToggle = ({ title, subtitle, value, onChange, icon }: any) => (
     <Switch
       value={value}
       onValueChange={onChange}
-      trackColor={{ false: '#334155', true: '#22C55E' }}
-      thumbColor="#0A1628"
+      trackColor={{ false: '#234736', true: '#57C58A' }}
+      thumbColor="#081A14"
     />
   </View>
 );
@@ -339,20 +339,20 @@ const StatItem = ({ label, value }: any) => (
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#0A1628' },
+  container: { flex: 1, backgroundColor: '#081A14' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
   section: { gap: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#F8FAFC', marginBottom: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#F2F8F3', marginBottom: 12 },
   profileCard: { backgroundColor: 'rgba(34,197,94,0.05)' },
   settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 16 },
-  settingTitle: { fontSize: 16, color: '#F8FAFC', fontWeight: '500' },
-  settingTitleDestructive: { color: '#EF4444' },
-  settingSubtitle: { fontSize: 13, color: '#CBD5E1', marginTop: 4 },
-  settingValueText: { fontSize: 16, color: '#CBD5E1' },
-  settingValueDestructive: { color: '#EF4444' },
-  divider: { height: 1, backgroundColor: '#334155', marginHorizontal: 16 },
+  settingTitle: { fontSize: 16, color: '#F2F8F3', fontWeight: '500' },
+  settingTitleDestructive: { color: '#E97966' },
+  settingSubtitle: { fontSize: 13, color: '#C4D8CB', marginTop: 4 },
+  settingValueText: { fontSize: 16, color: '#C4D8CB' },
+  settingValueDestructive: { color: '#E97966' },
+  divider: { height: 1, backgroundColor: '#234736', marginHorizontal: 16 },
   logoutSection: { marginTop: 24, paddingHorizontal: 16 },
   statItem: { alignItems: 'center' },
-  statValue: { fontSize: 16, fontWeight: '700', color: '#F8FAFC' },
-  statLabel: { fontSize: 11, color: '#CBD5E1' },
+  statValue: { fontSize: 16, fontWeight: '700', color: '#F2F8F3' },
+  statLabel: { fontSize: 11, color: '#C4D8CB' },
 };

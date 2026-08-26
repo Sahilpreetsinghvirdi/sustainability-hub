@@ -107,8 +107,8 @@ export const config = {
   // App info
   app: {
     name: 'Sustainability Hub',
-    version: '1.0.0',
-    buildNumber: '1',
+    version: '1.4.6',
+    buildNumber: '2',
     supportEmail: 'support@sustainabilityhub.app',
     privacyUrl: 'https://sustainabilityhub.app/privacy',
     termsUrl: 'https://sustainabilityhub.app/terms',

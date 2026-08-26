@@ -1,98 +1,188 @@
-import React from 'react';
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
-import { Stack, Button, Card, Badge, ProgressBar } from '@/ui';
-import { colors, spacing } from '@/constants/theme';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import React, { useMemo, useState } from 'react';
+import { Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
+import { useCarbon } from '@/hooks/useCarbon';
+import { useEnergy } from '@/hooks/useEnergy';
+import { useFoodWaste } from '@/hooks/useFoodWaste';
+import { borderRadius, colors, shadows, spacing } from '@/constants/theme';
+import { formatCarbon, formatEnergy, formatWeight } from '@/utils/formatters';
 
-export default function HomeScreen() {
-  const features = [
-    { name: 'Dashboard', icon: 'analytics', component: MaterialIcons, color: '#0EA5E9', route: '/dashboard', desc: 'Unified sustainability view' },
-    { name: 'Carbon Tracker', icon: 'leaf', component: Ionicons, color: '#22C55E', route: '/carbon', desc: 'Receipt scanning & footprint' },
-    { name: 'Energy Monitor', icon: 'flash', component: Ionicons, color: '#F59E0B', route: '/energy', desc: 'Bills & appliance audit' },
-    { name: 'Food Waste', icon: 'restaurant', component: Ionicons, color: '#EF4444', route: '/food-waste', desc: 'Meal logging & streaks' },
-    { name: 'Settings', icon: 'settings', component: Ionicons, color: '#64748B', route: '/settings', desc: 'Preferences & sync' },
-    { name: 'Component Demo', icon: 'code', component: Ionicons, color: '#8B5CF6', route: '/tamagui-demo', desc: 'Component showcase' },
-  ];
+const HomeScreen: React.FC = () => {
+  const [refreshing, setRefreshing] = useState(false);
+  const { user } = useAuth();
+  const carbon = useCarbon();
+  const energy = useEnergy();
+  const foodWaste = useFoodWaste();
+  const firstName = user?.name?.trim().split(' ')[0] || 'there';
+  const totalCarbon = carbon.getTotalCarbonThisMonth();
+  const totalEnergy = energy.getTotalEnergyThisMonth();
+  const totalWaste = foodWaste.getAvoidableWasteThisWeek();
+  const streak = foodWaste.getCurrentStreak();
+  const impactScore = useMemo(() => Math.max(0, Math.round(100 - Math.min(100, (totalCarbon / 200) * 100))), [totalCarbon]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([carbon.refresh(), energy.refresh(), foodWaste.refresh()]);
+    setRefreshing(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom={spacing.xl}>
-          <Stack>
-            <Text fontSize={32} fontWeight="800" color="#F8FAFC">Sustainability Hub</Text>
-            <Text fontSize={14} color="#94A3B8" marginTop={4}>Track. Reduce. Thrive.</Text>
-          </Stack>
-          <Stack width={56} height={56} borderRadius={28} backgroundColor="#22C55E" alignItems="center" justifyContent="center">
-            <Ionicons name="leaf" size={28} color="#FFFFFF" />
-          </Stack>
-        </Stack>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary[400]} />}
+      >
+        <View style={styles.topBar}>
+          <View style={styles.brandRow}>
+            <View style={styles.logoMark}><Ionicons name="leaf" size={17} color={colors.background.primary} /></View>
+            <View><Text style={styles.brandName}>Sustainability</Text><Text style={styles.brandCaption}>HUB / PERSONAL</Text></View>
+          </View>
+          <Pressable style={styles.profileButton} onPress={() => router.push('/settings')}>
+            <Text style={styles.profileInitial}>{firstName.charAt(0).toUpperCase()}</Text>
+          </Pressable>
+        </View>
 
-        <Stack flexDirection="row" gap={spacing.sm} marginBottom={spacing.xl}>
-          <QuickStat label="Carbon" value="187 kg" target="200 kg" progress={94} color="#22C55E" icon={<Ionicons name="leaf" size={20} color="#FFFFFF" />} />
-          <QuickStat label="Energy" value="423 kWh" target="400 kWh" progress={106} color="#F59E0B" icon={<Ionicons name="flash" size={20} color="#FFFFFF" />} />
-          <QuickStat label="Waste" value="4.2 kg" target="3.5 kg" progress={120} color="#EF4444" icon={<Ionicons name="restaurant" size={20} color="#FFFFFF" />} />
-        </Stack>
+        <View style={styles.greetingBlock}>
+          <Text style={styles.greeting}>Good morning, {firstName}.</Text>
+          <Text style={styles.subtitle}>One small choice can shift the whole picture.</Text>
+        </View>
 
-        <Text fontSize={20} fontWeight="700" color="#F8FAFC" marginBottom={spacing.md}>Features</Text>
-        <Stack gap={spacing.md} marginBottom={spacing.xl}>
-          {features.map((feature, index) => (
-            <FeatureCard key={index} feature={feature} />
-          ))}
-        </Stack>
+        <View style={styles.heroCard}>
+          <View style={styles.heroCopy}>
+            <Text style={styles.heroKicker}>YOUR MONTHLY PULSE</Text>
+            <Text style={styles.heroTitle}>Make your impact visible.</Text>
+            <Text style={styles.heroBody}>You have logged {carbon.scans.length} carbon {carbon.scans.length === 1 ? 'entry' : 'entries'} this month.</Text>
+            <Pressable style={styles.heroButton} onPress={() => router.push('/dashboard')}>
+              <Text style={styles.heroButtonText}>Open dashboard</Text>
+              <Ionicons name="arrow-forward" size={16} color={colors.background.primary} />
+            </Pressable>
+          </View>
+          <View style={styles.scoreCircle}>
+            <Text style={styles.scoreValue}>{impactScore}</Text>
+            <Text style={styles.scoreLabel}>impact{`\n`}score</Text>
+          </View>
+          <View style={styles.heroLeafOne} /><View style={styles.heroLeafTwo} />
+        </View>
 
-        <Card variant="elevated" padding={16} style={styles.ctaCard}>
-          <Stack alignItems="center" gap={spacing.md}>
-            <Text fontSize={20} fontWeight="700" color="#F8FAFC" textAlign="center">Ready to start?</Text>
-            <Text fontSize={14} color="#94A3B8" textAlign="center">Your sustainability journey begins with one scan</Text>
-            <Button variant="primary" size="lg" fullWidth onPress={() => router.push('/carbon')}>
-              Scan First Receipt
-            </Button>
-          </Stack>
-        </Card>
+        <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Your pulse</Text><Text style={styles.sectionMeta}>THIS MONTH</Text></View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.metricRail}>
+          <MetricTile label="Carbon" value={formatCarbon(totalCarbon)} detail="of 200 kg budget" color={colors.primary[400]} icon="leaf-outline" />
+          <MetricTile label="Energy" value={formatEnergy(totalEnergy)} detail="of 400 kWh target" color={colors.warning} icon="flash-outline" />
+          <MetricTile label="Food waste" value={formatWeight(totalWaste)} detail="avoidable this week" color={colors.error} icon="restaurant-outline" />
+        </ScrollView>
 
-        <Text fontSize={12} color="#94A3B8" textAlign="center" marginTop={spacing.lg}>Built with Expo + FastAPI</Text>
+        <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Add a habit</Text><Text style={styles.sectionMeta}>QUICK ACTIONS</Text></View>
+        <View style={styles.actionGrid}>
+          <ActionTile title="Scan waste" subtitle="AI analyzer" icon="scan-outline" color={colors.error} route="/ai-tools/waste" />
+          <ActionTile title="Add receipt" subtitle="Track carbon" icon="receipt-outline" color={colors.primary[400]} route="/carbon" />
+          <ActionTile title="Log a meal" subtitle="Reduce waste" icon="restaurant-outline" color={colors.warning} route="/food-waste/log" />
+          <ActionTile title="Run an audit" subtitle="Save energy" icon="flash-outline" color={colors.secondary[400]} route="/energy/audit" />
+        </View>
+
+        <Pressable style={styles.streakCard} onPress={() => router.push('/food-waste')}>
+          <View style={styles.streakIcon}><Ionicons name="flame" size={20} color={colors.background.primary} /></View>
+          <View style={styles.streakCopy}><Text style={styles.streakKicker}>ZERO-WASTE STREAK</Text><Text style={styles.streakTitle}>{streak} days and counting</Text></View>
+          <Ionicons name="chevron-forward" size={20} color={colors.warning} />
+        </Pressable>
+
+        <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>Keep exploring</Text><Text style={styles.sectionMeta}>TOOLS</Text></View>
+        <View style={styles.toolList}>
+          <ToolRow title="Full impact dashboard" subtitle="Trends, categories and wins" icon="analytics-outline" color={colors.primary[400]} route="/dashboard" />
+          <ToolRow title="Energy monitor" subtitle="Bills, appliances and savings" icon="flash-outline" color={colors.warning} route="/energy" />
+          <ToolRow title="AI sustainability tools" subtitle="Waste, plants and agriculture" icon="sparkles-outline" color={colors.secondary[400]} route="/ai-tools" />
+        </View>
+
+        <Text style={styles.footer}>Built for better everyday decisions.</Text>
       </ScrollView>
     </SafeAreaView>
   );
-}
+};
 
-const QuickStat = ({ label, value, target, progress, color, icon }: any) => (
-  <Stack flex={1} style={styles.quickStat}>
-    <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom={spacing.xs}>
-      <Stack flexDirection="row" alignItems="center" gap={spacing.xs}>
-        <Stack width={28} height={28} borderRadius={8} backgroundColor={color + '33'} alignItems="center" justifyContent="center">
-          {icon}
-        </Stack>
-        <Text fontSize={12} fontWeight="600" color="#F8FAFC">{label}</Text>
-      </Stack>
-      <Badge variant={progress > 100 ? 'error' : 'success'}>{progress > 100 ? 'Over' : 'On Track'}</Badge>
-    </Stack>
-    <Text fontSize={20} fontWeight="800" color="#F8FAFC">{value}</Text>
-    <Text fontSize={12} color="#94A3B8">Target: {target}</Text>
-    <ProgressBar progress={Math.min(100, progress)} color={progress > 100 ? '#EF4444' : '#22C55E'} style={{ marginTop: spacing.xs }} />
-  </Stack>
+type IconName = keyof typeof Ionicons.glyphMap;
+
+type ActionTileProps = { title: string; subtitle: string; icon: IconName; color: string; route: string };
+
+const ActionTile = ({ title, subtitle, icon, color, route }: ActionTileProps) => (
+  <Pressable style={styles.actionTile} onPress={() => router.push(route as never)}>
+    <View style={[styles.actionIcon, { backgroundColor: `${color}20` }]}><Ionicons name={icon} size={20} color={color} /></View>
+    <Text style={styles.actionTitle}>{title}</Text>
+    <Text style={styles.actionSubtitle}>{subtitle}</Text>
+    <Ionicons name="arrow-forward" size={16} color={colors.text.tertiary} style={styles.actionArrow} />
+  </Pressable>
 );
 
-const FeatureCard = ({ feature }: any) => (
-  <TouchableOpacity style={styles.featureCard} onPress={() => router.push(feature.route)}>
-    <Stack flexDirection="row" alignItems="center" gap={spacing.md} padding={spacing.md}>
-      <Stack width={48} height={48} borderRadius={12} backgroundColor={feature.color + '33'} alignItems="center" justifyContent="center">
-        <feature.component name={feature.icon} size={24} color={feature.color} />
-      </Stack>
-      <Stack flex={1} gap={spacing.xs}>
-        <Text fontSize={16} fontWeight="600" color="#F8FAFC">{feature.name}</Text>
-        <Text fontSize={12} color="#94A3B8">{feature.desc}</Text>
-      </Stack>
-      <Ionicons name="chevron-forward" size={24} color="#94A3B8" />
-    </Stack>
-  </TouchableOpacity>
+const MetricTile = ({ label, value, detail, color, icon }: { label: string; value: string; detail: string; color: string; icon: IconName }) => (
+  <View style={styles.metricTile}>
+    <View style={styles.metricTop}><View style={[styles.metricIcon, { backgroundColor: `${color}20` }]}><Ionicons name={icon} size={17} color={color} /></View><View style={[styles.metricStatus, { backgroundColor: color }]} /></View>
+    <Text style={styles.metricLabel}>{label}</Text><Text style={styles.metricValue}>{value}</Text><Text style={styles.metricDetail}>{detail}</Text>
+  </View>
+);
+
+const ToolRow = ({ title, subtitle, icon, color, route }: { title: string; subtitle: string; icon: IconName; color: string; route: string }) => (
+  <Pressable style={styles.toolRow} onPress={() => router.push(route as never)}>
+    <View style={[styles.toolIcon, { backgroundColor: `${color}20` }]}><Ionicons name={icon} size={19} color={color} /></View>
+    <View style={styles.toolCopy}><Text style={styles.toolTitle}>{title}</Text><Text style={styles.toolSubtitle}>{subtitle}</Text></View>
+    <Ionicons name="arrow-forward" size={18} color={colors.text.tertiary} />
+  </Pressable>
 );
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A1628' },
-  content: { paddingHorizontal: 16, paddingBottom: 48 },
-  quickStat: { padding: 16, borderRadius: 12, backgroundColor: '#1E2D4D' },
-  featureCard: { borderRadius: 12, overflow: 'hidden' },
-  ctaCard: { marginTop: 16 },
+  container: { flex: 1, backgroundColor: colors.background.primary },
+  content: { paddingHorizontal: spacing.md, paddingTop: spacing.sm, paddingBottom: 118, gap: spacing.lg },
+  topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  logoMark: { width: 34, height: 34, borderRadius: borderRadius.sm, backgroundColor: colors.primary[400], alignItems: 'center', justifyContent: 'center' },
+  brandName: { color: colors.text.primary, fontSize: 15, fontWeight: '800', letterSpacing: -0.2 },
+  brandCaption: { color: colors.text.tertiary, fontSize: 9, fontWeight: '800', letterSpacing: 1.25, marginTop: 2 },
+  profileButton: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.border.medium },
+  profileInitial: { color: colors.primary[300], fontSize: 15, fontWeight: '800' },
+  greetingBlock: { gap: spacing.xs, marginTop: spacing.sm },
+  greeting: { color: colors.text.primary, fontSize: 29, lineHeight: 35, fontWeight: '800', letterSpacing: -0.7 },
+  subtitle: { color: colors.text.tertiary, fontSize: 15, lineHeight: 22 },
+  heroCard: { minHeight: 238, overflow: 'hidden', borderRadius: borderRadius.xl, backgroundColor: colors.primary[800], padding: spacing.lg, ...shadows.lg },
+  heroCopy: { maxWidth: '68%', gap: spacing.sm, zIndex: 2 },
+  heroKicker: { color: colors.primary[200], fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
+  heroTitle: { color: colors.neutral[0], fontSize: 25, lineHeight: 31, fontWeight: '800', letterSpacing: -0.4 },
+  heroBody: { color: colors.primary[200], fontSize: 13, lineHeight: 19 },
+  heroButton: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: spacing.xs, backgroundColor: colors.primary[300], paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: borderRadius.full, marginTop: spacing.sm },
+  heroButtonText: { color: colors.background.primary, fontSize: 12, fontWeight: '800' },
+  scoreCircle: { position: 'absolute', right: 18, top: 58, width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', backgroundColor: 'rgba(8,26,20,0.18)', zIndex: 2 },
+  scoreValue: { color: colors.neutral[0], fontSize: 30, lineHeight: 32, fontWeight: '800' },
+  scoreLabel: { color: colors.primary[200], fontSize: 10, lineHeight: 12, fontWeight: '700', textAlign: 'center' },
+  heroLeafOne: { position: 'absolute', width: 174, height: 174, borderRadius: 87, right: -58, bottom: -63, borderWidth: 1, borderColor: 'rgba(138,217,170,0.22)' },
+  heroLeafTwo: { position: 'absolute', width: 250, height: 250, borderRadius: 125, right: -100, top: -84, borderWidth: 1, borderColor: 'rgba(138,217,170,0.12)' },
+  sectionHeading: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: -spacing.sm },
+  sectionTitle: { color: colors.text.primary, fontSize: 18, fontWeight: '800', letterSpacing: -0.2 },
+  sectionMeta: { color: colors.text.tertiary, fontSize: 10, fontWeight: '800', letterSpacing: 1.1 },
+  metricRail: { gap: spacing.sm, paddingRight: spacing.md },
+  metricTile: { width: 152, minHeight: 132, padding: spacing.md, borderRadius: borderRadius.lg, backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.border.light, gap: spacing.xs },
+  metricTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs },
+  metricIcon: { width: 32, height: 32, borderRadius: borderRadius.sm, alignItems: 'center', justifyContent: 'center' },
+  metricStatus: { width: 6, height: 6, borderRadius: 3 },
+  metricLabel: { color: colors.text.tertiary, fontSize: 12, fontWeight: '700' },
+  metricValue: { color: colors.text.primary, fontSize: 21, fontWeight: '800', letterSpacing: -0.3 },
+  metricDetail: { color: colors.text.tertiary, fontSize: 11, lineHeight: 15 },
+  actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  actionTile: { width: '48%', minHeight: 112, padding: spacing.md, borderRadius: borderRadius.lg, backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.border.light },
+  actionIcon: { width: 34, height: 34, borderRadius: borderRadius.sm, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.sm },
+  actionTitle: { color: colors.text.primary, fontSize: 14, fontWeight: '800' },
+  actionSubtitle: { color: colors.text.tertiary, fontSize: 11, marginTop: 3 },
+  actionArrow: { position: 'absolute', top: spacing.md, right: spacing.md },
+  streakCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, borderRadius: borderRadius.lg, backgroundColor: colors.background.secondary, borderWidth: 1, borderColor: colors.border.medium },
+  streakIcon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.warning },
+  streakCopy: { flex: 1, gap: 2 },
+  streakKicker: { color: colors.warning, fontSize: 9, fontWeight: '800', letterSpacing: 1.2 },
+  streakTitle: { color: colors.text.primary, fontSize: 15, fontWeight: '800' },
+  toolList: { gap: spacing.sm },
+  toolRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, borderRadius: borderRadius.lg, backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.border.light },
+  toolIcon: { width: 36, height: 36, borderRadius: borderRadius.sm, alignItems: 'center', justifyContent: 'center' },
+  toolCopy: { flex: 1, gap: 3 },
+  toolTitle: { color: colors.text.primary, fontSize: 14, fontWeight: '700' },
+  toolSubtitle: { color: colors.text.tertiary, fontSize: 12 },
+  footer: { color: colors.text.tertiary, textAlign: 'center', fontSize: 12, marginTop: spacing.sm },
 });
+
+export default HomeScreen;

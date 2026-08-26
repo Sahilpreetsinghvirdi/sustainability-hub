@@ -1,4 +1,4 @@
-﻿// mobile/src/screens/EnergyScreen.tsx
+// mobile/src/screens/EnergyScreen.tsx
 import React, { useState } from 'react';
 import { ScrollView, RefreshControl, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -82,9 +82,9 @@ export const EnergyScreen: React.FC = () => {
         <Stack>
           <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
             <Stack width={40} height={40} borderRadius="md" backgroundColor="rgba(245,158,11,0.2)" alignItems="center" justifyContent="center">
-              <Ionicons name="flash" size={24} color="#F59E0B" />
+              <Ionicons name="flash" size={24} color="#F2B85B" />
             </Stack>
-            <Text fontSize="28" fontWeight="800" color="#F8FAFC">Energy Tracker</Text>
+            <Text fontSize="28" fontWeight="800" color="#F2F8F3">Energy Tracker</Text>
           </Stack>
         </Stack>
       </Stack>
@@ -96,21 +96,21 @@ export const EnergyScreen: React.FC = () => {
           value={`${avgMonthly.toFixed(0)} kWh`}
           subtitle={`${formatCurrency(bills.length ? totalCost / bills.length : 0)}/mo`}
           icon={<Ionicons name="flash" size={22} />}
-          color="#F59E0B"
+          color="#F2B85B"
         />
         <SummaryCard
           title="Total Cost"
           value={formatCurrency(totalCost)}
           subtitle={`${bills.length} bills`}
           icon={<Ionicons name="cash" size={22} />}
-          color="#22C55E"
+          color="#57C58A"
         />
         <SummaryCard
           title="Appliances"
           value={`${appliances.length}`}
           subtitle={recommendations.length > 0 ? `${recommendations.length} tips` : 'Add appliances'}
           icon={<MaterialIcons name="devices" size={22} />}
-          color="#0EA5E9"
+          color="#5DA9C5"
         />
       </Stack>
 
@@ -125,11 +125,11 @@ export const EnergyScreen: React.FC = () => {
       <Card variant="elevated" padding="lg" marginBottom="lg">
         <Stack flexDirection="row" alignItems="center" gap="4">
           <Stack width={56} height={56} borderRadius="lg" backgroundColor="rgba(34,197,94,0.2)" alignItems="center" justifyContent="center">
-            <MaterialIcons name="analytics" size={28} color="#22C55E" />
+            <MaterialIcons name="analytics" size={28} color="#57C58A" />
           </Stack>
           <Stack flex={1}>
-            <Text fontSize="16" fontWeight="600" color="#F8FAFC">Home Energy Audit</Text>
-            <Text fontSize="8" color="#CBD5E1">Get personalized savings recommendations</Text>
+            <Text fontSize="16" fontWeight="600" color="#F2F8F3">Home Energy Audit</Text>
+            <Text fontSize="8" color="#C4D8CB">Get personalized savings recommendations</Text>
           </Stack>
           <Button variant="primary" onPress={async () => { await generateAudit(); router.push('/energy/audit'); }}>
             <Stack flexDirection="row" alignItems="center" gap="2">
@@ -144,7 +144,7 @@ export const EnergyScreen: React.FC = () => {
       {recommendations.length > 0 && (
         <Stack marginBottom="lg">
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-            <Text fontSize="20" fontWeight="700" color="#F8FAFC">Top Recommendations</Text>
+            <Text fontSize="20" fontWeight="700" color="#F2F8F3">Top Recommendations</Text>
             <Button variant="ghost" size="sm" onPress={() => router.push('/energy/audit')}>View All</Button>
           </Stack>
           <Stack gap="2">
@@ -157,14 +157,14 @@ export const EnergyScreen: React.FC = () => {
 
       {/* Bills List */}
       <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Recent Bills</Text>
+        <Text fontSize="20" fontWeight="700" color="#F2F8F3">Recent Bills</Text>
       </Stack>
 
       {bills.length === 0 ? (
         <Card variant="filled" padding="xl" alignItems="center" style={styles.emptyCard}>
-          <Ionicons name="document-text" size={56} color="#CBD5E1" />
-          <Text fontSize="20" fontWeight="600" color="#F8FAFC" marginTop="3" marginBottom="1">No bills yet</Text>
-          <Text fontSize="12" color="#CBD5E1" textAlign="center" marginBottom="4">Scan your first utility bill</Text>
+          <Ionicons name="document-text" size={56} color="#C4D8CB" />
+          <Text fontSize="20" fontWeight="600" color="#F2F8F3" marginTop="3" marginBottom="1">No bills yet</Text>
+          <Text fontSize="12" color="#C4D8CB" textAlign="center" marginBottom="4">Scan your first utility bill</Text>
           <Button variant="primary" onPress={handleScanPress}>Scan Bill</Button>
         </Card>
       ) : (
@@ -181,9 +181,9 @@ const SummaryCard = ({ title, value, subtitle, icon, color }: any) => (
     <Stack width={44} height={44} borderRadius="lg" backgroundColor={color + '20'} alignItems="center" justifyContent="center" marginBottom="2">
       {icon}
     </Stack>
-    <Text fontSize="8" color="#CBD5E1" textTransform="uppercase" letterSpacing={1}>{title}</Text>
-    <Text fontSize="24" fontWeight="800" color="#F8FAFC" marginTop="1">{value}</Text>
-    <Text fontSize="4" color="#CBD5E1">{subtitle}</Text>
+    <Text fontSize="8" color="#C4D8CB" textTransform="uppercase" letterSpacing={1}>{title}</Text>
+    <Text fontSize="24" fontWeight="800" color="#F2F8F3" marginTop="1">{value}</Text>
+    <Text fontSize="4" color="#C4D8CB">{subtitle}</Text>
   </Stack>
 );
 
@@ -200,18 +200,18 @@ const RecommendationCard = ({ rec }: any) => (
   <Card variant="default" padding="md" style={styles.recCard}>
     <Stack flexDirection="row" alignItems="flex-start" gap="3">
       <Stack width={4} height="100%" borderRadius="full" backgroundColor={
-        rec.priority === 'high' ? '#EF4444' :
-        rec.priority === 'medium' ? '#F59E0B' : '#3B82F6'
+        rec.priority === 'high' ? '#E97966' :
+        rec.priority === 'medium' ? '#F2B85B' : '#72A8E5'
       } />
       <Stack flex={1}>
-        <Text fontSize="12" fontWeight="600" color="#F8FAFC">{rec.title}</Text>
-        <Text fontSize="8" color="#CBD5E1" marginTop="1">{rec.description}</Text>
+        <Text fontSize="12" fontWeight="600" color="#F2F8F3">{rec.title}</Text>
+        <Text fontSize="8" color="#C4D8CB" marginTop="1">{rec.description}</Text>
         <Stack flexDirection="row" gap="2" marginTop="3">
           <Badge variant="outline" size="xs">Save ${rec.estimated_savings_usd_year?.toFixed(0)}/yr</Badge>
           <Badge variant="outline" size="xs">{rec.difficulty}</Badge>
         </Stack>
       </Stack>
-      <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
+      <Ionicons name="chevron-forward" size={20} color="#C4D8CB" />
     </Stack>
   </Card>
 );
@@ -221,32 +221,32 @@ const BillCard = ({ bill }: any) => (
     <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
       <Stack flexDirection="row" alignItems="center" gap="3" flex={1}>
         <Stack width={44} height={44} borderRadius="lg" backgroundColor="rgba(245,158,11,0.2)" alignItems="center" justifyContent="center">
-          <Ionicons name="document-text" size={20} color="#F59E0B" />
+          <Ionicons name="document-text" size={20} color="#F2B85B" />
         </Stack>
         <Stack>
           <Stack flexDirection="row" alignItems="center" gap="2">
-            <Text fontSize="12" fontWeight="600" color="#F8FAFC">{bill.utility_provider || 'Utility'}</Text>
+            <Text fontSize="12" fontWeight="600" color="#F2F8F3">{bill.utility_provider || 'Utility'}</Text>
             <Badge variant="outline" size="xs">{formatDate(bill.billing_period_start)} - {formatDate(bill.billing_period_end)}</Badge>
           </Stack>
           <Stack flexDirection="row" gap="3" marginTop="1">
-            <Text fontSize="8" color="#CBD5E1">{formatEnergy(bill.electricity_kwh)}</Text>
-            {bill.gas_therms > 0 && <Text fontSize="8" color="#CBD5E1">{bill.gas_therms.toFixed(1)} therms</Text>}
+            <Text fontSize="8" color="#C4D8CB">{formatEnergy(bill.electricity_kwh)}</Text>
+            {bill.gas_therms > 0 && <Text fontSize="8" color="#C4D8CB">{bill.gas_therms.toFixed(1)} therms</Text>}
           </Stack>
         </Stack>
       </Stack>
       <Stack alignItems="flex-end">
-        <Text fontSize="20" fontWeight="700" color="#F8FAFC">{formatCurrency(bill.total_cost)}</Text>
-        <Text fontSize="4" color="#CBD5E1">Total</Text>
-        <Ionicons name="chevron-forward" size={20} color="#CBD5E1" />
+        <Text fontSize="20" fontWeight="700" color="#F2F8F3">{formatCurrency(bill.total_cost)}</Text>
+        <Text fontSize="4" color="#C4D8CB">Total</Text>
+        <Ionicons name="chevron-forward" size={20} color="#C4D8CB" />
       </Stack>
     </Stack>
   </Card>
 );
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#0A1628' },
+  container: { flex: 1, backgroundColor: '#081A14' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
-  summaryCard: { padding: 16, borderRadius: 16, backgroundColor: '#1E2D4D' },
+  summaryCard: { padding: 16, borderRadius: 16, backgroundColor: '#193A2A' },
   recCard: {},
   billCard: {},
   emptyCard: { gap: 16 },

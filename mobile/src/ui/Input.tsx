@@ -1,5 +1,6 @@
 import React from 'react';
-import { TextInput, Text, View, StyleSheet, ViewStyle, StyleProp } from 'react-native';
+import { TextInput, Text, View, StyleSheet } from 'react-native';
+import { borderRadius, colors, spacing, typography } from '@/constants/theme';
 
 interface InputProps {
   label?: string;
@@ -15,41 +16,33 @@ interface InputProps {
   [key: string]: any;
 }
 
-export const Input: React.FC<InputProps> = ({ label, placeholder, value, onChangeText, secureTextEntry, error, containerStyle, style, leftIcon, rightComponent, ...rest }) => {
-  return (
-    <View style={containerStyle}>
-      {label && <Text style={styles.label}>{label}</Text>}
-      <View style={styles.inputRow}>
-        {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
-        <TextInput
-          style={[styles.input, leftIcon && { paddingLeft: 40 }, rightComponent && { paddingRight: 40 }, error && styles.inputError, style]}
-          placeholder={placeholder}
-          placeholderTextColor="#64748B"
-          value={value}
-          onChangeText={onChangeText}
-          secureTextEntry={secureTextEntry}
-        />
-        {rightComponent && <View style={styles.iconRight}>{rightComponent}</View>}
-      </View>
-      {error && <Text style={styles.error}>{error}</Text>}
+export const Input: React.FC<InputProps> = ({ label, placeholder, value, onChangeText, secureTextEntry, error, containerStyle, style, leftIcon, rightComponent }) => (
+  <View style={containerStyle}>
+    {label && <Text style={styles.label}>{label}</Text>}
+    <View style={styles.inputRow}>
+      {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
+      <TextInput
+        style={[styles.input, leftIcon && styles.inputWithLeftIcon, rightComponent && styles.inputWithRightIcon, error && styles.inputError, style]}
+        placeholder={placeholder}
+        placeholderTextColor={colors.text.tertiary}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+      />
+      {rightComponent && <View style={styles.iconRight}>{rightComponent}</View>}
     </View>
-  );
-};
+    {error && <Text style={styles.error}>{error}</Text>}
+  </View>
+);
 
 const styles = StyleSheet.create({
-  label: { color: '#F8FAFC', fontSize: 14, fontWeight: '600', marginBottom: 6 },
+  label: { color: colors.text.secondary, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, marginBottom: spacing.sm },
   inputRow: { position: 'relative', justifyContent: 'center' },
-  input: {
-    backgroundColor: '#1E293B',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 8,
-    padding: 12,
-    color: '#F8FAFC',
-    fontSize: 16,
-  },
-  inputError: { borderColor: '#EF4444' },
-  error: { color: '#EF4444', fontSize: 12, marginTop: 4 },
-  iconLeft: { position: 'absolute', left: 12, zIndex: 1 },
-  iconRight: { position: 'absolute', right: 12, zIndex: 1 },
+  input: { backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.border.light, borderRadius: borderRadius.md, padding: spacing.md, color: colors.text.primary, fontSize: typography.fontSize.md },
+  inputWithLeftIcon: { paddingLeft: 42 },
+  inputWithRightIcon: { paddingRight: 42 },
+  inputError: { borderColor: colors.error },
+  error: { color: colors.error, fontSize: typography.fontSize.xs, marginTop: spacing.xs },
+  iconLeft: { position: 'absolute', left: spacing.md, zIndex: 1 },
+  iconRight: { position: 'absolute', right: spacing.md, zIndex: 1 },
 });

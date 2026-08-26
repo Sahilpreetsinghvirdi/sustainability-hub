@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal as RNModal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { borderRadius, colors, shadows, spacing, typography } from '@/constants/theme';
 
 interface ModalProps {
   visible: boolean;
@@ -8,28 +9,22 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-export const Modal: React.FC<ModalProps> = ({ visible, onClose, title, children }) => {
-  return (
-    <RNModal visible={visible} transparent animationType="fade">
-      <View style={styles.overlay}>
-        <View style={styles.content}>
-          <View style={styles.header}>
-            {title && <Text style={styles.title}>{title}</Text>}
-            <TouchableOpacity onPress={onClose}>
-              <Text style={styles.close}>✕</Text>
-            </TouchableOpacity>
-          </View>
-          {children}
-        </View>
+export const Modal: React.FC<ModalProps> = ({ visible, onClose, title, children }) => (
+  <RNModal visible={visible} transparent animationType="fade">
+    <View style={styles.overlay}>
+      <View style={styles.content}>
+        <View style={styles.header}>{title && <Text style={styles.title}>{title}</Text>}<TouchableOpacity style={styles.closeButton} onPress={onClose}><Text style={styles.close}>✕</Text></TouchableOpacity></View>
+        {children}
       </View>
-    </RNModal>
-  );
-};
+    </View>
+  </RNModal>
+);
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  content: { backgroundColor: '#1E293B', borderRadius: 16, padding: 20, width: '100%', maxWidth: 400 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  title: { color: '#F8FAFC', fontSize: 18, fontWeight: '700' },
-  close: { color: '#94A3B8', fontSize: 20 },
+  overlay: { flex: 1, backgroundColor: 'rgba(3,12,8,0.78)', justifyContent: 'center', alignItems: 'center', padding: spacing.lg },
+  content: { width: '100%', maxWidth: 420, backgroundColor: colors.background.elevated, borderRadius: borderRadius.xl, padding: spacing.lg, ...shadows.lg },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  title: { color: colors.text.primary, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.bold },
+  closeButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderRadius: 16, backgroundColor: colors.background.tertiary },
+  close: { color: colors.text.tertiary, fontSize: 15 },
 });

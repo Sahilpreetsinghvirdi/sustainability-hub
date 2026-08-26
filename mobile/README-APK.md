@@ -1,58 +1,48 @@
-# Sustainability Hub — Mobile APK (install like Instagram)
+# Sustainability Hub — Release Installers
 
-This app builds a standalone `.apk` you can install on any Android phone. No Expo Go.
+The GitHub Releases page publishes both installable builds for each version:
 
-### Install from GitHub (like Instagram)
+- Android: `SustainabilityHub-vX.Y.Z.apk`
+- Windows: `Sustainability Hub_X.Y.Z_x64_en-US.msi`
 
-1. Go to **Releases**: `https://github.com/Sahilpreetsinghvirdi/sustainability-hub/releases`
-2. Open the latest `mobile-vX.Y.Z` release
-3. Download `SustainabilityHub-mobile-vX.Y.Z.apk`
-4. On your phone: open the file → allow "Install unknown apps" → Install
+The Android APK is a standalone signed build and does not require Expo Go. The Windows installer bundles WebView2 so the desktop app can be installed without a separate runtime download.
 
-To update: download the newer APK from the next `mobile-v*` release.
+## How releases are built
 
-### How releases are built
+`.github/workflows/mobile-apk.yml` builds both installers on GitHub Actions:
 
-`.github/workflows/mobile-apk.yml` runs on GitHub (Ubuntu, Java 17, Android SDK):
+- Android uses Java 17, the Android SDK, Expo prebuild, and a signed Gradle release build.
+- Windows uses Node, Rust, Tauri, and the offline WebView2 installer bundle.
+- The final job publishes both files to one GitHub Release.
 
-- `expo prebuild --platform android --clean`
-- `./gradlew assembleDebug` → `app-debug.apk`
-- Uploads as artifact + creates GitHub Release when you push a `mobile-v*` tag.
+## Trigger a release
 
-### Trigger a new build
+Push a semantic version tag:
 
-**Option A — push a tag (recommended):**
 ```bash
-git tag mobile-v1.0.0
-git push origin mobile-v1.0.0
+git tag v1.4.6
+git push origin v1.4.6
 ```
 
-**Option B — manual dispatch:**
-GitHub → Actions → Mobile APK → Run workflow → enter version `mobile-v1.0.1`.
+The workflow also supports a manual dispatch with a version tag.
 
-### Local build (requires Android SDK + Java 17)
+## Local Android build
 
-Your PC currently has ~1 GB free — free up ≥4 GB first, then:
+Local Android builds require Android SDK, Java 17, and enough free disk space:
 
 ```powershell
 cd mobile
-npm ci
+npm install --legacy-peer-deps
 npx expo prebuild --platform android --clean
+npx expo export --platform android
 cd android
-.\gradlew assembleDebug
-# APK: android/app/build/outputs/apk/debug/app-debug.apk
+.\gradlew assembleRelease --no-daemon
 ```
 
-For a signed release APK, add a keystore at `android/app/release.keystore` and configure `android/gradle.properties`.
+The APK is written to `mobile/android/app/build/outputs/apk/release/app-release.apk`.
 
-### Config
+## Mobile configuration
 
-- `mobile/app.json` — `android.package = com.sustainabilityhub.app`, `versionCode`
-- `mobile/eas.json` — EAS preview/production profiles (`buildType: apk`) if you use `eas build`
-- `mobile/src/constants/config.ts` — API base URL. For phone → PC backend, replace `localhost` with your PC's LAN IP (`ipconfig` → IPv4) and run backend on `0.0.0.0`.
-
-### Troubleshooting
-
-- `INSTALL_FAILED` — uninstall old debug build first.
-- Backend `localhost` on phone won't work — use LAN IP.
-- If GitHub Action fails on `npm ci`, run `npm install` locally and commit updated `package-lock.json`.
+- `mobile/app.json` contains the Android package and version code.
+- `mobile/eas.json` contains optional EAS preview and production profiles.
+- `mobile/src/constants/config.ts` contains the app version shown in Settings.

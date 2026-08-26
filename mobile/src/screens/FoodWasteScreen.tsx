@@ -1,4 +1,4 @@
-﻿// mobile/src/screens/FoodWasteScreen.tsx
+// mobile/src/screens/FoodWasteScreen.tsx
 import React, { useState } from 'react';
 import { ScrollView, RefreshControl, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -56,9 +56,9 @@ export const FoodWasteScreen: React.FC = () => {
         <Stack>
           <Stack flexDirection="row" alignItems="center" gap="2" marginBottom="1">
             <Stack width={40} height={40} borderRadius="md" backgroundColor="rgba(239,68,68,0.2)" alignItems="center" justifyContent="center">
-              <Ionicons name="restaurant" size={24} color="#EF4444" />
+              <Ionicons name="restaurant" size={24} color="#E97966" />
             </Stack>
-            <Text fontSize="28" fontWeight="800" color="#F8FAFC">Food Waste</Text>
+            <Text fontSize="28" fontWeight="800" color="#F2F8F3">Food Waste</Text>
           </Stack>
         </Stack>
       </Stack>
@@ -67,12 +67,12 @@ export const FoodWasteScreen: React.FC = () => {
       <Card variant="elevated" padding="lg" marginBottom="lg" style={styles.streakCard}>
         <Stack flexDirection="row" alignItems="center" justifyContent="space-between" marginBottom="lg">
           <Stack flexDirection="row" alignItems="center" gap="4">
-            <Stack width={64} height={64} borderRadius="full" backgroundColor="#F59E0B" alignItems="center" justifyContent="center">
+            <Stack width={64} height={64} borderRadius="full" backgroundColor="#F2B85B" alignItems="center" justifyContent="center">
               <Entypo name="flame" size={36} color="#FBBF24" />
             </Stack>
             <Stack>
-              <Text fontSize="36" fontWeight="800" color="#F8FAFC">{streak?.current_streak_days || 0}</Text>
-              <Text fontSize="12" color="#CBD5E1">Day Streak</Text>
+              <Text fontSize="36" fontWeight="800" color="#F2F8F3">{streak?.current_streak_days || 0}</Text>
+              <Text fontSize="12" color="#C4D8CB">Day Streak</Text>
             </Stack>
           </Stack>
           <Stack flexDirection="row" gap="6">
@@ -104,53 +104,53 @@ export const FoodWasteScreen: React.FC = () => {
           value={formatWeight(avoidableWaste)}
           subtitle={`${formatCurrency(wasteCost)} wasted`}
           icon={<Ionicons name="trash" size={22} />}
-          color="#EF4444"
+          color="#E97966"
         />
         <SummaryCard
           title="Meals Logged"
           value={`${logs.length}`}
           subtitle={logs.length > 0 ? `${Math.round((zeroWasteMeals / logs.length) * 100)}% zero waste` : 'Start logging'}
           icon={<Ionicons name="restaurant" size={22} />}
-          color="#22C55E"
+          color="#57C58A"
         />
         <SummaryCard
           title="Weekly Target"
           value={formatWeight(3.5 / 4)}
           subtitle={`${Math.min(100, (avoidableWaste / (3.5 / 4)) * 100).toFixed(0)}% used`}
           icon={<Ionicons name="target" size={22} />}
-          color="#F59E0B"
+          color="#F2B85B"
         />
       </Stack>
 
       {/* Charts */}
       <Stack flexDirection="row" gap="3" marginBottom="lg">
         <Card variant="default" padding="lg" flex={1} style={styles.chartCard}>
-          <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Waste by Meal</Text>
+          <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="lg">Waste by Meal</Text>
           {mealData.length > 0 ? (
             <PieChart data={mealData} size={160} innerRadius={50} showLegend={false} />
           ) : (
             <Stack alignItems="center" justifyContent="center" style={{ height: 160 }}>
-              <Ionicons name="restaurant" size={40} color="#CBD5E1" />
-              <Text fontSize="8" color="#CBD5E1" marginTop="2" textAlign="center">Log meals to see breakdown</Text>
+              <Ionicons name="restaurant" size={40} color="#C4D8CB" />
+              <Text fontSize="8" color="#C4D8CB" marginTop="2" textAlign="center">Log meals to see breakdown</Text>
             </Stack>
           )}
         </Card>
         <Card variant="default" padding="lg" flex={1} style={styles.chartCard}>
-          <Text fontSize="16" fontWeight="600" color="#F8FAFC" marginBottom="lg">Weekly Trend</Text>
+          <Text fontSize="16" fontWeight="600" color="#F2F8F3" marginBottom="lg">Weekly Trend</Text>
           <BarChart data={weeklyTrend} width={160} height={120} showLabels barWidth={16} barGap={8} />
         </Card>
       </Stack>
 
       {/* Logs List */}
       <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom="md">
-        <Text fontSize="20" fontWeight="700" color="#F8FAFC">Recent Meals</Text>
+        <Text fontSize="20" fontWeight="700" color="#F2F8F3">Recent Meals</Text>
       </Stack>
 
       {logs.length === 0 ? (
         <Card variant="filled" padding="xl" alignItems="center" style={styles.emptyCard}>
-          <Ionicons name="restaurant" size={56} color="#CBD5E1" />
-          <Text fontSize="20" fontWeight="600" color="#F8FAFC" marginTop="3" marginBottom="1">No meals logged yet</Text>
-          <Text fontSize="12" color="#CBD5E1" textAlign="center" marginBottom="4">Start tracking your food waste</Text>
+          <Ionicons name="restaurant" size={56} color="#C4D8CB" />
+          <Text fontSize="20" fontWeight="600" color="#F2F8F3" marginTop="3" marginBottom="1">No meals logged yet</Text>
+          <Text fontSize="12" color="#C4D8CB" textAlign="center" marginBottom="4">Start tracking your food waste</Text>
           <Button variant="primary" onPress={handleLogPress}>Log First Meal</Button>
         </Card>
       ) : (
@@ -161,12 +161,12 @@ export const FoodWasteScreen: React.FC = () => {
 
       {/* Analyzing Progress */}
       {isAnalyzing && (
-        <Card variant="default" padding="md" marginTop="lg" borderColor="#22C55E" borderWidth={2}>
+        <Card variant="default" padding="md" marginTop="lg" borderColor="#57C58A" borderWidth={2}>
           <Stack flexDirection="row" alignItems="center" gap="3">
-            <Ionicons name="sync" size={28} color="#22C55E" />
+            <Ionicons name="sync" size={28} color="#57C58A" />
             <Stack flex={1}>
-              <Text fontSize="16" fontWeight="600" color="#F8FAFC">Analyzing Photos...</Text>
-              <Text fontSize="8" color="#CBD5E1">{analysisProgress > 0 ? `${analysisProgress}% complete` : 'Identifying food & waste'}</Text>
+              <Text fontSize="16" fontWeight="600" color="#F2F8F3">Analyzing Photos...</Text>
+              <Text fontSize="8" color="#C4D8CB">{analysisProgress > 0 ? `${analysisProgress}% complete` : 'Identifying food & waste'}</Text>
             </Stack>
             <ProgressBar progress={analysisProgress} variant="primary" size="md" style={{ width: 100 }} />
           </Stack>
@@ -178,8 +178,8 @@ export const FoodWasteScreen: React.FC = () => {
 
 const StatItem = ({ label, value }: any) => (
   <Stack alignItems="center">
-    <Text fontSize="12" fontWeight="700" color="#F8FAFC">{value}</Text>
-    <Text fontSize="4" color="#CBD5E1">{label}</Text>
+    <Text fontSize="12" fontWeight="700" color="#F2F8F3">{value}</Text>
+    <Text fontSize="4" color="#C4D8CB">{label}</Text>
   </Stack>
 );
 
@@ -188,9 +188,9 @@ const SummaryCard = ({ title, value, subtitle, icon, color }: any) => (
     <Stack width={44} height={44} borderRadius="lg" backgroundColor={color + '20'} alignItems="center" justifyContent="center" marginBottom="2">
       {icon}
     </Stack>
-    <Text fontSize="8" color="#CBD5E1" textTransform="uppercase" letterSpacing={1}>{title}</Text>
-    <Text fontSize="24" fontWeight="800" color="#F8FAFC" marginTop="1">{value}</Text>
-    <Text fontSize="4" color="#CBD5E1">{subtitle}</Text>
+    <Text fontSize="8" color="#C4D8CB" textTransform="uppercase" letterSpacing={1}>{title}</Text>
+    <Text fontSize="24" fontWeight="800" color="#F2F8F3" marginTop="1">{value}</Text>
+    <Text fontSize="4" color="#C4D8CB">{subtitle}</Text>
   </Stack>
 );
 
@@ -202,27 +202,27 @@ const LogCard = ({ log }: any) => (
       </Stack>
       <Stack flex={1}>
         <Stack flexDirection="row" justifyContent="space-between" marginBottom="2">
-          <Text fontSize="12" fontWeight="600" color="#F8FAFC">{log.meal_type.charAt(0).toUpperCase() + log.meal_type.slice(1)}</Text>
-          <Text fontSize="4" color="#CBD5E1">{formatDate(log.logged_at)}</Text>
+          <Text fontSize="12" fontWeight="600" color="#F2F8F3">{log.meal_type.charAt(0).toUpperCase() + log.meal_type.slice(1)}</Text>
+          <Text fontSize="4" color="#C4D8CB">{formatDate(log.logged_at)}</Text>
         </Stack>
         <Stack flexDirection="row" gap="4">
-          <Stack style={styles.logMetric} borderRightWidth={1} borderRightColor="#334155">
-            <Text fontSize="8" fontWeight="600" color="#F8FAFC">{formatWeight(log.avoidable_waste_kg + log.unavoidable_waste_kg)}</Text>
-            <Text fontSize="4" color="#CBD5E1">Total</Text>
+          <Stack style={styles.logMetric} borderRightWidth={1} borderRightColor="#234736">
+            <Text fontSize="8" fontWeight="600" color="#F2F8F3">{formatWeight(log.avoidable_waste_kg + log.unavoidable_waste_kg)}</Text>
+            <Text fontSize="4" color="#C4D8CB">Total</Text>
           </Stack>
-          <Stack style={styles.logMetric} borderRightWidth={1} borderRightColor="#334155">
-            <Text fontSize="8" fontWeight="600" color="#F8FAFC">{formatWeight(log.avoidable_waste_kg)}</Text>
-            <Text fontSize="4" color="#CBD5E1">Avoidable</Text>
+          <Stack style={styles.logMetric} borderRightWidth={1} borderRightColor="#234736">
+            <Text fontSize="8" fontWeight="600" color="#F2F8F3">{formatWeight(log.avoidable_waste_kg)}</Text>
+            <Text fontSize="4" color="#C4D8CB">Avoidable</Text>
           </Stack>
           <Stack style={styles.logMetric}>
-            <Text fontSize="8" fontWeight="600" color="#F8FAFC">{formatCurrency(log.cost_usd)}</Text>
-            <Text fontSize="4" color="#CBD5E1">Cost</Text>
+            <Text fontSize="8" fontWeight="600" color="#F2F8F3">{formatCurrency(log.cost_usd)}</Text>
+            <Text fontSize="4" color="#C4D8CB">Cost</Text>
           </Stack>
         </Stack>
       </Stack>
       <Stack alignItems="flex-end">
-        <Text fontSize="16" fontWeight="700" color="#EF4444">{formatPercentage(log.avoidable_waste_kg, log.avoidable_waste_kg + log.unavoidable_waste_kg)}</Text>
-        <Text fontSize="4" color="#CBD5E1">Waste Rate</Text>
+        <Text fontSize="16" fontWeight="700" color="#E97966">{formatPercentage(log.avoidable_waste_kg, log.avoidable_waste_kg + log.unavoidable_waste_kg)}</Text>
+        <Text fontSize="4" color="#C4D8CB">Waste Rate</Text>
       </Stack>
     </Stack>
   </Card>
@@ -234,15 +234,15 @@ const generateWeeklyTrendData = (logs: any[]) => {
     label: day,
     value: logs.filter(l => new Date(l.logged_at).getDay() === days.indexOf(day))
       .reduce((s, l) => s + l.avoidable_waste_kg, 0) / Math.max(1, logs.filter(l => new Date(l.logged_at).getDay() === days.indexOf(day)).length) || Math.random() * 0.3,
-    color: '#22C55E',
+    color: '#57C58A',
   }));
 };
 
 const styles = {
-  container: { flex: 1, backgroundColor: '#0A1628' },
+  container: { flex: 1, backgroundColor: '#081A14' },
   content: { paddingHorizontal: 16, paddingBottom: 100, gap: 24 },
   streakCard: { backgroundColor: 'rgba(245,158,11,0.05)' },
-  summaryCard: { padding: 16, borderRadius: 16, backgroundColor: '#1E2D4D' },
+  summaryCard: { padding: 16, borderRadius: 16, backgroundColor: '#193A2A' },
   chartCard: { minHeight: 200 },
   logCard: {},
   emptyCard: { gap: 16 },

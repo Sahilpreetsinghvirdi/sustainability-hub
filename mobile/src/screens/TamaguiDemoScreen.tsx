@@ -28,8 +28,8 @@ export const TamaguiDemoScreen: React.FC = () => {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Stack flexDirection="row" justifyContent="space-between" alignItems="center" marginBottom={spacing.lg}>
         <Stack>
-          <Text fontSize={24} fontWeight="800" color="#F8FAFC">Component Demo</Text>
-          <Text fontSize={14} color="#94A3B8" marginTop={4}>All UI components</Text>
+          <Text fontSize={24} fontWeight="800" color="#F2F8F3">Component Demo</Text>
+          <Text fontSize={14} color="#8EAA99" marginTop={4}>All UI components</Text>
         </Stack>
         <Avatar size={48} name="Demo" />
       </Stack>
@@ -52,12 +52,12 @@ export const TamaguiDemoScreen: React.FC = () => {
 
       <Section title="Cards">
         <Card marginBottom={8}>
-          <Text fontSize={16} fontWeight="600" color="#F8FAFC" marginBottom={4}>Default Card</Text>
-          <Text fontSize={14} color="#CBD5E1">Content with default styling</Text>
+          <Text fontSize={16} fontWeight="600" color="#F2F8F3" marginBottom={4}>Default Card</Text>
+          <Text fontSize={14} color="#C4D8CB">Content with default styling</Text>
         </Card>
         <Card marginBottom={8}>
           <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
-            <Text fontSize={16} fontWeight="600" color="#F8FAFC">With Badge</Text>
+            <Text fontSize={16} fontWeight="600" color="#F2F8F3">With Badge</Text>
             <Badge variant="success">New</Badge>
           </Stack>
         </Card>
@@ -105,18 +105,18 @@ export const TamaguiDemoScreen: React.FC = () => {
       </Section>
 
       <Section title="Charts">
-        <Text fontSize={14} fontWeight="600" color="#F8FAFC" marginBottom={8}>Sparkline</Text>
+        <Text fontSize={14} fontWeight="600" color="#F2F8F3" marginBottom={8}>Sparkline</Text>
         <Sparkline data={[10, 15, 13, 17, 22, 20, 25, 28, 24, 30]} color={colors.primary[500]} width={300} height={80} />
-        <Text fontSize={14} fontWeight="600" color="#F8FAFC" marginTop={16} marginBottom={8}>Bar Chart</Text>
+        <Text fontSize={14} fontWeight="600" color="#F2F8F3" marginTop={16} marginBottom={8}>Bar Chart</Text>
         <BarChart data={barData} height={180} />
-        <Text fontSize={14} fontWeight="600" color="#F8FAFC" marginTop={16} marginBottom={8}>Pie Chart</Text>
+        <Text fontSize={14} fontWeight="600" color="#F2F8F3" marginTop={16} marginBottom={8}>Pie Chart</Text>
         <PieChart data={pieData} size={180} />
       </Section>
 
       <Section title="Modal">
         <Button variant="primary" onPress={() => setModalVisible(true)}>Open Modal</Button>
         <Modal visible={modalVisible} onClose={() => setModalVisible(false)} title="Demo Modal">
-          <Text color="#CBD5E1" marginBottom={12}>This is a modal dialog.</Text>
+          <Text color="#C4D8CB" marginBottom={12}>This is a modal dialog.</Text>
           <ProgressBar progress={75} color={colors.success} />
           <Button variant="primary" fullWidth onPress={() => setModalVisible(false)} style={{ marginTop: 16 }}>Close</Button>
         </Modal>
@@ -127,12 +127,12 @@ export const TamaguiDemoScreen: React.FC = () => {
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <Stack marginBottom={24}>
-    <Text fontSize={18} fontWeight="700" color="#F8FAFC" marginBottom={12}>{title}</Text>
+    <Text fontSize={18} fontWeight="700" color="#F2F8F3" marginBottom={12}>{title}</Text>
     {children}
   </Stack>
 );
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A1628' },
+  container: { flex: 1, backgroundColor: '#081A14' },
   content: { padding: 16, paddingBottom: 48 },
 });

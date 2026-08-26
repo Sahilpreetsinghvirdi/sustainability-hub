@@ -1,124 +1,113 @@
-// mobile/src/screens/DashboardScreen.tsx
 import React from 'react';
-import { View, ScrollView, RefreshControl, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useCarbon } from '@/hooks/useCarbon';
 import { useEnergy } from '@/hooks/useEnergy';
 import { useFoodWaste } from '@/hooks/useFoodWaste';
-import { Card, ProgressBar, Badge, SparklineChart } from '@/components';
-import { colors, spacing, typography, borderRadius, shadows } from '@/constants/theme';
-import { formatCurrency, formatCarbon, formatEnergy, formatWeight, formatPercentage, formatTrend, getCategoryColor } from '@/utils/formatters';
-import { Ionicons, MaterialIcons, Entypo } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { Card, Badge, ProgressBar, SparklineChart } from '@/components';
+import { borderRadius, colors, shadows, spacing, typography } from '@/constants/theme';
+import { formatCarbon, formatEnergy, formatPercentage, formatTrend, formatWeight, getCategoryColor } from '@/utils/formatters';
 
 export const DashboardScreen: React.FC = () => {
-  const { summary, insights, achievements, isLoading, isRefreshing, refresh, loadTrends } = useDashboard('month');
+  const { width } = useWindowDimensions();
+  const { summary, insights, achievements, isLoading, refresh } = useDashboard('month');
   const { getTotalCarbonThisMonth } = useCarbon();
-  const { getTotalEnergyThisMonth, getTotalCostThisMonth } = useEnergy();
-  const { getTotalWasteThisWeek, getAvoidableWasteThisWeek, getCurrentStreak } = useFoodWaste();
+  const { getTotalEnergyThisMonth } = useEnergy();
+  const { getAvoidableWasteThisWeek, getCurrentStreak } = useFoodWaste();
 
   const totalCarbon = getTotalCarbonThisMonth();
   const totalEnergy = getTotalEnergyThisMonth();
-  const totalCost = getTotalCostThisMonth();
-  const totalWaste = getTotalWasteThisWeek();
   const avoidableWaste = getAvoidableWasteThisWeek();
   const streak = getCurrentStreak();
-
-  const carbonBudget = 200; // from preferences
+  const carbonBudget = 200;
   const energyTarget = 400;
   const wasteTarget = 3.5;
+  const annualFootprint = totalCarbon * 12;
+  const footprintProgress = Math.min(100, (annualFootprint / 2000) * 100);
+  const trendWidth = Math.max(120, Math.min(190, width - 190));
 
-  if (isLoading) {
-    return <DashboardSkeleton />;
-  }
+  if (isLoading) return <DashboardSkeleton />;
 
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={refresh} />
-      }
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} tintColor={colors.primary[400]} />}
     >
-      {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Welcome back! 🌱</Text>
-          <Text style={styles.subtitle}>Here's your impact this month</Text>
+        <View style={styles.eyebrowRow}>
+          <View style={styles.logoMark}><Ionicons name="leaf" size={16} color={colors.background.primary} /></View>
+          <Text style={styles.eyebrow}>SUSTAINABILITY HUB</Text>
         </View>
-        <TouchableOpacity style={styles.notificationButton} onPress={() => Alert.alert('Notifications', 'No new notifications')}>
-          <Ionicons name="notifications-outline" size={24} color={colors.text.primary} />
-        </TouchableOpacity>
+        <Pressable style={styles.notificationButton} onPress={() => Alert.alert('Notifications', 'No new notifications')}>
+          <Ionicons name="notifications-outline" size={21} color={colors.text.primary} />
+          <View style={styles.notificationDot} />
+        </Pressable>
       </View>
 
-      {/* Impact Cards */}
-      <View style={styles.cardsGrid}>
-        <ImpactCard
-          title="Carbon"
-          value={formatCarbon(totalCarbon)}
-          trend={formatTrend(totalCarbon, carbonBudget * 0.083)} // ~monthly budget / 12
-          progress={Math.min(100, (totalCarbon / carbonBudget) * 100)}
-          target={`${formatCarbon(carbonBudget)} / month`}
-          icon={<Ionicons name="leaf-outline" size={28} color={colors.primary[500]} />}
-          iconBg="rgba(34, 197, 94, 0.15)"
-          progressColor={colors.primary[500]}
-        />
-        <ImpactCard
-          title="Energy"
-          value={`${totalEnergy.toFixed(0)} kWh`}
-          trend={formatTrend(totalEnergy, energyTarget * 0.083)}
-          progress={Math.min(100, (totalEnergy / energyTarget) * 100)}
-          target={`${energyTarget} kWh / month`}
-          icon={<Ionicons name="flash-outline" size={28} color={colors.warning} />}
-          iconBg="rgba(245, 158, 11, 0.15)"
-          progressColor={colors.warning}
-        />
-        <ImpactCard
-          title="Food Waste"
-          value={formatWeight(avoidableWaste)}
-          trend={formatTrend(avoidableWaste, wasteTarget / 4)}
-          progress={Math.min(100, (avoidableWaste / (wasteTarget / 4)) * 100)}
-          target={`${formatWeight(wasteTarget)} / month`}
-          icon={<Ionicons name="restaurant-outline" size={28} color={colors.error} />}
-          iconBg="rgba(239, 68, 68, 0.15)"
-          progressColor={colors.error}
-        />
+      <View style={styles.titleBlock}>
+        <Text style={styles.title}>Your impact, in motion.</Text>
+        <Text style={styles.subtitle}>A clearer view of the choices adding up this month.</Text>
       </View>
 
-      {/* Total Footprint */}
-      <Card style={styles.totalCard}>
-        <View style={styles.totalHeader}>
-          <Text style={styles.totalTitle}>🎯 Total Annual Footprint</Text>
-          <Badge variant="info" size="sm">Projected</Badge>
+      <View style={styles.heroCard}>
+        <View style={styles.heroOrbLarge} />
+        <View style={styles.heroOrbSmall} />
+        <View style={styles.heroTopRow}>
+          <View>
+            <Text style={styles.heroKicker}>PROJECTED ANNUAL FOOTPRINT</Text>
+            <Text style={styles.heroValue}>{formatCarbon(annualFootprint)}</Text>
+          </View>
+          <View style={styles.heroScore}>
+            <Text style={styles.heroScoreValue}>{Math.max(0, Math.round(100 - footprintProgress))}</Text>
+            <Text style={styles.heroScoreLabel}>score</Text>
+          </View>
         </View>
-        <Text style={styles.totalValue}>{formatCarbon(totalCarbon * 12)}</Text>
-        <ProgressBar
-          progress={Math.min(100, (totalCarbon * 12) / 2000 * 100)}
-          variant={totalCarbon * 12 > 2000 ? 'danger' : totalCarbon * 12 > 1600 ? 'warning' : 'success'}
-          size="lg"
-          showLabel
-          label="Target: < 2.0 t CO₂e/year"
-        />
+        <View style={styles.heroProgressRow}>
+          <ProgressBar
+            progress={footprintProgress}
+            variant={footprintProgress > 80 ? 'danger' : footprintProgress > 60 ? 'warning' : 'success'}
+            size="sm"
+            style={styles.heroProgress}
+          />
+          <Badge variant={footprintProgress > 80 ? 'danger' : 'success'} size="sm">
+            {footprintProgress > 80 ? 'Needs attention' : 'On track'}
+          </Badge>
+        </View>
+        <Text style={styles.heroFootnote}>Target is less than 2.0 t CO₂e per year</Text>
+      </View>
+
+      <SectionHeading title="Monthly pulse" action="View details" onPress={() => router.push('/dashboard')} />
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.metricRail}>
+        <MetricCard title="Carbon" value={formatCarbon(totalCarbon)} target={`${formatCarbon(carbonBudget)} budget`} progress={(totalCarbon / carbonBudget) * 100} trend={formatTrend(totalCarbon, carbonBudget * 0.083)} color={colors.primary[400]} icon="leaf-outline" />
+        <MetricCard title="Energy" value={formatEnergy(totalEnergy)} target={`${energyTarget} kWh target`} progress={(totalEnergy / energyTarget) * 100} trend={formatTrend(totalEnergy, energyTarget * 0.083)} color={colors.warning} icon="flash-outline" />
+        <MetricCard title="Food waste" value={formatWeight(avoidableWaste)} target={`${formatWeight(wasteTarget)} weekly target`} progress={(avoidableWaste / (wasteTarget / 4)) * 100} trend={formatTrend(avoidableWaste, wasteTarget / 4)} color={colors.error} icon="restaurant-outline" />
+      </ScrollView>
+
+      <Card style={styles.focusCard}>
+        <View style={styles.focusIcon}><Ionicons name="sparkles-outline" size={20} color={colors.warning} /></View>
+        <View style={styles.focusCopy}>
+          <Text style={styles.cardEyebrow}>YOUR NEXT BEST MOVE</Text>
+          <Text style={styles.focusTitle}>{insights[0]?.message || 'Log one small habit today to keep your momentum.'}</Text>
+        </View>
+        <Ionicons name="arrow-forward" size={20} color={colors.primary[400]} />
       </Card>
 
-      {/* Carbon Breakdown */}
       {summary?.carbon && (
         <Card>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>🛒 Carbon by Category</Text>
-            <TouchableOpacity onPress={() => router.push('/carbon')}>
-              <Text style={styles.seeAll}>See all</Text>
-            </TouchableOpacity>
-          </View>
+          <SectionHeading title="Where your carbon comes from" action="See all" onPress={() => router.push('/carbon')} />
           <View style={styles.categoryList}>
             {Object.entries(summary.carbon.by_category)
               .filter(([, value]) => value > 0)
               .sort(([, a], [, b]) => b - a)
-              .slice(0, 5)
+              .slice(0, 4)
               .map(([category, value]) => (
                 <CategoryRow
                   key={category}
-                  label={category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  label={category.replace(/_/g, ' ').replace(/\b\w/g, letter => letter.toUpperCase())}
                   value={formatCarbon(value)}
                   percentage={formatPercentage(value, totalCarbon)}
                   color={getCategoryColor(category)}
@@ -128,407 +117,159 @@ export const DashboardScreen: React.FC = () => {
         </Card>
       )}
 
-      {/* Trends */}
       <Card>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>📈 30-Day Trends</Text>
-        </View>
-        <View style={styles.trendsRow}>
-          <TrendChart
-            title="Carbon"
-            data={generateMockTrendData(30, totalCarbon / 30)}
-            color={colors.primary[500]}
-          />
-          <TrendChart
-            title="Energy"
-            data={generateMockTrendData(30, totalEnergy / 30)}
-            color={colors.warning}
-          />
-          <TrendChart
-            title="Waste"
-            data={generateMockTrendData(30, avoidableWaste / 7)}
-            color={colors.error}
-          />
-        </View>
+        <SectionHeading title="30-day movement" />
+        <TrendRow title="Carbon" value={formatCarbon(totalCarbon)} color={colors.primary[400]} data={generateTrendData(totalCarbon / 30)} width={trendWidth} icon="leaf-outline" />
+        <TrendRow title="Energy" value={formatEnergy(totalEnergy)} color={colors.warning} data={generateTrendData(totalEnergy / 30)} width={trendWidth} icon="flash-outline" />
+        <TrendRow title="Food waste" value={formatWeight(avoidableWaste)} color={colors.error} data={generateTrendData(avoidableWaste / 7)} width={trendWidth} icon="restaurant-outline" last />
       </Card>
 
-      {/* Smart Suggestions */}
-      {insights.length > 0 && (
-        <Card>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>💡 Smart Suggestions</Text>
-          </View>
-          <View style={styles.insightsList}>
-            {insights.slice(0, 3).map((insight, index) => (
-              <InsightCard key={index} insight={insight} />
-            ))}
-          </View>
-        </Card>
-      )}
-
-      {/* Achievements */}
       {achievements.length > 0 && (
         <Card>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>🏆 Achievements</Text>
-          </View>
-          <View style={styles.achievementsRow}>
+          <SectionHeading title="Small wins" action="See all" />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.achievementRail}>
             {achievements.slice(0, 5).map((achievement, index) => (
-              <AchievementBadge key={index} achievement={achievement} />
+              <View key={index} style={styles.achievementItem}>
+                <Text style={styles.achievementIcon}>{achievement.icon || '✦'}</Text>
+                <Text style={styles.achievementName}>{achievement.name || achievement}</Text>
+              </View>
             ))}
-          </View>
+          </ScrollView>
         </Card>
       )}
 
-      {/* Streak */}
-      <Card style={styles.streakCard}>
-        <View style={styles.streakContent}>
-          <View style={styles.streakIcon}>
-            <Entypo name="flame" size={32} color={colors.warning} />
-          </View>
-          <View>
-            <Text style={styles.streakNumber}>{streak} Days</Text>
-            <Text style={styles.streakLabel}>Current Zero-Waste Streak</Text>
-          </View>
-          <TouchableOpacity style={styles.streakButton} onPress={() => router.push('/food-waste/log')}>
-            <Text style={styles.streakButtonText}>Log Meal</Text>
-          </TouchableOpacity>
+      <View style={styles.streakCard}>
+        <View style={styles.streakIcon}><Ionicons name="flame" size={23} color={colors.background.primary} /></View>
+        <View style={styles.streakCopy}>
+          <Text style={styles.streakKicker}>KEEP IT GOING</Text>
+          <Text style={styles.streakValue}>{streak} day zero-waste streak</Text>
         </View>
-      </Card>
+        <Pressable style={styles.streakButton} onPress={() => router.push('/food-waste/log')}>
+          <Text style={styles.streakButtonText}>Log meal</Text>
+          <Ionicons name="arrow-forward" size={16} color={colors.background.primary} />
+        </Pressable>
+      </View>
     </ScrollView>
   );
 };
 
-// Sub-components
-const ImpactCard: React.FC<{
-  title: string;
-  value: string;
-  trend: { value: string; isPositive: boolean };
-  progress: number;
-  target: string;
-  icon: React.ReactNode;
-  iconBg: string;
-  progressColor: string;
-}> = ({ title, value, trend, progress, target, icon, iconBg, progressColor }) => (
-  <Card style={styles.impactCard}>
-    <View style={styles.impactHeader}>
-      <View style={[styles.iconWrapper, { backgroundColor: iconBg }]}>{icon}</View>
-      <Badge variant={trend.isPositive ? 'success' : 'danger'} size="sm">
-        {trend.value}
-      </Badge>
-    </View>
-    <Text style={styles.impactValue}>{value}</Text>
-    <Text style={styles.impactLabel}>{title}</Text>
-    <ProgressBar
-      progress={progress}
-      variant={progress > 90 ? 'danger' : progress > 70 ? 'warning' : 'success'}
-      size="sm"
-    />
-    <Text style={styles.impactTarget}>{target}</Text>
-  </Card>
+const SectionHeading = ({ title, action, onPress }: { title: string; action?: string; onPress?: () => void }) => (
+  <View style={styles.sectionHeading}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    {action && <Pressable onPress={onPress}><Text style={styles.sectionAction}>{action}</Text></Pressable>}
+  </View>
 );
 
-const CategoryRow: React.FC<{
-  label: string;
-  value: string;
-  percentage: string;
-  color: string;
-}> = ({ label, value, percentage, color }) => (
-  <View style={styles.categoryRow}>
-    <View style={[styles.categoryColor, { backgroundColor: color }]} />
-    <View style={styles.categoryInfo}>
-      <Text style={styles.categoryLabel}>{label}</Text>
-      <Text style={styles.categoryPercentage}>{percentage}</Text>
+const MetricCard = ({ title, value, target, progress, trend, color, icon }: { title: string; value: string; target: string; progress: number; trend: { value: string; isPositive: boolean }; color: string; icon: keyof typeof Ionicons.glyphMap }) => (
+  <View style={styles.metricCard}>
+    <View style={styles.metricTopRow}>
+      <View style={[styles.metricIcon, { backgroundColor: `${color}20` }]}><Ionicons name={icon} size={18} color={color} /></View>
+      <Badge variant={trend.isPositive ? 'success' : 'danger'} size="sm">{trend.value}</Badge>
     </View>
+    <Text style={styles.metricTitle}>{title}</Text>
+    <Text style={styles.metricValue}>{value}</Text>
+    <ProgressBar progress={progress} variant={progress > 90 ? 'danger' : progress > 70 ? 'warning' : 'success'} size="sm" />
+    <Text style={styles.metricTarget}>{target}</Text>
+  </View>
+);
+
+const CategoryRow = ({ label, value, percentage, color }: { label: string; value: string; percentage: string; color: string }) => (
+  <View style={styles.categoryRow}>
+    <View style={[styles.categoryDot, { backgroundColor: color }]} />
+    <View style={styles.categoryCopy}><Text style={styles.categoryLabel}>{label}</Text><Text style={styles.categoryPercentage}>{percentage}</Text></View>
     <Text style={styles.categoryValue}>{value}</Text>
   </View>
 );
 
-const TrendChart: React.FC<{
-  title: string;
-  data: number[];
-  color: string;
-}> = ({ title, data, color }) => (
-  <View style={styles.trendChart}>
-    <Text style={styles.trendTitle}>{title}</Text>
-    <SparklineChart
-      data={data}
-      color={color}
-      width={100}
-      height={50}
-      strokeWidth={2}
-      fillOpacity={0.15}
-    />
+const TrendRow = ({ title, value, color, data, width, icon, last = false }: { title: string; value: string; color: string; data: number[]; width: number; icon: keyof typeof Ionicons.glyphMap; last?: boolean }) => (
+  <View style={[styles.trendRow, !last && styles.trendRowBorder]}>
+    <View style={[styles.trendIcon, { backgroundColor: `${color}20` }]}><Ionicons name={icon} size={16} color={color} /></View>
+    <View style={styles.trendCopy}><Text style={styles.trendTitle}>{title}</Text><Text style={styles.trendValue}>{value}</Text></View>
+    <SparklineChart data={data} color={color} width={width} height={38} strokeWidth={2.5} fillOpacity={0.15} />
   </View>
 );
 
-const InsightCard: React.FC<{ insight: any }> = ({ insight }) => (
-  <View style={styles.insightCard}>
-    <Ionicons name="lightbulb-outline" size={20} color={colors.warning} />
-    <Text style={styles.insightText}>{insight.message || insight}</Text>
-  </View>
-);
+const generateTrendData = (base: number) => Array.from({ length: 18 }, (_, index) => Math.max(0, base * (0.75 + ((index * 17) % 9) / 20)));
 
-const AchievementBadge: React.FC<{ achievement: any }> = ({ achievement }) => (
-  <View style={styles.achievementBadge}>
-    <Text style={styles.achievementIcon}>{achievement.icon || '🏅'}</Text>
-    <Text style={styles.achievementName}>{achievement.name || achievement}</Text>
-  </View>
-);
-
-const DashboardSkeleton: React.FC = () => (
+const DashboardSkeleton = () => (
   <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-    <View style={styles.header}>
-      <View style={styles.skeletonLine} />
-      <View style={styles.skeletonLineSmall} />
-    </View>
-    <View style={styles.cardsGrid}>
-      <View style={[styles.impactCard, styles.skeletonCard]} />
-      <View style={[styles.impactCard, styles.skeletonCard]} />
-      <View style={[styles.impactCard, styles.skeletonCard]} />
-    </View>
-    <View style={[styles.totalCard, styles.skeletonCard]} />
-    <View style={styles.skeletonCard} />
-    <View style={styles.skeletonCard} />
-    <View style={styles.skeletonCard} />
+    <View style={styles.skeletonHeader}><View style={styles.skeletonSmall} /><View style={styles.skeletonCircle} /></View>
+    <View style={styles.skeletonTitle} />
+    <View style={styles.skeletonHero} />
+    <View style={styles.skeletonMetricRail}><View style={styles.skeletonMetric} /><View style={styles.skeletonMetric} /></View>
+    <View style={styles.skeletonBlock} /><View style={styles.skeletonBlock} />
   </ScrollView>
 );
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background.primary,
-  },
-  content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xxl,
-    gap: spacing.lg,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-  greeting: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-  },
-  subtitle: {
-    fontSize: typography.fontSize.md,
-    color: colors.text.tertiary,
-    marginTop: spacing.xs,
-  },
-  notificationButton: {
-    padding: spacing.sm,
-  },
-  cardsGrid: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  impactCard: {
-    flex: 1,
-    minWidth: 0,
-  },
-  impactHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  iconWrapper: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  impactValue: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-  },
-  impactLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-    marginTop: spacing.xs,
-  },
-  impactTarget: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-    marginTop: spacing.sm,
-  },
-  totalCard: {
-    marginTop: spacing.md,
-  },
-  totalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  totalTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-  },
-  totalValue: {
-    fontSize: typography.fontSize.display,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-    marginBottom: spacing.md,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-  },
-  seeAll: {
-    fontSize: typography.fontSize.sm,
-    color: colors.primary[500],
-    fontWeight: typography.fontWeight.medium,
-  },
-  categoryList: {
-    gap: spacing.sm,
-  },
-  categoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  categoryColor: {
-    width: 12,
-    height: 12,
-    borderRadius: borderRadius.sm,
-  },
-  categoryInfo: {
-    flex: 1,
-  },
-  categoryLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.primary,
-    fontWeight: typography.fontWeight.medium,
-  },
-  categoryPercentage: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.tertiary,
-  },
-  categoryValue: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.semibold,
-    color: colors.text.primary,
-  },
-  trendsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  trendChart: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  trendTitle: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.medium,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-  },
-  insightsList: {
-    gap: spacing.sm,
-  },
-  insightCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    padding: spacing.sm,
-    backgroundColor: colors.background.tertiary,
-    borderRadius: borderRadius.md,
-  },
-  insightText: {
-    flex: 1,
-    fontSize: typography.fontSize.sm,
-    color: colors.text.secondary,
-    lineHeight: 20,
-  },
-  achievementsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  achievementBadge: {
-    flex: 1,
-    alignItems: 'center',
-    padding: spacing.md,
-    backgroundColor: colors.background.tertiary,
-    borderRadius: borderRadius.md,
-  },
-  achievementIcon: {
-    fontSize: 24,
-    marginBottom: spacing.xs,
-  },
-  achievementName: {
-    fontSize: typography.fontSize.xs,
-    color: colors.text.secondary,
-    textAlign: 'center',
-  },
-  streakCard: {
-    backgroundColor: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
-  },
-  streakContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  streakIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.warning,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  streakNumber: {
-    fontSize: typography.fontSize.xxl,
-    fontWeight: typography.fontWeight.bold,
-    color: colors.text.primary,
-  },
-  streakLabel: {
-    fontSize: typography.fontSize.sm,
-    color: colors.text.tertiary,
-  },
-  streakButton: {
-    backgroundColor: colors.primary[500],
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-  },
-  streakButtonText: {
-    color: colors.neutral[0],
-    fontWeight: typography.fontWeight.semibold,
-  },
-  skeletonLine: {
-    height: 28,
-    width: '60%',
-    backgroundColor: colors.background.tertiary,
-    borderRadius: borderRadius.sm,
-  },
-  skeletonLineSmall: {
-    height: 16,
-    width: '40%',
-    backgroundColor: colors.background.tertiary,
-    borderRadius: borderRadius.sm,
-    marginTop: spacing.xs,
-  },
-  skeletonCard: {
-    height: 120,
-    backgroundColor: colors.background.tertiary,
-    borderRadius: borderRadius.lg,
-  },
+  container: { flex: 1, backgroundColor: colors.background.primary },
+  content: { paddingHorizontal: spacing.md, paddingTop: spacing.md, paddingBottom: 118, gap: spacing.lg },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  eyebrowRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  logoMark: { width: 30, height: 30, borderRadius: borderRadius.sm, backgroundColor: colors.primary[400], alignItems: 'center', justifyContent: 'center' },
+  eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: colors.text.tertiary },
+  notificationButton: { width: 42, height: 42, borderRadius: borderRadius.full, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.background.card, borderWidth: 1, borderColor: colors.border.light },
+  notificationDot: { position: 'absolute', top: 10, right: 10, width: 6, height: 6, borderRadius: 3, backgroundColor: colors.warning },
+  titleBlock: { gap: spacing.xs },
+  title: { color: colors.text.primary, fontSize: 30, lineHeight: 36, fontWeight: '800', letterSpacing: -0.6 },
+  subtitle: { color: colors.text.tertiary, fontSize: 15, lineHeight: 22, maxWidth: 310 },
+  heroCard: { minHeight: 196, overflow: 'hidden', borderRadius: borderRadius.xl, padding: spacing.lg, backgroundColor: colors.primary[800], ...shadows.lg },
+  heroOrbLarge: { position: 'absolute', width: 210, height: 210, borderRadius: 105, right: -82, top: -82, backgroundColor: 'rgba(87,197,138,0.16)' },
+  heroOrbSmall: { position: 'absolute', width: 96, height: 96, borderRadius: 48, right: 46, bottom: -52, backgroundColor: 'rgba(242,184,91,0.13)' },
+  heroTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  heroKicker: { color: colors.primary[200], fontSize: 10, fontWeight: '700', letterSpacing: 1.25 },
+  heroValue: { color: colors.neutral[0], fontSize: 36, lineHeight: 44, fontWeight: '800', marginTop: spacing.xs },
+  heroScore: { width: 58, height: 58, borderRadius: 29, borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.12)' },
+  heroScoreValue: { color: colors.neutral[0], fontSize: 20, fontWeight: '800', lineHeight: 22 },
+  heroScoreLabel: { color: colors.primary[200], fontSize: 10, fontWeight: '600' },
+  heroProgressRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.lg },
+  heroProgress: { flex: 1 },
+  heroFootnote: { color: colors.primary[200], fontSize: 12, marginTop: spacing.sm },
+  sectionHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
+  sectionTitle: { color: colors.text.primary, fontSize: 18, fontWeight: '700', letterSpacing: -0.2 },
+  sectionAction: { color: colors.primary[400], fontSize: 13, fontWeight: '700' },
+  metricRail: { gap: spacing.sm, paddingRight: spacing.md },
+  metricCard: { width: 174, padding: spacing.md, backgroundColor: colors.background.card, borderRadius: borderRadius.lg, borderWidth: 1, borderColor: colors.border.light, gap: spacing.sm },
+  metricTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  metricIcon: { width: 34, height: 34, borderRadius: borderRadius.sm, alignItems: 'center', justifyContent: 'center' },
+  metricTitle: { color: colors.text.tertiary, fontSize: 13, fontWeight: '600', marginTop: spacing.xs },
+  metricValue: { color: colors.text.primary, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
+  metricTarget: { color: colors.text.tertiary, fontSize: 11, marginTop: -2 },
+  focusCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.background.secondary, borderColor: colors.border.medium },
+  focusIcon: { width: 38, height: 38, borderRadius: borderRadius.sm, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(242,184,91,0.14)' },
+  focusCopy: { flex: 1, gap: 3 },
+  cardEyebrow: { color: colors.warning, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  focusTitle: { color: colors.text.primary, fontSize: 14, lineHeight: 20, fontWeight: '600' },
+  categoryList: { gap: spacing.md },
+  categoryRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  categoryDot: { width: 10, height: 10, borderRadius: 5 },
+  categoryCopy: { flex: 1, gap: 2 },
+  categoryLabel: { color: colors.text.primary, fontSize: 14, fontWeight: '600' },
+  categoryPercentage: { color: colors.text.tertiary, fontSize: 12 },
+  categoryValue: { color: colors.text.primary, fontSize: 14, fontWeight: '700' },
+  trendRow: { flexDirection: 'row', alignItems: 'center', minHeight: 62, gap: spacing.sm },
+  trendRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border.light },
+  trendIcon: { width: 32, height: 32, borderRadius: borderRadius.sm, alignItems: 'center', justifyContent: 'center' },
+  trendCopy: { width: 80, gap: 2 },
+  trendTitle: { color: colors.text.secondary, fontSize: 13, fontWeight: '600' },
+  trendValue: { color: colors.text.tertiary, fontSize: 11 },
+  achievementRail: { gap: spacing.sm, paddingRight: spacing.md },
+  achievementItem: { width: 102, minHeight: 86, padding: spacing.sm, borderRadius: borderRadius.md, backgroundColor: colors.background.tertiary, alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
+  achievementIcon: { fontSize: 24 },
+  achievementName: { color: colors.text.secondary, fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  streakCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md, borderRadius: borderRadius.lg, backgroundColor: colors.warning },
+  streakIcon: { width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,26,20,0.16)' },
+  streakCopy: { flex: 1, gap: 2 },
+  streakKicker: { color: 'rgba(8,26,20,0.65)', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  streakValue: { color: colors.background.primary, fontSize: 15, lineHeight: 20, fontWeight: '800' },
+  streakButton: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: spacing.sm, paddingVertical: spacing.sm, borderRadius: borderRadius.full, backgroundColor: colors.neutral[0] },
+  streakButtonText: { color: colors.background.primary, fontSize: 12, fontWeight: '800' },
+  skeletonHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  skeletonSmall: { width: 150, height: 24, borderRadius: borderRadius.sm, backgroundColor: colors.background.tertiary },
+  skeletonCircle: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.background.tertiary },
+  skeletonTitle: { width: '74%', height: 34, borderRadius: borderRadius.sm, backgroundColor: colors.background.tertiary },
+  skeletonHero: { height: 196, borderRadius: borderRadius.xl, backgroundColor: colors.background.tertiary },
+  skeletonMetricRail: { flexDirection: 'row', gap: spacing.sm },
+  skeletonMetric: { width: 174, height: 170, borderRadius: borderRadius.lg, backgroundColor: colors.background.tertiary },
+  skeletonBlock: { height: 150, borderRadius: borderRadius.lg, backgroundColor: colors.background.tertiary },
 });
