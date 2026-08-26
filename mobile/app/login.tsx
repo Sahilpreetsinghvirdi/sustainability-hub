@@ -12,7 +12,7 @@ export default function LoginScreen() {
   const [show, setShow] = useState(false);
   const [keep, setKeep] = useState(false);
   const setAuth = useAuthStore(s => s.setAuth);
-  const isConfigured = useAiConfigStore(s => s.isConfigured());
+  const isConfigured = useAiConfigStore(s => (s.provider === 'gemini' ? !!s.geminiKey : !!s.openaiKey));
 
   const onLogin = () => {
     if (!email.trim() || !password.trim()) { Alert.alert('Required', 'Enter email and security key'); return; }
@@ -26,8 +26,8 @@ export default function LoginScreen() {
     };
     const tokens: any = { access_token: 'local_' + Date.now(), refresh_token: 'local_refresh', token_type: 'Bearer', expires_in: 86400 * 30 };
     setAuth(user, tokens);
-    if (!isConfigured()) router.replace('/api-setup' as any);
-    else router.replace('/(tabs)');
+    if (!isConfigured) router.replace('/api-setup' as any);
+    else router.replace('/' as any);
   };
 
   return (

@@ -1,40 +1,69 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { StatusBar } from 'react-native';
+import { StatusBar, Text, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Providers } from '@/store/providers';
 import { colors } from '@/constants/theme';
 import TopNavigation from '@/components/TopNavigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useAiConfigStore } from '@/store/aiConfigStore';
 
 function RootStack() {
-  const { isAuthenticated } = useAuthStore();
-  const isConfigured = useAiConfigStore(s => s.provider === 'gemini' ? !!s.geminiKey : !!s.openaiKey);
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+  const isLoading = useAuthStore(s => s.isLoading);
+  const hasHydrated = useAuthStore.persist.hasHydrated();
+  const isConfigured = useAiConfigStore(s => (s.provider === 'gemini' ? !!s.geminiKey : !!s.openaiKey));
   const segments = useSegments();
   const router = useRouter();
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const inAuth = segments[0] === 'login' || segments[0] === 'create-account' || segments[0] === 'api-setup';
-    if (!isAuthenticated && !inAuth) {
-      router.replace('/login' as any);
-    } else if (isAuthenticated && !isConfigured && !inAuth && segments[0] !== 'api-setup') {
-      // after login, force API setup if not configured
-      // allow user to skip, but we redirect once
-      // we check if they are in tabs - redirect to api-setup
-      const isInTabs = segments[0] === '(tabs)';
-      if (isInTabs) router.replace('/api-setup' as any);
-    } else if (isAuthenticated && isConfigured && inAuth) {
-      router.replace('/(tabs)' as any);
-    }
-  }, [isAuthenticated, isConfigured, segments]);
+    // wait for MMKV rehydration
+    if (!hasHydrated) return;
+    // clear loading after hydrate
+    if (isLoading) useAuthStore.getState().setLoading(false);
+    setReady(true);
+  }, [hasHydrated, isLoading]);
+
+  useEffect(() => {
+    if (!ready || !hasHydrated) return;
+    if (segments.length === 0) return; // navigation not ready
+    const seg0 = segments[0] as string;
+    const inAuth = seg0 === 'login' || seg0 === 'create-account' || seg0 === 'api-setup';
+    // avoid double navigation: use timeout to let navigation mount
+    const t = setTimeout(() => {
+      try {
+        if (!isAuthenticated && !inAuth) {
+          router.replace('/login' as any);
+        } else if (isAuthenticated && !isConfigured && seg0 === '(tabs)') {
+          router.replace('/api-setup' as any);
+        } else if (isAuthenticated && isConfigured && inAuth) {
+          router.replace('/' as any);
+        }
+      } catch {}
+    }, 50);
+    return () => clearTimeout(t);
+  }, [isAuthenticated, isConfigured, segments, ready, hasHydrated]);
+
+  if (!ready || !hasHydrated) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF' }}>
+        <ActivityIndicator color="#0A0A0A" />
+        <Text style={{ marginTop: 12, fontSize: 12, color: '#6B7280', fontWeight: '600' }}>Loading Sustainability Hub…</Text>
+      </View>
+    );
+  }
+
+  const seg0 = segments[0] as string;
+  const inAuth = seg0 === 'login' || seg0 === 'create-account' || seg0 === 'api-setup';
+  const showHeader = !inAuth;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background.primary }} edges={['top', 'bottom']}>
       <Stack
         screenOptions={{
-          header: () => <TopNavigation />,
-          headerShown: true,
+          header: showHeader ? () => <TopNavigation /> : () => null,
+          headerShown: showHeader,
           animation: 'fade',
           contentStyle: { backgroundColor: colors.background.primary },
         }}
@@ -42,7 +71,7 @@ function RootStack() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="create-account" options={{ headerShown: false }} />
         <Stack.Screen name="api-setup" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(tabs)" options={{ headerShown: showHeader }} />
         <Stack.Screen name="carbon/manual" options={{ headerShown: false }} />
         <Stack.Screen name="carbon/review" options={{ headerShown: false }} />
         <Stack.Screen name="energy/audit" options={{ headerShown: false }} />

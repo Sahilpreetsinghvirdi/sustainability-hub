@@ -14,7 +14,7 @@ export default function CreateAccountScreen() {
   const [show2, setShow2] = useState(false);
   const [agree, setAgree] = useState(false);
   const setAuth = useAuthStore(s => s.setAuth);
-  const isConfigured = useAiConfigStore(s => s.isConfigured());
+  const isConfigured = useAiConfigStore(s => (s.provider === 'gemini' ? !!s.geminiKey : !!s.openaiKey));
 
   const onCreate = () => {
     if (!name.trim() || !email.trim() || !pass.trim()) { Alert.alert('Required', 'Fill all fields'); return; }
@@ -27,8 +27,8 @@ export default function CreateAccountScreen() {
     };
     const tokens: any = { access_token: 'local_' + Date.now(), refresh_token: 'local_refresh', token_type: 'Bearer', expires_in: 86400 * 30 };
     setAuth(user, tokens);
-    if (!isConfigured()) router.replace('/api-setup' as any);
-    else router.replace('/(tabs)');
+    if (!isConfigured) router.replace('/api-setup' as any);
+    else router.replace('/' as any);
   };
 
   return (

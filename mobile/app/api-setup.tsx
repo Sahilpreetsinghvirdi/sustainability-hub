@@ -16,7 +16,7 @@ export default function ApiSetupScreen() {
     if (!key) { Alert.alert('Key required', `Enter your ${localProvider === 'gemini' ? 'Gemini' : 'OpenAI'} API key`); return; }
     if (localProvider === 'gemini') { setGeminiKey(key); setProvider('gemini'); }
     else { setOpenaiKey(key); setProvider('openai'); }
-    Alert.alert('Connected', `${localProvider === 'gemini' ? 'Gemini' : 'OpenAI'} configured`, [{ text: 'Continue', onPress: () => router.replace('/(tabs)' as any) }]);
+    Alert.alert('Connected', `${localProvider === 'gemini' ? 'Gemini' : 'OpenAI'} configured`, [{ text: 'Continue', onPress: () => router.replace('/' as any) }]);
   };
 
   return (
@@ -43,7 +43,7 @@ export default function ApiSetupScreen() {
       <View style={s.tipCard}><View style={s.tipIcon}><Ionicons name="information-circle-outline" size={16} color="#0A0A0A" /></View><View style={{ flex: 1 }}><Text style={s.tipTitle}>Why this step?</Text><Text style={s.tipSub}>Waste Analyzer, AgriSense and PlantSense run on your chosen model. Without a key, AI features show “Not configured”.</Text></View></View>
 
       <Pressable style={s.blackBtn} onPress={onSave}><Text style={s.blackText}>SAVE & CONTINUE</Text><Ionicons name="arrow-forward" size={16} color="#fff" /></Pressable>
-      <Pressable style={s.skip} onPress={() => router.replace('/(tabs)' as any)}><Text style={s.skipText}>Skip for now — explore without AI</Text></Pressable>
+      <Pressable style={s.skip} onPress={() => router.replace('/' as any)}><Text style={s.skipText}>Skip for now — explore without AI</Text></Pressable>
 
       <Text style={s.footer}>SUSTAINABILITY HUB © 2024 · AI-CORE V2.4</Text>
     </ScrollView>
