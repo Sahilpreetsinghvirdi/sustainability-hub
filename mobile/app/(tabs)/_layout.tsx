@@ -33,8 +33,8 @@ export default function TabsLayout() {
             case 'settings':
               iconName = focused ? 'settings' : 'settings-outline';
               break;
-            case 'tamagui-demo':
-              iconName = focused ? 'code' : 'code-outline';
+            case 'ai-tools':
+              iconName = focused ? 'sparkles' : 'sparkles-outline';
               iconComponent = Ionicons;
               break;
             default:
@@ -63,7 +63,7 @@ export default function TabsLayout() {
       <Tab.Screen name="energy" options={{ title: 'Energy' }} />
       <Tab.Screen name="food-waste" options={{ title: 'Waste' }} />
       <Tab.Screen name="settings" options={{ title: 'Settings' }} />
-      <Tab.Screen name="tamagui-demo" options={{ title: 'Tamagui' }} />
+      <Tab.Screen name="ai-tools" options={{ title: 'AI Tools' }} />
     </Tab.Navigator>
   );
 }

@@ -2,10 +2,12 @@
 export const config = {
   // API
   api: {
-    baseUrl: __DEV__ 
-      ? 'http://localhost:8000/api/v1' 
+    // For phone → desktop backend: replace localhost with your PC's LAN IP (e.g. '192.168.1.50')
+    // Run 'ipconfig' on PC to find your IPv4 address. Backend must run on 0.0.0.0 or the LAN IP.
+    baseUrl: __DEV__
+      ? 'http://localhost:8000/api/v1'
       : 'https://api.sustainabilityhub.app/api/v1',
-    timeout: 30000,
+    timeout: 60000,
     retryAttempts: 3,
     retryDelay: 1000,
   },

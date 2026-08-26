@@ -21,6 +21,9 @@ export default function RootLayout() {
         <Stack.Screen name="food-waste/detail" />
         <Stack.Screen name="settings/profile" />
         <Stack.Screen name="settings/household" />
+        <Stack.Screen name="ai-tools/waste" options={{ headerShown: false }} />
+        <Stack.Screen name="ai-tools/agri" options={{ headerShown: false }} />
+        <Stack.Screen name="ai-tools/plant" options={{ headerShown: false }} />
       </Stack>
     </Providers>
   );
