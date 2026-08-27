@@ -434,6 +434,8 @@ export async function analyzeWaste(imageUri: string, question = ''): Promise<Was
 
 // Streaming variant of analyzeWaste: reports the model's raw generated text
 // token-by-token to `onChunk` in real time, then returns the parsed result.
+// Falls back to non-streaming callVision if the SSE stream yields no content
+// (e.g. transient empty stream) so the user still gets a result.
 export async function streamAnalyzeWaste(
   imageUri: string,
   question = '',
@@ -447,16 +449,28 @@ export async function streamAnalyzeWaste(
     if (c.provider !== 'gemini') {
       // Streaming is only wired for Gemini SSE; OpenAI falls back to the normal path.
       const raw = await callVision(WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'), imageB64, mime);
-      onChunk(JSON.stringify(raw));
+      onChunk(JSON.stringify(raw).slice(0, 800));
       return buildWasteResult(raw, started);
     }
-    const text = await streamCallVisionGemini(
-      WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'),
-      imageB64,
-      mime,
-      onChunk,
-    );
-    return buildWasteResult(extractJson(text), started);
+    try {
+      const text = await streamCallVisionGemini(
+        WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'),
+        imageB64,
+        mime,
+        onChunk,
+      );
+      return buildWasteResult(extractJson(text), started);
+    } catch (streamErr: any) {
+      const sm = streamErr instanceof Error ? streamErr.message : String(streamErr);
+      // If the stream produced no content, retry once via the proven non-streaming path
+      if (/returned no content/i.test(sm)) {
+        onChunk('Stream returned empty — retrying without streaming…');
+        const raw = await callVision(WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'), imageB64, mime);
+        onChunk(JSON.stringify(raw).slice(0, 800));
+        return buildWasteResult(raw, started);
+      }
+      throw streamErr;
+    }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (/No AI key|not configured/i.test(msg)) throw e;
