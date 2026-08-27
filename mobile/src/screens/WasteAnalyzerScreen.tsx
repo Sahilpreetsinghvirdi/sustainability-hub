@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { clearWasteHistory, getWasteHistory, getWasteStatus, saveWasteHistory, streamAnalyzeWaste, WasteAnalysisResponse, WasteHistoryItem } from '@/services/ai';
 import { useAiConfigStore } from '@/store/aiConfigStore';
+import WasteAnalysisResults from '@/components/WasteAnalysisResults';
 
 const MAT_COLORS = ['#0EA5E9','#F59E0B','#22C55E','#A78BFA','#EF4444','#14B8A6','#EC4899','#84CC16'];
 function hazardColor(level: string) {
@@ -173,101 +174,7 @@ export default function WasteAnalyzerScreen() {
           </View>
         )}
 
-        {result && (
-          <View style={s.results}>
-            {/* Summary + hazard header — minimal like desktop */}
-            <View style={[s.resultCard, { borderColor: hazardColor(result.overall_hazard.level).border }]}>
-              <View style={s.resultHead}>
-                <View style={[s.scoreBadge, { backgroundColor: hazardColor(result.overall_hazard.level).bg }]}>
-                  <Text style={[s.scoreNum, { color: hazardColor(result.overall_hazard.level).text }]}>{result.overall_hazard.score}</Text>
-                  <Text style={[s.scoreLabel, { color: hazardColor(result.overall_hazard.level).text }]}>{result.overall_hazard.level.toUpperCase()}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.resultSummary}>{result.summary}</Text>
-                  {(result.overall_hazard.toxins?.length > 0 || result.overall_hazard.health_risks?.length > 0) && (
-                    <Text style={s.toxinsLine} numberOfLines={2}>
-                      {result.overall_hazard.toxins?.length ? `Toxins: ${result.overall_hazard.toxins.slice(0,4).join(', ')}` : ''}
-                      {result.overall_hazard.toxins?.length && result.overall_hazard.health_risks?.length ? ' · ' : ''}
-                      {result.overall_hazard.health_risks?.slice(0,2).join(' · ')}
-                    </Text>
-                  )}
-                  <Text style={s.metaLine}>{result.analyzer_model} · {result.materials.length} material{result.materials.length!==1?'s':''} · {(result.processing_time_ms/1000).toFixed(1)}s{result.estimated_decomposition ? ` · ${result.estimated_decomposition}` : ''}</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Composition bars */}
-            {result.materials.length > 0 && (
-              <View style={s.sectionCard}>
-                <Text style={s.sectionTitle}>Composition</Text>
-                {[...result.materials].sort((a:any,b:any)=>b.percentage-a.percentage).map((m:any,i:number)=>(
-                  <View key={i} style={s.compRow}>
-                    <View style={s.compHead}>
-                      <Text style={s.compName} numberOfLines={1}>{m.name}</Text>
-                      <Text style={s.compPct}>{m.percentage.toFixed(1)}%</Text>
-                    </View>
-                    <View style={s.compTrack}><View style={[s.compFill, { width: `${Math.min(100,m.percentage)}%`, backgroundColor: MAT_COLORS[i % MAT_COLORS.length] }]} /></View>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* Recommendations */}
-            {result.recommendations?.length > 0 && (
-              <View style={s.sectionCard}>
-                <Text style={s.sectionTitle}>What you should do</Text>
-                {result.recommendations.map((r:string,i:number)=>(
-                  <View key={i} style={s.recRow}><View style={s.recNum}><Text style={s.recNumText}>{i+1}</Text></View><Text style={s.recText}>{r}</Text></View>
-                ))}
-              </View>
-            )}
-
-            {/* Material breakdown */}
-            <Text style={s.sectionTitle}>Materials</Text>
-            {result.materials.map((m: any, i: number) => (
-              <View key={i} style={s.matCard}>
-                <View style={s.matHead}>
-                  <View style={[s.matPct, { backgroundColor: MAT_COLORS[i % MAT_COLORS.length] + '18', borderColor: MAT_COLORS[i % MAT_COLORS.length] + '44' }]}>
-                    <Text style={[s.matPctText, { color: MAT_COLORS[i % MAT_COLORS.length] }]}>{m.percentage.toFixed(0)}%</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={s.matName}>{m.name}</Text>
-                    <View style={s.matMetaRow}>
-                      <Text style={s.matCat}>{String(m.category).replace('_','-')}</Text>
-                      <Text style={s.matConf}>{(m.confidence*100).toFixed(0)}% conf</Text>
-                      {m.disposal?.recyclable && <Text style={s.recyclable}>♻ Recyclable</Text>}
-                    </View>
-                  </View>
-                  <View style={[s.hazardChip, { backgroundColor: hazardColor(m.hazard.level).bg, borderColor: hazardColor(m.hazard.level).border }]}>
-                    <Text style={[s.hazardChipText, { color: hazardColor(m.hazard.level).text }]}>{m.hazard.level} · {m.hazard.score}</Text>
-                  </View>
-                </View>
-                {m.description ? <Text style={s.matDesc}>{m.description}</Text> : null}
-                {m.hazard?.toxins?.length > 0 && <View style={s.chipRow}>{m.hazard.toxins.slice(0,5).map((t:string,j:number)=><View key={j} style={s.toxinChip}><Text style={s.toxinText}>{t}</Text></View>)}</View>}
-                {(m.reuse_ideas?.length > 0 || m.eco_alternatives?.length > 0) && (
-                  <View style={s.matGrid}>
-                    {m.reuse_ideas?.length > 0 && <View style={s.matCol}><Text style={s.colTitle}>Reuse</Text>{m.reuse_ideas.slice(0,3).map((x:string,k:number)=><Text key={k} style={s.colItem}>• {x}</Text>)}</View>}
-                    {m.eco_alternatives?.length > 0 && <View style={s.matCol}><Text style={s.colTitle}>Eco alternative</Text>{m.eco_alternatives.slice(0,3).map((x:string,k:number)=><Text key={k} style={s.colItem}>• {x}</Text>)}</View>}
-                  </View>
-                )}
-                {m.disposal && (
-                  <View style={s.disposalBox}>
-                    <Text style={s.disposalTitle}>Disposal</Text>
-                    <Text style={s.disposalText}><Text style={s.disposalLabel}>Method: </Text>{m.disposal.method}</Text>
-                    <Text style={s.disposalText}><Text style={s.disposalLabel}>Goes to: </Text>{m.disposal.destination}</Text>
-                  </View>
-                )}
-              </View>
-            ))}
-
-            {result.environmental_impact ? (
-              <View style={[s.sectionCard, { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
-                <Text style={[s.sectionTitle, { color: '#92400E' }]}>Environmental impact if left unmanaged</Text>
-                <Text style={[s.resultSummary, { color: '#78350F' }]}>{result.environmental_impact}</Text>
-              </View>
-            ) : null}
-          </View>
-        )}
+        {result && <WasteAnalysisResults result={result} />}
 
         <Text style={s.howTitle}>HOW IT WORKS</Text>
         <View style={s.howCard}>
