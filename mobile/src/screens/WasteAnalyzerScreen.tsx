@@ -5,6 +5,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { clearWasteHistory, getWasteHistory, getWasteStatus, saveWasteHistory, streamAnalyzeWaste, WasteAnalysisResponse, WasteHistoryItem } from '@/services/ai';
 import { useAiConfigStore } from '@/store/aiConfigStore';
 
+const MAT_COLORS = ['#0EA5E9','#F59E0B','#22C55E','#A78BFA','#EF4444','#14B8A6','#EC4899','#84CC16'];
+function hazardColor(level: string) {
+  switch (level) {
+    case 'medium': return { bg: '#FEF3C7', border: '#FDE68A', text: '#92400E' };
+    case 'high': return { bg: '#FFEDD5', border: '#FDBA74', text: '#9A3412' };
+    case 'critical': return { bg: '#FEE2E2', border: '#FECACA', text: '#991B1B' };
+    default: return { bg: '#DCFCE7', border: '#BBF7D0', text: '#065F46' };
+  }
+}
+
 export default function WasteAnalyzerScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [question, setQuestion] = useState('');
@@ -165,10 +175,97 @@ export default function WasteAnalyzerScreen() {
 
         {result && (
           <View style={s.results}>
-            <View style={s.resultCard}><Text style={s.resultSummary}>{result.summary}</Text><View style={s.hazardRow}><View style={[s.hazardDot, { backgroundColor: result.overall_hazard.score >= 70 ? '#0A0A0A' : '#6B7280' }]} /><Text style={s.hazardText}>Hazard: {result.overall_hazard.level} {result.overall_hazard.score}/100</Text></View></View>
+            {/* Summary + hazard header — minimal like desktop */}
+            <View style={[s.resultCard, { borderColor: hazardColor(result.overall_hazard.level).border }]}>
+              <View style={s.resultHead}>
+                <View style={[s.scoreBadge, { backgroundColor: hazardColor(result.overall_hazard.level).bg }]}>
+                  <Text style={[s.scoreNum, { color: hazardColor(result.overall_hazard.level).text }]}>{result.overall_hazard.score}</Text>
+                  <Text style={[s.scoreLabel, { color: hazardColor(result.overall_hazard.level).text }]}>{result.overall_hazard.level.toUpperCase()}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.resultSummary}>{result.summary}</Text>
+                  {(result.overall_hazard.toxins?.length > 0 || result.overall_hazard.health_risks?.length > 0) && (
+                    <Text style={s.toxinsLine} numberOfLines={2}>
+                      {result.overall_hazard.toxins?.length ? `Toxins: ${result.overall_hazard.toxins.slice(0,4).join(', ')}` : ''}
+                      {result.overall_hazard.toxins?.length && result.overall_hazard.health_risks?.length ? ' · ' : ''}
+                      {result.overall_hazard.health_risks?.slice(0,2).join(' · ')}
+                    </Text>
+                  )}
+                  <Text style={s.metaLine}>{result.analyzer_model} · {result.materials.length} material{result.materials.length!==1?'s':''} · {(result.processing_time_ms/1000).toFixed(1)}s{result.estimated_decomposition ? ` · ${result.estimated_decomposition}` : ''}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Composition bars */}
+            {result.materials.length > 0 && (
+              <View style={s.sectionCard}>
+                <Text style={s.sectionTitle}>Composition</Text>
+                {[...result.materials].sort((a:any,b:any)=>b.percentage-a.percentage).map((m:any,i:number)=>(
+                  <View key={i} style={s.compRow}>
+                    <View style={s.compHead}>
+                      <Text style={s.compName} numberOfLines={1}>{m.name}</Text>
+                      <Text style={s.compPct}>{m.percentage.toFixed(1)}%</Text>
+                    </View>
+                    <View style={s.compTrack}><View style={[s.compFill, { width: `${Math.min(100,m.percentage)}%`, backgroundColor: MAT_COLORS[i % MAT_COLORS.length] }]} /></View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Recommendations */}
+            {result.recommendations?.length > 0 && (
+              <View style={s.sectionCard}>
+                <Text style={s.sectionTitle}>What you should do</Text>
+                {result.recommendations.map((r:string,i:number)=>(
+                  <View key={i} style={s.recRow}><View style={s.recNum}><Text style={s.recNumText}>{i+1}</Text></View><Text style={s.recText}>{r}</Text></View>
+                ))}
+              </View>
+            )}
+
+            {/* Material breakdown */}
+            <Text style={s.sectionTitle}>Materials</Text>
             {result.materials.map((m: any, i: number) => (
-              <View key={i} style={s.matCard}><Text style={s.matName}>{m.name} · {m.percentage}%</Text><Text style={s.matDesc}>{m.description}</Text></View>
+              <View key={i} style={s.matCard}>
+                <View style={s.matHead}>
+                  <View style={[s.matPct, { backgroundColor: MAT_COLORS[i % MAT_COLORS.length] + '18', borderColor: MAT_COLORS[i % MAT_COLORS.length] + '44' }]}>
+                    <Text style={[s.matPctText, { color: MAT_COLORS[i % MAT_COLORS.length] }]}>{m.percentage.toFixed(0)}%</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.matName}>{m.name}</Text>
+                    <View style={s.matMetaRow}>
+                      <Text style={s.matCat}>{String(m.category).replace('_','-')}</Text>
+                      <Text style={s.matConf}>{(m.confidence*100).toFixed(0)}% conf</Text>
+                      {m.disposal?.recyclable && <Text style={s.recyclable}>♻ Recyclable</Text>}
+                    </View>
+                  </View>
+                  <View style={[s.hazardChip, { backgroundColor: hazardColor(m.hazard.level).bg, borderColor: hazardColor(m.hazard.level).border }]}>
+                    <Text style={[s.hazardChipText, { color: hazardColor(m.hazard.level).text }]}>{m.hazard.level} · {m.hazard.score}</Text>
+                  </View>
+                </View>
+                {m.description ? <Text style={s.matDesc}>{m.description}</Text> : null}
+                {m.hazard?.toxins?.length > 0 && <View style={s.chipRow}>{m.hazard.toxins.slice(0,5).map((t:string,j:number)=><View key={j} style={s.toxinChip}><Text style={s.toxinText}>{t}</Text></View>)}</View>}
+                {(m.reuse_ideas?.length > 0 || m.eco_alternatives?.length > 0) && (
+                  <View style={s.matGrid}>
+                    {m.reuse_ideas?.length > 0 && <View style={s.matCol}><Text style={s.colTitle}>Reuse</Text>{m.reuse_ideas.slice(0,3).map((x:string,k:number)=><Text key={k} style={s.colItem}>• {x}</Text>)}</View>}
+                    {m.eco_alternatives?.length > 0 && <View style={s.matCol}><Text style={s.colTitle}>Eco alternative</Text>{m.eco_alternatives.slice(0,3).map((x:string,k:number)=><Text key={k} style={s.colItem}>• {x}</Text>)}</View>}
+                  </View>
+                )}
+                {m.disposal && (
+                  <View style={s.disposalBox}>
+                    <Text style={s.disposalTitle}>Disposal</Text>
+                    <Text style={s.disposalText}><Text style={s.disposalLabel}>Method: </Text>{m.disposal.method}</Text>
+                    <Text style={s.disposalText}><Text style={s.disposalLabel}>Goes to: </Text>{m.disposal.destination}</Text>
+                  </View>
+                )}
+              </View>
             ))}
+
+            {result.environmental_impact ? (
+              <View style={[s.sectionCard, { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' }]}>
+                <Text style={[s.sectionTitle, { color: '#92400E' }]}>Environmental impact if left unmanaged</Text>
+                <Text style={[s.resultSummary, { color: '#78350F' }]}>{result.environmental_impact}</Text>
+              </View>
+            ) : null}
           </View>
         )}
 
@@ -236,15 +333,53 @@ const s = StyleSheet.create({
   historyItem: { flexDirection: 'row', gap: 10, alignItems: 'center', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 8 },
   thumb: { width: 48, height: 48, borderRadius: 8 },
   historySummary: { flex: 1, fontSize: 12, color: '#0A0A0A', lineHeight: 16 },
-  results: { gap: 10 },
+  results: { gap: 12 },
   resultCard: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, gap: 8, backgroundColor: '#FFFFFF' },
+  resultHead: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  scoreBadge: { width: 64, height: 64, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E5E5' },
+  scoreNum: { fontSize: 20, fontWeight: '800' },
+  scoreLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.6, marginTop: 1 },
   resultSummary: { fontSize: 13, lineHeight: 18, color: '#0A0A0A' },
+  toxinsLine: { fontSize: 11, color: '#6B7280', marginTop: 6, lineHeight: 15 },
+  metaLine: { fontSize: 10, color: '#9CA3AF', marginTop: 6 },
+  sectionCard: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, gap: 8, backgroundColor: '#FFFFFF' },
+  sectionTitle: { fontSize: 12, fontWeight: '800', color: '#0A0A0A', letterSpacing: 0.3 },
+  compRow: { gap: 4, marginTop: 6 },
+  compHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  compName: { fontSize: 12, fontWeight: '600', color: '#0A0A0A', flex: 1, marginRight: 8 },
+  compPct: { fontSize: 12, fontWeight: '700', color: '#0A0A0A' },
+  compTrack: { height: 6, borderRadius: 9999, backgroundColor: '#E5E5E5', overflow: 'hidden' },
+  compFill: { height: '100%', borderRadius: 9999 },
+  recRow: { flexDirection: 'row', gap: 8, alignItems: 'flex-start', marginTop: 6 },
+  recNum: { width: 20, height: 20, borderRadius: 6, backgroundColor: '#0A0A0A', alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  recNumText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF' },
+  recText: { flex: 1, fontSize: 12, lineHeight: 17, color: '#0A0A0A' },
   hazardRow: { flexDirection: 'row', gap: 6, alignItems: 'center' },
   hazardDot: { width: 8, height: 8, borderRadius: 4 },
   hazardText: { fontSize: 11, color: '#6B7280', fontWeight: '600' },
-  matCard: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, gap: 6, backgroundColor: '#F9FAFA' },
+  matCard: { borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 12, gap: 8, backgroundColor: '#F9FAFA' },
+  matHead: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  matPct: { width: 44, height: 44, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  matPctText: { fontSize: 12, fontWeight: '800' },
   matName: { fontSize: 13, fontWeight: '700', color: '#0A0A0A' },
+  matMetaRow: { flexDirection: 'row', gap: 8, marginTop: 2, flexWrap: 'wrap', alignItems: 'center' },
+  matCat: { fontSize: 10, fontWeight: '600', color: '#6B7280', textTransform: 'capitalize', borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, backgroundColor: '#FFFFFF' },
+  matConf: { fontSize: 10, color: '#6B7280' },
+  recyclable: { fontSize: 10, fontWeight: '700', color: '#059669' },
+  hazardChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 9999, borderWidth: 1 },
+  hazardChipText: { fontSize: 10, fontWeight: '700', textTransform: 'capitalize' },
   matDesc: { fontSize: 11, lineHeight: 16, color: '#6B7280' },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  toxinChip: { borderWidth: 1, borderColor: '#FECACA', backgroundColor: '#FEE2E2', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 9999 },
+  toxinText: { fontSize: 10, fontWeight: '600', color: '#991B1B' },
+  matGrid: { flexDirection: 'row', gap: 12, marginTop: 2 },
+  matCol: { flex: 1, gap: 4 },
+  colTitle: { fontSize: 10, fontWeight: '800', color: '#0A0A0A', textTransform: 'uppercase', letterSpacing: 0.4 },
+  colItem: { fontSize: 11, lineHeight: 15, color: '#4B5563' },
+  disposalBox: { borderWidth: 1, borderColor: '#E5E5E5', backgroundColor: '#FFFFFF', borderRadius: 10, padding: 10, gap: 4 },
+  disposalTitle: { fontSize: 10, fontWeight: '800', color: '#0A0A0A', textTransform: 'uppercase', letterSpacing: 0.4 },
+  disposalText: { fontSize: 11, lineHeight: 15, color: '#0A0A0A' },
+  disposalLabel: { fontWeight: '700', color: '#6B7280' },
   howTitle: { fontSize: 11, fontWeight: '800', color: '#6B7280', letterSpacing: 0.8, marginTop: 6 },
   howCard: { flexDirection: 'row', gap: 12, borderWidth: 1, borderColor: '#E5E5E5', borderRadius: 12, padding: 14, backgroundColor: '#FFFFFF' },
   howIcon: { width: 30, height: 30, borderRadius: 8, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center' },

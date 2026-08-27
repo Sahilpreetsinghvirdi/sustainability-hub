@@ -234,11 +234,21 @@ function extractJson(text: string): Record<string, unknown> {
     const e = t.lastIndexOf('}');
     if (s !== -1 && e > s) t = t.slice(s, e + 1);
   }
-  try {
-    const parsed = JSON.parse(t);
-    if (parsed && typeof parsed === 'object') return parsed as Record<string, unknown>;
-  } catch { /* fall through */ }
-  const snippet = text.length > 160 ? text.slice(0, 160) + '…' : text;
+  const tryParse = (s: string) => {
+    try { const p = JSON.parse(s); if (p && typeof p === 'object') return p as Record<string, unknown>; } catch {}
+    return null;
+  };
+  let parsed = tryParse(t);
+  if (parsed) return parsed;
+  // Try cleaning common LLM JSON issues: trailing commas, control chars
+  const cleaned = t
+    .replace(/[\u0000-\u001F]+/g, ' ') // control chars
+    .replace(/,\s*([}\]])/g, '$1'); // trailing commas
+  parsed = tryParse(cleaned);
+  if (parsed) return parsed;
+  const snippet = text.length > 220 ? text.slice(0, 220) + '…' : text;
+  // Log full text length for debugging (shows in console)
+  console.warn('[extractJson] parse failed, text length', text.length, 'cleaned length', cleaned.length);
   throw new Error(`The AI response could not be read as a result. The model returned: "${snippet}"`);
 }
 
