@@ -36,6 +36,7 @@ import softwareLogo from './assets/logo.png';
 import { checkForUpdate, CURRENT_VERSION } from './lib/updater';
 import { getCurrentUser, getSession, logout } from './lib/auth';
 import LoginPage from './pages/Login';
+import AuthCallback from './pages/AuthCallback';
 
 interface NavItem {
   path: string;
@@ -251,6 +252,7 @@ function AppLayout() {
               <Route path="/energy" element={<EnergyPage />} />
               <Route path="/food-waste" element={<FoodWastePage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
             </Routes>
           </div>
         </div>

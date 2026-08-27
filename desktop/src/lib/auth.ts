@@ -144,7 +144,9 @@ export async function loginWithGoogle(): Promise<AuthUser> {
     const left = window.screenX + (window.outerWidth - width) / 2;
     const top = window.screenY + (window.outerHeight - height) / 2;
     const state = Math.random().toString(36).slice(2);
-    const redirect = window.location.origin;
+    const redirect = `${window.location.origin}/auth/callback?provider=google`;
+    // @ts-ignore — stash for callback detection
+    (window as any).__oauth_provider = 'google';
     const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirect)}&response_type=id_token&scope=${encodeURIComponent('openid email profile')}&nonce=${state}&prompt=select_account`;
     const popup = window.open(url, 'google_oauth', `width=${width},height=${height},left=${left},top=${top}`);
     if (!popup) return reject(new Error('Popup blocked. Allow popups for Google sign-in.'));
@@ -152,12 +154,16 @@ export async function loginWithGoogle(): Promise<AuthUser> {
       try { if (popup.closed) { clearInterval(timer); reject(new Error('Google sign-in cancelled.')); } } catch {}
     }, 500);
     const handler = (e: MessageEvent) => {
-      if (e.origin !== window.location.origin) return;
       if (e.data?.type === 'google_oauth' && e.data?.email) {
         clearInterval(timer);
         window.removeEventListener('message', handler);
         try { popup.close(); } catch {}
         resolve(upsertOAuthUser(e.data.email, e.data.name || '', 'google'));
+      }
+      if (e.data?.type === 'oauth_error') {
+        clearInterval(timer);
+        window.removeEventListener('message', handler);
+        reject(new Error(e.data.error || 'Google sign-in failed'));
       }
     };
     window.addEventListener('message', handler);
@@ -172,7 +178,8 @@ export async function loginWithMicrosoft(): Promise<AuthUser> {
   const left = window.screenX + (window.outerWidth - width) / 2;
   const top = window.screenY + (window.outerHeight - height) / 2;
   const tenant = 'common';
-  const redirect = window.location.origin;
+  const redirect = `${window.location.origin}/auth/callback?provider=microsoft`;
+  (window as any).__oauth_provider = 'microsoft';
   const state = Math.random().toString(36).slice(2);
   const url = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(clientId)}&response_type=id_token&redirect_uri=${encodeURIComponent(redirect)}&scope=${encodeURIComponent('openid email profile')}&nonce=${state}&prompt=select_account`;
   const popup = window.open(url, 'ms_oauth', `width=${width},height=${height},left=${left},top=${top}`);
@@ -180,12 +187,16 @@ export async function loginWithMicrosoft(): Promise<AuthUser> {
   return new Promise((resolve, reject) => {
     const timer = setInterval(() => { try { if (popup.closed) { clearInterval(timer); reject(new Error('Microsoft sign-in cancelled.')); } } catch {} }, 500);
     const handler = (e: MessageEvent) => {
-      if (e.origin !== window.location.origin) return;
       if (e.data?.type === 'microsoft_oauth' && e.data?.email) {
         clearInterval(timer);
         window.removeEventListener('message', handler);
         try { popup.close(); } catch {}
         resolve(upsertOAuthUser(e.data.email, e.data.name || '', 'microsoft'));
+      }
+      if (e.data?.type === 'oauth_error') {
+        clearInterval(timer);
+        window.removeEventListener('message', handler);
+        reject(new Error(e.data.error || 'Microsoft sign-in failed'));
       }
     };
     window.addEventListener('message', handler);
