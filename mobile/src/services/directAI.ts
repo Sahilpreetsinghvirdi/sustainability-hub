@@ -437,7 +437,9 @@ export async function analyzeWaste(imageUri: string, question = ''): Promise<Was
     const msg = e instanceof Error ? e.message : String(e);
     if (/No AI key|not configured/i.test(msg)) throw e;
     if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
-    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) return heuristicWaste();
+    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) {
+      throw new Error(`Network error: Could not reach Gemini. Check internet/CORS. Original: ${msg}`);
+    }
     throw e;
   }
 }
@@ -493,7 +495,10 @@ export async function streamAnalyzeWaste(
     const msg = e instanceof Error ? e.message : String(e);
     if (/No AI key|not configured/i.test(msg)) throw e;
     if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
-    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) return heuristicWaste();
+    if (/Network error/i.test(msg)) throw e;
+    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) {
+      throw new Error(`Network error: Could not reach Gemini. Check internet/CORS. Original: ${msg}`);
+    }
     throw e;
   }
 }
@@ -694,7 +699,10 @@ export async function analyzePlant(imageUri: string, context: PlantContext = {})
     const msg = e instanceof Error ? e.message : String(e);
     if (/No AI key|not configured/i.test(msg)) throw e;
     if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
-    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) return heuristicPlant();
+    if (/Network error/i.test(msg)) throw e;
+    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) {
+      throw new Error(`Network error: Could not reach Gemini. Check internet/CORS. Original: ${msg}`);
+    }
     throw e;
   }
 }

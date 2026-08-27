@@ -51,11 +51,17 @@ if (typeof window !== 'undefined' && window.__METRO_GLOBAL_PREFIX__ === undefine
       const metro = `<script>if (typeof window !== 'undefined' && window.__METRO_GLOBAL_PREFIX__ === undefined) { window.__METRO_GLOBAL_PREFIX__ = ''; }</script>`;
       html = html.replace(/<\/head>/i, metro + '\n  </head>');
     }
+    // Cache-bust: force browsers to fetch fresh JS on every deploy
+    const v = Date.now().toString(36);
+    html = html.replace(/(src="[^"]+\.js)(")/g, `$1?v=${v}$2`);
+    if (!html.includes('no-cache')) {
+      html = html.replace(/<\/head>/i, `<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />\n  <meta http-equiv="Pragma" content="no-cache" />\n  </head>`);
+    }
     if (html === before) {
       console.log('fix-web-index: no entry script tag found to patch (already OK or no matches).');
     } else {
       writeFileSync(file, html, 'utf8');
-      console.log('fix-web-index: patched ' + file);
+      console.log('fix-web-index: patched ' + file + ' v=' + v);
     }
   } catch (e) {
   console.error('fix-web-index: ' + e.message);
