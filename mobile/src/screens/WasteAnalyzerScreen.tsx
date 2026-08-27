@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
-import { analyzeWaste, clearWasteHistory, getWasteHistory, getWasteStatus, saveWasteHistory, WasteAnalysisResponse, WasteHistoryItem } from '@/services/ai';
+import { clearWasteHistory, getWasteHistory, getWasteStatus, saveWasteHistory, streamAnalyzeWaste, WasteAnalysisResponse, WasteHistoryItem } from '@/services/ai';
 import { useAiConfigStore } from '@/store/aiConfigStore';
 
 export default function WasteAnalyzerScreen() {
@@ -15,24 +15,32 @@ export default function WasteAnalyzerScreen() {
   const progress = useRef(new Animated.Value(0)).current;
   const progressValue = useRef(0);
   const [progressLabel, setProgressLabel] = useState('');
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [thinking, setThinking] = useState('');
+  const chunkCount = useRef(0);
 
   const startProgress = () => {
-    setProgressLabel('Starting analysis…');
     progress.setValue(0);
     progressValue.current = 0;
-    timerRef.current = setInterval(() => {
-      progressValue.current = Math.min(progressValue.current + 0.035 + Math.random() * 0.03, 0.96);
-      progress.setValue(progressValue.current);
-      setProgressLabel(progressValue.current < 0.3 ? 'Uploading & reading image…' : progressValue.current < 0.6 ? 'Sending to AI model…' : progressValue.current < 0.9 ? 'Analyzing materials…' : 'Finalizing…');
-    }, 220);
+    chunkCount.current = 0;
+    setThinking('');
+    setProgressLabel('Preparing request…');
+  };
+
+  // Called on every streamed token: advances the bar based on how much the
+  // model has produced so far (real progress, tied to the live stream).
+  const onLiveChunk = (fullText: string) => {
+    chunkCount.current += 1;
+    const capped = Math.min(0.1 + (chunkCount.current * 0.05), 0.9);
+    progressValue.current = Math.max(progressValue.current, capped);
+    progress.setValue(progressValue.current);
+    setProgressLabel('Analyzing your image…');
+    setThinking(fullText);
   };
 
   const completeProgress = () => {
-    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     progress.setValue(1);
-    setProgressLabel('Done ✓');
-    setTimeout(() => { progress.setValue(0); progressValue.current = 0; setProgressLabel(''); }, 600);
+    setProgressLabel('Analysis complete ✓');
+    setTimeout(() => { progress.setValue(0); progressValue.current = 0; setThinking(''); setProgressLabel(''); }, 400);
   };
 
   useEffect(() => {
@@ -52,7 +60,7 @@ export default function WasteAnalyzerScreen() {
     setAnalyzing(true);
     startProgress();
     try {
-      const out = await analyzeWaste(imageUri, question);
+      const out = await streamAnalyzeWaste(imageUri, question, onLiveChunk);
       setResult(out);
       const item: WasteHistoryItem = { id: `w_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: out, question: question || undefined };
       await saveWasteHistory(item);
@@ -106,6 +114,12 @@ export default function WasteAnalyzerScreen() {
               <Animated.View style={[s.progressFill, { width: progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
             </View>
             <Text style={s.progressLabel}>{progressLabel}</Text>
+            {thinking ? (
+              <View style={s.thinkingBox}>
+                <Text style={s.thinkingTitle}>AI is analysing live…</Text>
+                <Text style={s.thinkingText} numberOfLines={8}>{thinking}</Text>
+              </View>
+            ) : <Text style={s.thinkingText}>Connecting to AI model…</Text>}
           </View>
         )}
 
@@ -198,6 +212,9 @@ const s = StyleSheet.create({
   progressTrack: { height: 8, borderRadius: 9999, backgroundColor: '#E5E5E5', overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: 9999, backgroundColor: '#0A0A0A' },
   progressLabel: { fontSize: 11, color: '#666666', marginTop: 6, textAlign: 'center', fontWeight: '600' },
+  thinkingBox: { marginTop: 10, borderRadius: 10, borderWidth: 1, borderColor: '#E5E5E5', backgroundColor: '#F6F7F8', padding: 10 },
+  thinkingTitle: { fontSize: 11, fontWeight: '800', color: '#0A0A0A', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  thinkingText: { fontSize: 11, color: '#44555F', fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }), lineHeight: 16 },
   segmentRow: { flexDirection: 'row', gap: 10 },
   segment: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 9999, borderWidth: 1, borderColor: '#E5E5E5', backgroundColor: '#FFFFFF' },
   segmentActive: { backgroundColor: '#0A0A0A', borderColor: '#0A0A0A' },

@@ -199,6 +199,16 @@ export async function analyzeWaste(
   return run(imageUri, question ?? '');
 }
 
+// Streaming variant: calls back with the model's raw generated text in real time.
+export async function streamAnalyzeWaste(
+  imageUri: string,
+  question: string,
+  onChunk: (fullText: string) => void,
+): Promise<WasteAnalysisResponse> {
+  const { streamAnalyzeWaste: run } = await import('./directAI');
+  return run(imageUri, question, onChunk);
+}
+
 export async function analyzeFertilizer(
   imageUri: string,
   context: { crop: string; growth_stage?: string; soil_type?: string; irrigation?: string; season?: string; notes?: string },

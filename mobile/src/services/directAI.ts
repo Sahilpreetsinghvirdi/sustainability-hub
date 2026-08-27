@@ -151,6 +151,74 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
   return extractJson(content);
 }
 
+// Streams a Gemini response token-by-token via SSE (`streamGenerateContent?alt=sse`)
+// and reports the accumulated text to `onChunk` as it arrives, in real time.
+// Returns the fully accumulated text once the stream ends.
+async function streamCallVisionGemini(
+  prompt: string,
+  imageB64: string,
+  mimeType: string,
+  onChunk: (fullText: string) => void,
+): Promise<string> {
+  const c = configuredProviders();
+  const s = cfg();
+  if (!c.provider) {
+    throw new Error('No AI key configured. Open Settings → AI Configuration and add a Gemini or OpenAI key.');
+  }
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:streamGenerateContent?alt=sse`;
+  const payload = {
+    contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: imageB64 } }] }],
+    generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
+  };
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'x-goog-api-key': s.geminiKey || '', 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => '')).slice(0, 300);
+    throw new Error(`Gemini API error ${res.status}: ${detail}`);
+  }
+  if (!res.body || !('getReader' in res.body)) {
+    // No stream support (e.g. some runtimes): fall back to non-streaming JSON.
+    const data = await res.json();
+    const parts = data?.candidates?.[0]?.content?.parts ?? [];
+    const text = parts.map((p: { text?: string }) => p?.text ?? '').join('').trim();
+    onChunk(text);
+    return text;
+  }
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let full = '';
+  let finish = 'UNKNOWN';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true }).replace(/^data:\s*/gm, '');
+    // Extract complete SSE lines (separated by blank lines).
+    const lines = buffer.split('\n\n');
+    buffer = lines.pop() || '';
+    for (const line of lines) {
+      const l = line.trim();
+      if (!l.startsWith('{')) continue;
+      try {
+        const chunk = JSON.parse(l);
+        const dr = chunk?.error;
+        if (dr) throw new Error(`Gemini API error ${dr.code || '?'}: ${dr.message || ''}`);
+        const cand = chunk?.candidates?.[0];
+        if (cand?.finishReason) finish = cand.finishReason;
+        const t = (cand?.content?.parts ?? []).map((p: { text?: string }) => p?.text ?? '').join('');
+        if (t) { full += t; onChunk(full); }
+      } catch (pe) { /* skip malformed heartbeat */ }
+    }
+  }
+  if (!full.trim()) {
+    throw new Error(`Gemini returned no content (finishReason: ${finish}). The model may have blocked the image, or the key has no quota.`);
+  }
+  return full;
+}
+
 function extractJson(text: string): Record<string, unknown> {
   let t = text.trim();
   const fence = t.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/);
@@ -222,6 +290,48 @@ function heuristicWaste(): WasteAnalysisResponse {
     estimated_decomposition: null,
     analyzer_model: 'local-fallback',
     processing_time_ms: 0,
+  };
+}
+
+function buildWasteResult(raw: Record<string, unknown>, started: number): WasteAnalysisResponse {
+  const mRaw = Array.isArray(raw.materials) ? raw.materials : [];
+  const materials = mRaw
+    .map((m) => {
+      const dm = asDict(m);
+      if (!asStr(dm.name)) return null;
+      const disposal = asDict(dm.disposal);
+      return {
+        name: asStr(dm.name).slice(0, 120),
+        category: asStr(dm.category, 'other').toLowerCase().replace(/-/g, '_'),
+        percentage: clamp(dm.percentage, 0, 100, 0),
+        confidence: clamp(dm.confidence, 0, 1, 0.7),
+        description: asStr(dm.description),
+        hazard: normHazard(dm.hazard),
+        common_uses: asList(dm.common_uses).slice(0, 8),
+        reuse_ideas: asList(dm.reuse_ideas).slice(0, 8),
+        eco_alternatives: asList(dm.eco_alternatives).slice(0, 8),
+        disposal: {
+          method: asStr(disposal.method, 'Consult local municipal guidelines'),
+          destination: asStr(disposal.destination, 'Municipal dry/wet waste collection'),
+          recyclable: Boolean(disposal.recyclable),
+        },
+      };
+    })
+    .filter((m): m is NonNullable<typeof m> => m !== null)
+    .slice(0, 20);
+  const total = materials.reduce((s, m) => s + m.percentage, 0);
+  const scaled = total > 0
+    ? materials.map((m) => ({ ...m, percentage: Math.round((m.percentage / total) * 1000) / 10 })).sort((a, b) => b.percentage - a.percentage)
+    : materials;
+  return {
+    summary: asStr(raw.summary) || 'No analysis summary returned.',
+    overall_hazard: normHazard(raw.overall_hazard),
+    materials: scaled,
+    recommendations: asList(raw.recommendations).slice(0, 10),
+    environmental_impact: asStr(raw.environmental_impact),
+    estimated_decomposition: raw.estimated_decomposition == null ? null : asStr(raw.estimated_decomposition),
+    analyzer_model: configuredProviders().model,
+    processing_time_ms: Math.round(Date.now() - started),
   };
 }
 
@@ -306,47 +416,41 @@ export async function analyzeWaste(imageUri: string, question = ''): Promise<Was
   try {
     const [imageB64, mime] = await Promise.all([imageToBase64(imageUri), guessMime(imageUri)]);
     const raw = await callVision(WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'), imageB64, mime);
-    const mRaw = Array.isArray(raw.materials) ? raw.materials : [];
-    const materials = mRaw
-      .map((m) => {
-        const dm = asDict(m);
-        if (!asStr(dm.name)) return null;
-        const disposal = asDict(dm.disposal);
-        return {
-          name: asStr(dm.name).slice(0, 120),
-          category: asStr(dm.category, 'other').toLowerCase().replace(/-/g, '_'),
-          percentage: clamp(dm.percentage, 0, 100, 0),
-          confidence: clamp(dm.confidence, 0, 1, 0.7),
-          description: asStr(dm.description),
-          hazard: normHazard(dm.hazard),
-          common_uses: asList(dm.common_uses).slice(0, 8),
-          reuse_ideas: asList(dm.reuse_ideas).slice(0, 8),
-          eco_alternatives: asList(dm.eco_alternatives).slice(0, 8),
-          disposal: {
-            method: asStr(disposal.method, 'Consult local municipal guidelines'),
-            destination: asStr(disposal.destination, 'Municipal dry/wet waste collection'),
-            recyclable: Boolean(disposal.recyclable),
-          },
-        };
-      })
-      .filter((m): m is NonNullable<typeof m> => m !== null)
-      .slice(0, 20);
+    return buildWasteResult(raw, started);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/No AI key|not configured/i.test(msg)) throw e;
+    if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
+    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) return heuristicWaste();
+    throw e;
+  }
+}
 
-    const total = materials.reduce((s, m) => s + m.percentage, 0);
-    const scaled = total > 0
-      ? materials.map((m) => ({ ...m, percentage: Math.round((m.percentage / total) * 1000) / 10 })).sort((a, b) => b.percentage - a.percentage)
-      : materials;
-
-    return {
-      summary: asStr(raw.summary) || 'No analysis summary returned.',
-      overall_hazard: normHazard(raw.overall_hazard),
-      materials: scaled,
-      recommendations: asList(raw.recommendations).slice(0, 10),
-      environmental_impact: asStr(raw.environmental_impact),
-      estimated_decomposition: raw.estimated_decomposition == null ? null : asStr(raw.estimated_decomposition),
-      analyzer_model: configuredProviders().model,
-      processing_time_ms: Math.round(Date.now() - started),
-    };
+// Streaming variant of analyzeWaste: reports the model's raw generated text
+// token-by-token to `onChunk` in real time, then returns the parsed result.
+export async function streamAnalyzeWaste(
+  imageUri: string,
+  question = '',
+  onChunk: (fullText: string) => void,
+): Promise<WasteAnalysisResponse> {
+  if (!aiConfigured()) throw new Error('No AI key configured. Open Settings → AI Configuration and add a Gemini or OpenAI key.');
+  const started = Date.now();
+  try {
+    const [imageB64, mime] = await Promise.all([imageToBase64(imageUri), guessMime(imageUri)]);
+    const c = configuredProviders();
+    if (c.provider !== 'gemini') {
+      // Streaming is only wired for Gemini SSE; OpenAI falls back to the normal path.
+      const raw = await callVision(WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'), imageB64, mime);
+      onChunk(JSON.stringify(raw));
+      return buildWasteResult(raw, started);
+    }
+    const text = await streamCallVisionGemini(
+      WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'),
+      imageB64,
+      mime,
+      onChunk,
+    );
+    return buildWasteResult(extractJson(text), started);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (/No AI key|not configured/i.test(msg)) throw e;
