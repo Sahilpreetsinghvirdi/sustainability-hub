@@ -64,13 +64,19 @@ function blobToBase64(blob: Blob): Promise<string> {
 }
 
 export async function imageToBase64(uri: string): Promise<string> {
+  let b64: string;
   if (Platform.OS === 'web') {
     const res = await fetch(uri);
     const blob = await res.blob();
-    return blobToBase64(blob);
+    b64 = await blobToBase64(blob);
+  } else {
+    const FileSystem = require('expo-file-system');
+    b64 = await FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
   }
-  const FileSystem = require('expo-file-system');
-  return FileSystem.readAsStringAsync(uri, { encoding: FileSystem.EncodingType.Base64 });
+  if (!b64 || b64.length < 8) {
+    throw new Error('The selected image could not be read. Please try picking another photo.');
+  }
+  return b64;
 }
 
 export async function guessMime(uri: string): Promise<string> {
