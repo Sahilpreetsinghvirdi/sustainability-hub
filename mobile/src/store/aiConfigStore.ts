@@ -26,7 +26,7 @@ export const useAiConfigStore = create<AiConfigState>()(
       provider: 'gemini',
       geminiKey: '',
       openaiKey: '',
-      geminiModel: 'gemini-2.0-flash',
+      geminiModel: 'gemini-3.6-flash',
       openaiModel: 'gpt-4o-mini',
       setProvider: (provider) => set({ provider }),
       setGeminiKey: (geminiKey) => set({ geminiKey }),

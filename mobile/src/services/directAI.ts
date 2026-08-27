@@ -18,13 +18,22 @@ function cfg() {
   return useAiConfigStore.getState();
 }
 
+const GEMINI_FALLBACK: Record<string, string> = {
+  'gemini-2.0-flash': 'gemini-3.6-flash',
+  'gemini-2.5-flash': 'gemini-3.6-flash',
+};
+
+function geminiModel(raw: string): string {
+  return GEMINI_FALLBACK[raw.trim()] || raw || 'gemini-3.6-flash';
+}
+
 export function configuredProviders(): { provider: 'gemini' | 'openai' | null; model: string } {
   const s = cfg();
   if (s.provider === 'openai' && s.openaiKey) return { provider: 'openai', model: s.openaiModel };
-  if (s.provider === 'gemini' && s.geminiKey) return { provider: 'gemini', model: s.geminiModel };
+  if (s.provider === 'gemini' && s.geminiKey) return { provider: 'gemini', model: geminiModel(s.geminiModel) };
   if (s.openaiKey) return { provider: 'openai', model: s.openaiModel };
-  if (s.geminiKey) return { provider: 'gemini', model: s.geminiModel };
-  return { provider: null, model: s.provider === 'openai' ? s.openaiModel : s.geminiModel };
+  if (s.geminiKey) return { provider: 'gemini', model: geminiModel(s.geminiModel) };
+  return { provider: null, model: s.provider === 'openai' ? s.openaiModel : geminiModel(s.geminiModel) };
 }
 
 export function aiConfigured(): boolean {
