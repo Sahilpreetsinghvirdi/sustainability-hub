@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import {
   User, Home, Bell, Shield, KeyRound, Eye, EyeOff,
   CheckCircle2, AlertTriangle, ExternalLink, Sparkles, Sprout, ScanSearch, Loader2, Save,
-  Trash2, Database, Download,
+  Trash2, Database, Download, Users, LogOut,
 } from 'lucide-react';
 import { fetchAISettings, updateAISettings, type AISettingsResponse } from '@/lib/api';
 import { store, type ProfileData, type HouseholdData, type NotificationPrefs } from '@/lib/store';
+import { listAccounts, deleteAccount, clearAllAccounts, getCurrentUser, logout, type AuthUser } from '@/lib/auth';
 
-type Tab = 'ai' | 'profile' | 'household' | 'notifications' | 'data';
+type Tab = 'ai' | 'accounts' | 'profile' | 'household' | 'notifications' | 'data';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('ai');
@@ -33,6 +34,14 @@ export default function SettingsPage() {
   const [notifs, setNotifs] = useState<NotificationPrefs>(() => store.getNotifications());
   const [profileSaved, setProfileSaved] = useState(false);
   const [householdSaved, setHouseholdSaved] = useState(false);
+
+  // Accounts — well-organized local account saving system
+  const [accounts, setAccounts] = useState<AuthUser[]>(() => listAccounts());
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => getCurrentUser());
+  function refreshAccounts() {
+    setAccounts(listAccounts());
+    setCurrentUser(getCurrentUser());
+  }
 
   // Data tab counts
   const [counts, setCounts] = useState({ scans: 0, agri: 0, waste: 0, carbon: 0, energy: 0 });
@@ -62,8 +71,14 @@ export default function SettingsPage() {
     }
   }
 
-  useEffect(() => { loadAI(); refreshCounts(); }, []);
-  useEffect(() => { if (activeTab === 'ai') loadAI(); if (activeTab === 'data') refreshCounts(); }, [activeTab]);
+  useEffect(() => { loadAI(); refreshCounts(); refreshAccounts(); }, []);
+  useEffect(() => { if (activeTab === 'ai') loadAI(); if (activeTab === 'data') refreshCounts(); if (activeTab === 'accounts') refreshAccounts(); }, [activeTab]);
+  useEffect(() => {
+    const h = () => refreshAccounts();
+    window.addEventListener('auth-changed', h as EventListener);
+    window.addEventListener('storage', h);
+    return () => { window.removeEventListener('auth-changed', h as EventListener); window.removeEventListener('storage', h); };
+  }, []);
 
   // Keep profile sync with sidebar (dispatch event)
   function saveProfile() {
@@ -140,6 +155,7 @@ export default function SettingsPage() {
         <div className="w-full lg:w-56 space-y-1 shrink-0">
           {[
             { key: 'ai' as Tab, label: 'AI Configuration', icon: KeyRound },
+            { key: 'accounts' as Tab, label: 'Accounts', icon: Users },
             { key: 'profile' as Tab, label: 'Profile', icon: User },
             { key: 'household' as Tab, label: 'Household', icon: Home },
             { key: 'notifications' as Tab, label: 'Notifications', icon: Bell },
@@ -312,6 +328,56 @@ export default function SettingsPage() {
                   <li><strong>OpenAI</strong> — <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">platform.openai.com/api-keys <ExternalLink className="w-3 h-3" /></a></li>
                 </ul>
                 <p className="text-[11px] text-dark-300 mt-2">Keys are stored on this device and sent directly to Google/OpenAI only when you run an analysis. They never pass through our servers.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'accounts' && (
+            <div className="space-y-4 animate-pageIn">
+              <div className="card-elevated p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-dark-50 flex items-center gap-2"><Users className="w-4 h-4 text-primary" /> Saved Accounts</h3>
+                  <span className="text-xs px-2 py-1 rounded-full bg-dark-600 border border-dark-400 text-dark-200">{accounts.length} account{accounts.length !== 1 ? 's' : ''}</span>
+                </div>
+                <p className="text-xs text-dark-300">All accounts are stored locally on this device (SHA-256 for local passwords). No cloud sync until OAuth is configured.</p>
+                {currentUser && (
+                  <div className="rounded-xl border border-primary/30 bg-primary/10 p-3 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold shrink-0">{initials(currentUser.name)}</div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-dark-50 truncate">{currentUser.name} <span className="text-xs font-normal text-primary">· Active</span></p>
+                      <p className="text-xs text-dark-200 truncate">{currentUser.email} · {currentUser.provider}</p>
+                    </div>
+                    <span className="text-[10px] px-2 py-1 rounded-full bg-success/15 border border-success/30 text-success">Signed in</span>
+                  </div>
+                )}
+                {accounts.length === 0 ? (
+                  <p className="text-sm text-dark-300 text-center py-6">No accounts yet. Create one from the login screen.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {accounts.map(acc => (
+                      <div key={acc.id} className={`flex items-center gap-3 p-3 rounded-xl border ${currentUser?.id === acc.id ? 'bg-primary/5 border-primary/20' : 'bg-dark-700 border-dark-500'}`}>
+                        <div className="w-9 h-9 rounded-full bg-dark-600 border border-dark-400 flex items-center justify-center text-dark-50 text-sm font-bold shrink-0">{initials(acc.name)}</div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-dark-50 truncate">{acc.name}</p>
+                          <p className="text-xs text-dark-200 truncate">{acc.email}</p>
+                          <p className="text-[11px] text-dark-300">{acc.provider} · {new Date(acc.createdAt).toLocaleDateString()} {currentUser?.id === acc.id ? '· Active' : ''}</p>
+                        </div>
+                        <button onClick={() => { if (!confirm(`Delete account ${acc.email}?`)) return; deleteAccount(acc.id); refreshAccounts(); }} className="p-2 rounded-lg hover:bg-error/10 text-dark-300 hover:text-error" title="Delete account">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-dark-500">
+                  <button onClick={() => { if (!confirm('Sign out current account?')) return; logout(); refreshAccounts(); }} className="btn-outline inline-flex items-center gap-2 !border-amber-300 !text-amber-700 hover:!bg-amber-50">
+                    <LogOut className="w-4 h-4" /> Sign out
+                  </button>
+                  <button onClick={() => { if (!confirm('Delete ALL saved accounts? This cannot be undone.')) return; clearAllAccounts(); refreshAccounts(); }} className="btn-outline inline-flex items-center gap-2 !border-error/30 !text-error hover:!bg-error/10">
+                    <Trash2 className="w-4 h-4" /> Clear all accounts
+                  </button>
+                </div>
+                <p className="text-[11px] text-dark-300">Storage keys: <code className="font-mono bg-dark-600 px-1 py-0.5 rounded">sh_auth_users</code> + <code className="font-mono bg-dark-600 px-1 py-0.5 rounded">sh_auth_session</code> in localStorage. Google/Microsoft OAuth will be enabled when you set <code className="font-mono">VITE_GOOGLE_CLIENT_ID</code> / <code className="font-mono">VITE_MICROSOFT_CLIENT_ID</code>.</p>
               </div>
             </div>
           )}

@@ -134,8 +134,26 @@ export function loginWithOAuthEmail(email: string, name: string, provider: Provi
   return upsertOAuthUser(email, name, provider);
 }
 
-// Google / Microsoft — if VITE_GOOGLE_CLIENT_ID / VITE_MICROSOFT_CLIENT_ID is set we use real OAuth,
-// otherwise we return a signal for the UI to show the native chooser window.
+// --- Well-organized account saving system (local, secure) ---
+export function listAccounts(): AuthUser[] {
+  return loadUsers().map(({ passwordHash: _, ...u }) => u);
+}
+
+export function deleteAccount(id: string): void {
+  const users = loadUsers().filter(u => u.id !== id);
+  saveUsers(users);
+  // If deleted account was the current session, log out
+  const sess = getSession();
+  if (sess?.user.id === id) logout();
+  else window.dispatchEvent(new CustomEvent('auth-changed'));
+}
+
+export function clearAllAccounts(): void {
+  saveUsers([]);
+  logout();
+}
+
+// Google / Microsoft — real OAuth (requires VITE_*_CLIENT_ID). No popup fallback for now.
 export async function loginWithGoogle(): Promise<AuthUser> {
   const clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
   if (!clientId) throw new Error('OAUTH_NO_CLIENT_ID');
