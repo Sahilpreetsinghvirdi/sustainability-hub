@@ -11,25 +11,46 @@ import { join } from 'node:path';
 const dist = process.argv[2] || 'dist';
 const file = join(dist, 'index.html');
 
-try {
-  let html = readFileSync(file, 'utf8');
-  const before = html;
-  // Add type="module" to every entry bundle <script> tag (safe & idempotent).
-  html = html.replace(/<script(?!\s+type=["']module["'])([^>]*)src="([^"]+\.js)"([^>]*)><\/script>/gi, (m, pre, src, post) => {
-    if (/\.js"/.test(src)) {
-      return `<script type="module" ${pre} src="${src}" ${post}></script>`.replace(/\s{2,}/g, ' ');
+  const SHIM = `<script>
+if (typeof window !== 'undefined' && !window.process) {
+  var __proc = { env: {} };
+  __proc.env.NODE_ENV = 'production';
+  __proc.env.EXPO_PUBLIC_APP_ENV = 'production';
+  __proc.nextTick = function (cb) { setTimeout(cb, 0); };
+  __proc.browser = true;
+  __proc.argv = [];
+  __proc.platform = 'browser';
+  window.process = __proc;
+}
+</script>`;
+
+  try {
+    let html = readFileSync(file, 'utf8');
+    const before = html;
+    // Add type="module" to every entry bundle <script> tag (safe & idempotent).
+    html = html.replace(/<script(?!\s+type=["']module["'])([^>]*)src="([^"]+\.js)"([^>]*)><\/script>/gi, (m, pre, src, post) => {
+      if (/\.js"/.test(src)) {
+        return `<script type="module" ${pre} src="${src}" ${post}></script>`.replace(/\s{2,}/g, ' ');
+      }
+      return m;
+    });
+    // Fallback: ensure any script WITHOUT type gets it (simple + safe).
+    html = html.replace(/<script(?!\s+type=["']module["'])\s+src="([^"]+\.js)"/g, '<script type="module" src="$1"');
+    // Inject a `process` global shim BEFORE the app bundles. Some bundled deps
+    // (e.g. react-native-reanimated) read `process.env.NODE_ENV` at module-eval
+    // time; Metro's web export doesn't always inject a `process` polyfill, so
+    // without this the bundle throws `ReferenceError: process is not defined`
+    // and React never mounts (blank white screen). Idempotent guard below.
+    if (!html.includes('window.process')) {
+      html = html.replace(/<\/head>/i, SHIM + '\n  </head>');
     }
-    return m;
-  });
-  // Fallback: ensure any script WITHOUT type gets it (simple + safe).
-  html = html.replace(/<script(?!\s+type=["']module["'])\s+src="([^"]+\.js)"/g, '<script type="module" src="$1"');
-  if (html === before) {
-    console.log('fix-web-index: no entry script tag found to patch (already OK or no matches).');
-  } else {
-    writeFileSync(file, html, 'utf8');
-    console.log('fix-web-index: patched ' + file);
-  }
-} catch (e) {
+    if (html === before) {
+      console.log('fix-web-index: no entry script tag found to patch (already OK or no matches).');
+    } else {
+      writeFileSync(file, html, 'utf8');
+      console.log('fix-web-index: patched ' + file);
+    }
+  } catch (e) {
   console.error('fix-web-index: ' + e.message);
   process.exit(1);
 }
