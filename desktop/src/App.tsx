@@ -20,6 +20,7 @@ import {
   Settings,
   Menu,
   ScanSearch,
+  Download,
 } from 'lucide-react';
 import WasteAnalyzerPage from './pages/WasteAnalyzer';
 import DashboardPage from './pages/Dashboard';
@@ -32,6 +33,7 @@ import PlantSensePage from './pages/PlantSense';
 import ThemeToggle from './components/ui/ThemeToggle';
 import { store } from './lib/store';
 import softwareLogo from './assets/logo.png';
+import { checkForUpdate, CURRENT_VERSION } from './lib/updater';
 
 interface NavItem {
   path: string;
@@ -147,6 +149,34 @@ function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [update, setUpdate] = useState<null | { latest: string; url: string; downloadUrl: string | null }>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const run = async () => {
+      const info = await checkForUpdate();
+      if (!cancelled && info?.hasUpdate) setUpdate({ latest: info.latest, url: info.url, downloadUrl: info.downloadUrl });
+    };
+    run();
+    const id = setInterval(run, 6 * 60 * 60 * 1000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  const handleUpdate = async () => {
+    if (!update) return;
+    if (update.downloadUrl) {
+      setDownloading(true);
+      try {
+        const { downloadUpdate } = await import('./lib/updater');
+        await downloadUpdate(update.downloadUrl);
+      } finally {
+        setTimeout(() => setDownloading(false), 2000);
+      }
+    } else {
+      window.open(update.url, '_blank', 'noreferrer');
+    }
+  };
   const headerTitle =
     allNavItems.find((n) => n.path === location.pathname)?.label || 'Sustainability Hub';
 
@@ -182,6 +212,18 @@ function AppLayout() {
           </button>
           <h2 className="text-sm font-semibold text-dark-100 truncate">{headerTitle}</h2>
           <div className="ml-auto flex items-center gap-2 shrink-0">
+            {update && (
+              <button
+                onClick={handleUpdate}
+                disabled={downloading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors shadow-sm disabled:opacity-60"
+                title={update.downloadUrl ? `Download ${update.latest} — ${CURRENT_VERSION} → ${update.latest}` : `Update available: ${CURRENT_VERSION} → ${update.latest}`}
+              >
+                <Download className={`w-3.5 h-3.5 ${downloading ? 'animate-bounce' : ''}`} />
+                {downloading ? 'Downloading…' : `Update ${update.latest}`}
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              </button>
+            )}
             <ThemeToggle />
           </div>
         </header>
