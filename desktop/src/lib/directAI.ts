@@ -80,7 +80,7 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:generateContent`;
     const payload = {
       contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: imageB64 } }] }],
-      generationConfig: { response_mime_type: 'application/json', temperature: 0.2, maxOutputTokens: 4096 },
+      generationConfig: { response_mime_type: 'application/json', temperature: 0.2, maxOutputTokens: 8192 },
     };
     const res = await fetch(url, {
       method: 'POST',
@@ -105,7 +105,7 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
       { type: 'text', text: prompt },
     ] }],
     response_format: { type: 'json_object' },
-    max_tokens: 4096,
+    max_tokens: 8192,
     temperature: 0.2,
   };
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -141,6 +141,23 @@ function extractJson(text: string): Record<string, unknown> {
   const cleaned = t.replace(/[\u0000-\u001F]+/g, ' ').replace(/,\s*([}\]])/g, '$1');
   parsed = tryParse(cleaned);
   if (parsed) return parsed;
+  const lastGoodBrace = cleaned.lastIndexOf('}');
+  if (lastGoodBrace !== -1) {
+    const truncated = cleaned.slice(0, lastGoodBrace + 1);
+    let openBraces = 0, openBrackets = 0, inStr = false, esc = false;
+    for (const ch of truncated) {
+      if (esc) { esc = false; continue; }
+      if (ch === '\\' && inStr) { esc = true; continue; }
+      if (ch === '"') inStr = !inStr;
+      if (inStr) continue;
+      if (ch === '{') openBraces++; else if (ch === '}') openBraces--;
+      else if (ch === '[') openBrackets++; else if (ch === ']') openBrackets--;
+    }
+    let repaired = truncated.replace(/,\s*"[^"]*"?\s*:?\s*"?[^"]*$/g, '').replace(/,\s*$/g, '');
+    repaired += ']'.repeat(Math.max(0, openBrackets)) + '}'.repeat(Math.max(0, openBraces));
+    parsed = tryParse(repaired);
+    if (parsed) return parsed;
+  }
   console.warn('[extractJson] parse failed, len', text.length);
   throw new Error('The AI did not return a usable result. Please try again.');
 }
@@ -244,7 +261,7 @@ function heuristicPlant(): PlantAnalysisResponse {
 
 const WASTE_PROMPT = `You are an expert waste-management scientist, materials engineer and environmental toxicologist.
 
-Analyze the attached photo of garbage/waste with maximum accuracy. Identify EVERY distinct material or object you can see.
+Analyze the attached photo of garbage/waste with maximum accuracy. Identify the most visually dominant materials (for a huge landfill/dump, limit to the 8-10 largest by visible volume — do NOT list every tiny fragment).
 
 For each material provide:
 1. name: specific item/material (e.g. "PET plastic water bottle", "banana peel")
