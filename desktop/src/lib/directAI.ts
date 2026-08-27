@@ -16,13 +16,20 @@ import { loadLocalAISettings } from './api';
 // Keys / config (all local)
 // ---------------------------------------------------------------------------
 
+const GEMINI_FALLBACK: Record<string, string> = {
+  'gemini-2.0-flash': 'gemini-3.6-flash',
+  'gemini-2.5-flash': 'gemini-3.6-flash',
+};
+function geminiModel(raw: string): string {
+  return GEMINI_FALLBACK[raw.trim()] || raw || 'gemini-3.6-flash';
+}
 export function configuredProviders(): { provider: 'gemini' | 'openai' | null; model: string } {
   const s = loadLocalAISettings();
   if (s.ai_provider === 'openai' && s.openai_api_key) return { provider: 'openai', model: s.openai_model };
-  if (s.ai_provider === 'gemini' && s.gemini_api_key) return { provider: 'gemini', model: s.gemini_model };
+  if (s.ai_provider === 'gemini' && s.gemini_api_key) return { provider: 'gemini', model: geminiModel(s.gemini_model) };
   if (s.openai_api_key) return { provider: 'openai', model: s.openai_model };
-  if (s.gemini_api_key) return { provider: 'gemini', model: s.gemini_model };
-  return { provider: null, model: s.ai_provider === 'openai' ? s.openai_model : s.gemini_model };
+  if (s.gemini_api_key) return { provider: 'gemini', model: geminiModel(s.gemini_model) };
+  return { provider: null, model: s.ai_provider === 'openai' ? s.openai_model : geminiModel(s.gemini_model) };
 }
 
 export function aiConfigured(): boolean {
@@ -128,12 +135,13 @@ function extractJson(text: string): Record<string, unknown> {
     const e = t.lastIndexOf('}');
     if (s !== -1 && e > s) t = t.slice(s, e + 1);
   }
-  try {
-    const parsed = JSON.parse(t);
-    if (parsed && typeof parsed === 'object') return parsed as Record<string, unknown>;
-  } catch {
-    /* fall through to heuristic */
-  }
+  const tryParse = (s: string) => { try { const p = JSON.parse(s); if (p && typeof p === 'object') return p as Record<string, unknown>; } catch {} return null; };
+  let parsed = tryParse(t);
+  if (parsed) return parsed;
+  const cleaned = t.replace(/[\u0000-\u001F]+/g, ' ').replace(/,\s*([}\]])/g, '$1');
+  parsed = tryParse(cleaned);
+  if (parsed) return parsed;
+  console.warn('[extractJson] parse failed, len', text.length);
   throw new Error('The AI did not return a usable result. Please try again.');
 }
 
