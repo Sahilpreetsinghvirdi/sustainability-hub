@@ -22,6 +22,9 @@ if (typeof window !== 'undefined' && !window.process) {
   __proc.platform = 'browser';
   window.process = __proc;
 }
+if (typeof window !== 'undefined' && window.__METRO_GLOBAL_PREFIX__ === undefined) {
+  window.__METRO_GLOBAL_PREFIX__ = '';
+}
 </script>`;
 
   try {
@@ -43,6 +46,10 @@ if (typeof window !== 'undefined' && !window.process) {
     // and React never mounts (blank white screen). Idempotent guard below.
     if (!html.includes('window.process')) {
       html = html.replace(/<\/head>/i, SHIM + '\n  </head>');
+    }
+    if (!html.includes('__METRO_GLOBAL_PREFIX__')) {
+      const metro = `<script>if (typeof window !== 'undefined' && window.__METRO_GLOBAL_PREFIX__ === undefined) { window.__METRO_GLOBAL_PREFIX__ = ''; }</script>`;
+      html = html.replace(/<\/head>/i, metro + '\n  </head>');
     }
     if (html === before) {
       console.log('fix-web-index: no entry script tag found to patch (already OK or no matches).');
