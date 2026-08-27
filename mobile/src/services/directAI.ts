@@ -107,7 +107,7 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:generateContent`;
     const payload = {
       contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: imageB64 } }] }],
-      generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
+      generationConfig: { response_mime_type: 'application/json', temperature: 0.2, maxOutputTokens: 4096 },
     };
     const res = await fetch(url, {
       method: 'POST',
@@ -459,7 +459,15 @@ export async function streamAnalyzeWaste(
         mime,
         onChunk,
       );
-      return buildWasteResult(extractJson(text), started);
+      try {
+        return buildWasteResult(extractJson(text), started);
+      } catch (parseErr: any) {
+        const pm = parseErr instanceof Error ? parseErr.message : String(parseErr);
+        onChunk('Stream parse failed — retrying without streaming…');
+        const raw = await callVision(WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'), imageB64, mime);
+        onChunk(JSON.stringify(raw).slice(0, 800));
+        return buildWasteResult(raw, started);
+      }
     } catch (streamErr: any) {
       const sm = streamErr instanceof Error ? streamErr.message : String(streamErr);
       // If the stream produced no content, retry once via the proven non-streaming path
