@@ -130,77 +130,65 @@ function upsertOAuthUser(email: string, name: string, provider: Provider): AuthU
   return pub;
 }
 
-// Google / Microsoft — real OAuth would use a backend or Supabase/Firebase.
-// For a fully local desktop app we open the provider's OAuth consent and capture the email
-// via a lightweight popup. If no client ID is configured, we fall back to a secure email prompt
-// so the flow still works for demo/testing without breaking.
+export function loginWithOAuthEmail(email: string, name: string, provider: Provider): AuthUser {
+  return upsertOAuthUser(email, name, provider);
+}
+
+// Google / Microsoft — if VITE_GOOGLE_CLIENT_ID / VITE_MICROSOFT_CLIENT_ID is set we use real OAuth,
+// otherwise we return a signal for the UI to show the native chooser window.
 export async function loginWithGoogle(): Promise<AuthUser> {
   const clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
-  if (clientId) {
-    // Real Google Identity Services flow (requires VITE_GOOGLE_CLIENT_ID)
-    return new Promise((resolve, reject) => {
-      const width = 480, height = 640;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-      const state = Math.random().toString(36).slice(2);
-      const redirect = window.location.origin;
-      const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirect)}&response_type=id_token&scope=${encodeURIComponent('openid email profile')}&nonce=${state}&prompt=select_account`;
-      const popup = window.open(url, 'google_oauth', `width=${width},height=${height},left=${left},top=${top}`);
-      if (!popup) return reject(new Error('Popup blocked. Allow popups for Google sign-in.'));
-      const timer = setInterval(() => {
-        try {
-          if (popup.closed) { clearInterval(timer); reject(new Error('Google sign-in cancelled.')); }
-        } catch {}
-      }, 500);
-      const handler = (e: MessageEvent) => {
-        if (e.origin !== window.location.origin) return;
-        if (e.data?.type === 'google_oauth' && e.data?.email) {
-          clearInterval(timer);
-          window.removeEventListener('message', handler);
-          popup.close();
-          resolve(upsertOAuthUser(e.data.email, e.data.name || '', 'google'));
-        }
-      };
-      window.addEventListener('message', handler);
-      setTimeout(() => { clearInterval(timer); window.removeEventListener('message', handler); try { popup.close(); } catch {} reject(new Error('Google sign-in timed out.')); }, 120000);
-    });
-  }
-  // Fallback: secure local prompt (works without any cloud config)
-  const email = prompt('Enter your Google email to sign in (demo fallback — configure VITE_GOOGLE_CLIENT_ID for real OAuth):');
-  if (!email) throw new Error('Google sign-in cancelled.');
-  const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  return upsertOAuthUser(email, name, 'google');
+  if (!clientId) throw new Error('OAUTH_NO_CLIENT_ID');
+  return new Promise((resolve, reject) => {
+    const width = 520, height = 640;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    const state = Math.random().toString(36).slice(2);
+    const redirect = window.location.origin;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirect)}&response_type=id_token&scope=${encodeURIComponent('openid email profile')}&nonce=${state}&prompt=select_account`;
+    const popup = window.open(url, 'google_oauth', `width=${width},height=${height},left=${left},top=${top}`);
+    if (!popup) return reject(new Error('Popup blocked. Allow popups for Google sign-in.'));
+    const timer = setInterval(() => {
+      try { if (popup.closed) { clearInterval(timer); reject(new Error('Google sign-in cancelled.')); } } catch {}
+    }, 500);
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === 'google_oauth' && e.data?.email) {
+        clearInterval(timer);
+        window.removeEventListener('message', handler);
+        try { popup.close(); } catch {}
+        resolve(upsertOAuthUser(e.data.email, e.data.name || '', 'google'));
+      }
+    };
+    window.addEventListener('message', handler);
+    setTimeout(() => { clearInterval(timer); window.removeEventListener('message', handler); try { popup.close(); } catch {} reject(new Error('Google sign-in timed out.')); }, 120000);
+  });
 }
 
 export async function loginWithMicrosoft(): Promise<AuthUser> {
   const clientId = (import.meta as any).env?.VITE_MICROSOFT_CLIENT_ID || '';
-  if (clientId) {
-    const width = 480, height = 640;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-    const tenant = 'common';
-    const redirect = window.location.origin;
-    const state = Math.random().toString(36).slice(2);
-    const url = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(clientId)}&response_type=id_token&redirect_uri=${encodeURIComponent(redirect)}&scope=${encodeURIComponent('openid email profile')}&nonce=${state}&prompt=select_account`;
-    const popup = window.open(url, 'ms_oauth', `width=${width},height=${height},left=${left},top=${top}`);
-    if (!popup) throw new Error('Popup blocked. Allow popups for Microsoft sign-in.');
-    return new Promise((resolve, reject) => {
-      const timer = setInterval(() => { try { if (popup.closed) { clearInterval(timer); reject(new Error('Microsoft sign-in cancelled.')); } } catch {} }, 500);
-      const handler = (e: MessageEvent) => {
-        if (e.origin !== window.location.origin) return;
-        if (e.data?.type === 'microsoft_oauth' && e.data?.email) {
-          clearInterval(timer);
-          window.removeEventListener('message', handler);
-          popup.close();
-          resolve(upsertOAuthUser(e.data.email, e.data.name || '', 'microsoft'));
-        }
-      };
-      window.addEventListener('message', handler);
-      setTimeout(() => { clearInterval(timer); window.removeEventListener('message', handler); try { popup.close(); } catch {} reject(new Error('Microsoft sign-in timed out.')); }, 120000);
-    });
-  }
-  const email = prompt('Enter your Microsoft email to sign in (demo fallback — configure VITE_MICROSOFT_CLIENT_ID for real OAuth):');
-  if (!email) throw new Error('Microsoft sign-in cancelled.');
-  const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  return upsertOAuthUser(email, name, 'microsoft');
+  if (!clientId) throw new Error('OAUTH_NO_CLIENT_ID');
+  const width = 520, height = 640;
+  const left = window.screenX + (window.outerWidth - width) / 2;
+  const top = window.screenY + (window.outerHeight - height) / 2;
+  const tenant = 'common';
+  const redirect = window.location.origin;
+  const state = Math.random().toString(36).slice(2);
+  const url = `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/authorize?client_id=${encodeURIComponent(clientId)}&response_type=id_token&redirect_uri=${encodeURIComponent(redirect)}&scope=${encodeURIComponent('openid email profile')}&nonce=${state}&prompt=select_account`;
+  const popup = window.open(url, 'ms_oauth', `width=${width},height=${height},left=${left},top=${top}`);
+  if (!popup) throw new Error('Popup blocked. Allow popups for Microsoft sign-in.');
+  return new Promise((resolve, reject) => {
+    const timer = setInterval(() => { try { if (popup.closed) { clearInterval(timer); reject(new Error('Microsoft sign-in cancelled.')); } } catch {} }, 500);
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return;
+      if (e.data?.type === 'microsoft_oauth' && e.data?.email) {
+        clearInterval(timer);
+        window.removeEventListener('message', handler);
+        try { popup.close(); } catch {}
+        resolve(upsertOAuthUser(e.data.email, e.data.name || '', 'microsoft'));
+      }
+    };
+    window.addEventListener('message', handler);
+    setTimeout(() => { clearInterval(timer); window.removeEventListener('message', handler); try { popup.close(); } catch {} reject(new Error('Microsoft sign-in timed out.')); }, 120000);
+  });
 }

@@ -1,7 +1,87 @@
 import { useState } from 'react';
 import { Loader2, Leaf, Mail, Lock, User, ShieldCheck, Eye, EyeOff } from 'lucide-react';
-import { login, register, loginWithGoogle, loginWithMicrosoft } from '@/lib/auth';
+import { login, register, loginWithGoogle, loginWithMicrosoft, loginWithOAuthEmail } from '@/lib/auth';
 import softwareLogo from '@/assets/logo.png';
+
+function openChooserWindow(provider: 'google' | 'microsoft'): Promise<{ email: string; name: string }> {
+  return new Promise((resolve, reject) => {
+    const isGoogle = provider === 'google';
+    const title = isGoogle ? 'Google' : 'Microsoft';
+    const logo = isGoogle
+      ? `<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>`
+      : `<svg width="20" height="20" viewBox="0 0 23 23"><path fill="#f1511b" d="M1 1h10v10H1z"/><path fill="#80cc28" d="M12 1h10v10H12z"/><path fill="#00adef" d="M1 12h10v10H1z"/><path fill="#fbbc09" d="M12 12h10v10H12z"/></svg>`;
+    const accent = isGoogle ? '#1a73e8' : '#0078d4';
+    let saved: any[] = [];
+    try { saved = JSON.parse(localStorage.getItem('sh_auth_users') || '[]').filter((u: any) => u.provider === provider).slice(0, 3); } catch {}
+    const accountsHtml = saved.map((u: any) => `
+      <button class="account" data-email="${u.email}" data-name="${(u.name || '').replace(/"/g, '&quot;')}">
+        <div class="avatar">${(u.name || u.email).trim().split(/\s+/).slice(0,2).map((w:string)=>w[0]?.toUpperCase()).join('').slice(0,2) || 'U'}</div>
+        <div class="info"><div class="name">${u.name || u.email.split('@')[0]}</div><div class="email">${u.email}</div></div>
+      </button>
+    `).join('');
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Choose an account — ${title}</title>
+    <style>
+      *{box-sizing:border-box} body{margin:0;font-family:Roboto,Arial,sans-serif;background:#fff;color:#202124}
+      .wrap{max-width:420px;margin:32px auto;padding:24px 24px 18px;border:1px solid #dadce0;border-radius:8px}
+      .head{display:flex;align-items:center;gap:10;margin-bottom:18px}
+      .logo{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid #dadce0}
+      h1{font-size:18px;font-weight:400;margin:0}
+      .sub{font-size:14px;color:#5f6368;margin:4px 0 18px}
+      .account{width:100%;display:flex;align-items:center;gap:14;padding:10px 12px;border:1px solid #dadce0;border-radius:8px;background:#fff;cursor:pointer;text-align:left;margin-bottom:10px}
+      .account:hover{border-color:${accent};background:#f8fafc}
+      .avatar{width:36px;height:36px;border-radius:50%;background:${accent};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
+      .name{font-size:14px;font-weight:500}
+      .email{font-size:12px;color:#5f6368}
+      .divider{height:1px;background:#dadce0;margin:16px 0}
+      .field{display:flex;gap:8}
+      .field input{flex:1;padding:10px 12px;border:1px solid #dadce0;border-radius:4px;font-size:14px}
+      .field input:focus{outline:none;border-color:${accent}}
+      .btn{padding:9px 18px;border:none;border-radius:4px;background:${accent};color:#fff;font-weight:500;cursor:pointer}
+      .btn:disabled{opacity:.6}
+      .foot{font-size:11px;color:#5f6368;margin-top:14px;text-align:center}
+    </style></head><body>
+    <div class="wrap">
+      <div class="head"><div class="logo">${logo}</div><div><h1>Choose an account</h1><div class="sub">to continue to Sustainability Hub</div></div></div>
+      ${accountsHtml || '<div style="font-size:13px;color:#5f6368;margin-bottom:10px">No saved accounts — use another account below.</div>'}
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:8px">Use another account</div>
+      <div class="field">
+        <input id="email" type="email" placeholder="you@${isGoogle ? 'gmail.com' : 'outlook.com'}" autofocus />
+        <button id="go" class="btn">Continue</button>
+      </div>
+      <div class="foot">This window mimics ${title} account chooser. For production, set VITE_${isGoogle ? 'GOOGLE' : 'MICROSOFT'}_CLIENT_ID for real OAuth.</div>
+    </div>
+    <script>
+      const post = (email,name) => { try{ window.opener.postMessage({type:'oauth_chooser', provider:'${provider}', email, name}, '*'); }catch{} window.close(); };
+      document.querySelectorAll('.account').forEach(b=> b.addEventListener('click',()=> post(b.dataset.email, b.dataset.name)));
+      const emailEl=document.getElementById('email'), go=document.getElementById('go');
+      go.addEventListener('click',()=>{
+        const v=emailEl.value.trim(); if(!v || !/^[^@]+@[^@]+\\.[^@]+$/.test(v)){ emailEl.focus(); emailEl.style.borderColor='#d93025'; return; }
+        const name=v.split('@')[0].replace(/[._]/g,' ').replace(/\\b\\w/g,c=>c.toUpperCase());
+        post(v,name);
+      });
+      emailEl.addEventListener('keydown',e=>{ if(e.key==='Enter') go.click(); });
+    </script>
+    </body></html>`;
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const w = 440, h = 560;
+    const left = window.screenX + (window.outerWidth - w) / 2;
+    const top = window.screenY + (window.outerHeight - h) / 2;
+    const popup = window.open(url, `${provider}_chooser`, `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+    if (!popup) { URL.revokeObjectURL(url); reject(new Error('Popup blocked. Allow popups.')); return; }
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'oauth_chooser' && e.data?.provider === provider && e.data?.email) {
+        window.removeEventListener('message', handler);
+        URL.revokeObjectURL(url);
+        resolve({ email: e.data.email, name: e.data.name || '' });
+      }
+    };
+    window.addEventListener('message', handler);
+    const timer = setInterval(() => { try { if (popup.closed) { clearInterval(timer); window.removeEventListener('message', handler); URL.revokeObjectURL(url); reject(new Error('Sign-in cancelled.')); } } catch {} }, 500);
+    setTimeout(() => { clearInterval(timer); window.removeEventListener('message', handler); try{ popup.close(); }catch{} URL.revokeObjectURL(url); reject(new Error('Sign-in timed out.')); }, 120000);
+  });
+}
 
 export default function LoginPage({ onDone }: { onDone: () => void }) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -32,7 +112,14 @@ export default function LoginPage({ onDone }: { onDone: () => void }) {
     setError(null);
     setOauthLoading('google');
     try {
-      await loginWithGoogle();
+      try {
+        await loginWithGoogle();
+      } catch (e: any) {
+        if (e?.message === 'OAUTH_NO_CLIENT_ID') {
+          const { email, name } = await openChooserWindow('google');
+          loginWithOAuthEmail(email, name, 'google');
+        } else throw e;
+      }
       onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google sign-in failed');
@@ -45,7 +132,14 @@ export default function LoginPage({ onDone }: { onDone: () => void }) {
     setError(null);
     setOauthLoading('microsoft');
     try {
-      await loginWithMicrosoft();
+      try {
+        await loginWithMicrosoft();
+      } catch (e: any) {
+        if (e?.message === 'OAUTH_NO_CLIENT_ID') {
+          const { email, name } = await openChooserWindow('microsoft');
+          loginWithOAuthEmail(email, name, 'microsoft');
+        } else throw e;
+      }
       onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Microsoft sign-in failed');
