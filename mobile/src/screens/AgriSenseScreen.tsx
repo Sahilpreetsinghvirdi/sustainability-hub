@@ -28,6 +28,7 @@ export default function AgriSenseScreen() {
       try { const { saveAgriHistory } = await import('@/services/ai'); await saveAgriHistory({ id: `ag_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: out, crop }); } catch {}
     } catch (e: any) {
       const hasKey = useAiConfigStore.getState().provider === 'gemini' ? !!useAiConfigStore.getState().geminiKey : !!useAiConfigStore.getState().openaiKey;
+      const errMsg = (e?.message || 'Unknown error').slice(0, 240);
       const mock: any = {
         summary: `${crop} — offline analysis: suitable with standard dosage. Monitor soil pH around 6.5.`,
         product_identification: { name: crop + ' Fertilizer', type: 'NPK', confidence: 0.88, description: 'Balanced nutrient fertilizer' },
@@ -40,14 +41,14 @@ export default function AgriSenseScreen() {
         dosage: '5g/L',
         best_timing: 'Early morning',
         alternatives: [],
-        environmental_notes: hasKey ? 'Provisional offline estimate — AI provider unreachable' : 'Offline — add API key for precise',
+        environmental_notes: hasKey ? `Provisional offline estimate — ${errMsg}` : 'Offline — add API key for precise',
         recommendations: ['Test soil after 2 weeks'],
         analyzer_model: 'offline-mock',
         processing_time_ms: 700,
       };
       setResult(mock);
       try { const { saveAgriHistory } = await import('@/services/ai'); await saveAgriHistory({ id: `ag_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: mock, crop }); } catch {}
-      if (hasKey) Alert.alert('AI provider unreachable', `Could not reach the AI provider (${e.message}). Check your internet connection and try again.`);
+      if (hasKey) Alert.alert('AI analysis failed', `The AI provider returned an error:\n\n${errMsg}\n\nCheck that your API key is valid in Settings and that your plan has not exceeded its quota.`);
       else Alert.alert('Offline Mode', 'No API key configured — showing offline estimate. Add an API key in Settings for full AI.');
     } finally { setAnalyzing(false); }
   };

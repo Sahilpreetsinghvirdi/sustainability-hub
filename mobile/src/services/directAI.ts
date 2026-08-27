@@ -287,9 +287,9 @@ User question: {question}`;
 
 export async function analyzeWaste(imageUri: string, question = ''): Promise<WasteAnalysisResponse> {
   if (!aiConfigured()) throw new Error('No AI key configured. Open Settings → AI Configuration and add a Gemini or OpenAI key.');
-  const [imageB64, mime] = await Promise.all([imageToBase64(imageUri), guessMime(imageUri)]);
   const started = Date.now();
   try {
+    const [imageB64, mime] = await Promise.all([imageToBase64(imageUri), guessMime(imageUri)]);
     const raw = await callVision(WASTE_PROMPT.replace('{question}', (question || '').trim() || 'Analyze this garbage/waste image.'), imageB64, mime);
     const mRaw = Array.isArray(raw.materials) ? raw.materials : [];
     const materials = mRaw
@@ -333,7 +333,9 @@ export async function analyzeWaste(imageUri: string, question = ''): Promise<Was
       processing_time_ms: Math.round(Date.now() - started),
     };
   } catch (e) {
-    if (e instanceof Error && /No AI key|not configured/i.test(e.message)) throw e;
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/No AI key|not configured/i.test(msg)) throw e;
+    if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
     return heuristicWaste();
   }
 }
@@ -379,7 +381,6 @@ export interface FertilizerContext {
 
 export async function analyzeFertilizer(imageUri: string, context: FertilizerContext): Promise<AgriAnalysisResponse> {
   if (!aiConfigured()) throw new Error('No AI key configured. Open Settings → AI Configuration and add a Gemini or OpenAI key.');
-  const [imageB64, mime] = await Promise.all([imageToBase64(imageUri), guessMime(imageUri)]);
   const f = (v?: string) => (v || '').trim() || 'not specified';
   const prompt = AGRI_PROMPT
     .replace('{crop}', f(context.crop))
@@ -390,6 +391,7 @@ export async function analyzeFertilizer(imageUri: string, context: FertilizerCon
     .replace('{notes}', f(context.notes) === 'not specified' ? 'none' : f(context.notes));
   const started = Date.now();
   try {
+    const [imageB64, mime] = await Promise.all([imageToBase64(imageUri), guessMime(imageUri)]);
     const raw = await callVision(prompt, imageB64, mime);
     const pid = asDict(raw.product_identification);
     const npkRaw = asDict(raw.nutrient_profile);
@@ -435,7 +437,9 @@ export async function analyzeFertilizer(imageUri: string, context: FertilizerCon
       processing_time_ms: Math.round(Date.now() - started),
     };
   } catch (e) {
-    if (e instanceof Error && /No AI key|not configured/i.test(e.message)) throw e;
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/No AI key|not configured/i.test(msg)) throw e;
+    if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
     return heuristicAgri(context.crop);
   }
 }
@@ -478,7 +482,6 @@ Rules:
 
 export async function analyzePlant(imageUri: string, context: PlantContext = {}): Promise<PlantAnalysisResponse> {
   if (!aiConfigured()) throw new Error('No AI key configured. Open Settings → AI Configuration and add a Gemini or OpenAI key.');
-  const [imageB64, mime] = await Promise.all([imageToBase64(imageUri), guessMime(imageUri)]);
   const f = (v?: string) => (v || '').trim() || 'not specified';
   const prompt = PLANT_PROMPT
     .replace('{crop}', f(context.crop))
@@ -487,6 +490,7 @@ export async function analyzePlant(imageUri: string, context: PlantContext = {})
     .replace('{notes}', f(context.notes) === 'not specified' ? 'none' : f(context.notes));
   const started = Date.now();
   try {
+    const [imageB64, mime] = await Promise.all([imageToBase64(imageUri), guessMime(imageUri)]);
     const raw = await callVision(prompt, imageB64, mime);
     const pid = asDict(raw.plant_identification);
     const health = asDict(raw.health);
@@ -528,7 +532,9 @@ export async function analyzePlant(imageUri: string, context: PlantContext = {})
       processing_time_ms: Math.round(Date.now() - started),
     };
   } catch (e) {
-    if (e instanceof Error && /No AI key|not configured/i.test(e.message)) throw e;
+    const msg = e instanceof Error ? e.message : String(e);
+    if (/No AI key|not configured/i.test(msg)) throw e;
+    if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
     return heuristicPlant();
   }
 }

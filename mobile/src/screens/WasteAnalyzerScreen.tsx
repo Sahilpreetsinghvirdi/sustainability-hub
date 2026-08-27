@@ -36,12 +36,13 @@ export default function WasteAnalyzerScreen() {
       setHistory(prev => [item, ...prev]);
     } catch (e: any) {
       const hasKey = useAiConfigStore.getState().provider === 'gemini' ? !!useAiConfigStore.getState().geminiKey : !!useAiConfigStore.getState().openaiKey;
+      const errMsg = (e?.message || 'Unknown error').slice(0, 240);
       const mock: any = {
-        summary: hasKey ? 'AI analysis failed (key present but the AI provider could not be reached). Showing a provisional offline assessment.' : 'Offline analysis: appears to be compostable organic waste (e.g., vegetable scraps). Segregate for compost.',
+        summary: hasKey ? `AI analysis could not be completed. ${errMsg}. Showing a provisional offline assessment.` : 'Offline analysis: appears to be compostable organic waste (e.g., vegetable scraps). Segregate for compost.',
         overall_hazard: { level: 'low', score: 12, toxins: [], health_risks: [] },
         materials: [{ name: 'Organic Waste', category: 'organic', percentage: 95, confidence: 0.9, description: 'Compostable organic matter', hazard: { level: 'low', score: 10, toxins: [], health_risks: [] }, reuse_ideas: ['Compost'], eco_alternatives: [], disposal: { method: 'Compost', destination: 'Compost bin', recyclable: true } }],
         recommendations: ['Add to compost bin, keep moisture 60%'],
-        environmental_impact: hasKey ? 'Provisional offline assessment — AI provider unreachable' : 'Offline — add API key for precise AI',
+        environmental_impact: hasKey ? 'Provisional offline assessment — AI provider returned an error' : 'Offline — add API key for precise AI',
         analyzer_model: 'offline-mock',
         processing_time_ms: 600,
       };
@@ -49,7 +50,7 @@ export default function WasteAnalyzerScreen() {
       const item: WasteHistoryItem = { id: `w_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: mock, question: question || undefined };
       await saveWasteHistory(item).catch(() => {});
       setHistory(prev => [item, ...prev]);
-      if (hasKey) Alert.alert('AI provider unreachable', `Could not reach the AI provider (${e.message}). Check your internet connection and try again.`);
+      if (hasKey) Alert.alert('AI analysis failed', `The AI provider returned an error:\n\n${errMsg}\n\nCheck that your API key is valid in Settings and that your plan has not exceeded its quota.`);
       else Alert.alert('Offline Mode', 'No API key configured — showing offline analysis. Add an API key in Settings for full AI.');
     } finally { setAnalyzing(false); }
   };

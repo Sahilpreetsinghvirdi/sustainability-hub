@@ -26,6 +26,7 @@ export default function PlantSenseScreen() {
       try { const { savePlantHistory } = await import('@/services/ai'); await savePlantHistory({ id: `pl_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: out, crop: crop || undefined }); } catch {}
     } catch (e: any) {
       const hasKey = useAiConfigStore.getState().provider === 'gemini' ? !!useAiConfigStore.getState().geminiKey : !!useAiConfigStore.getState().openaiKey;
+      const errMsg = (e?.message || 'Unknown error').slice(0, 240);
       const mock = {
         summary: `${crop || 'Plant'} appears healthy with minor light deficiency. Increase light exposure and maintain soil moisture at 60-70%.`,
         plant_identification: { name: crop || 'Ficus Elastica', type: 'indoor', confidence: 0.92, description: 'Common indoor foliage plant' },
@@ -37,14 +38,14 @@ export default function PlantSenseScreen() {
         manures_suggested: ['Vermicompost 10% top dressing'],
         watering_guidance: 'Water 250ml when soil moisture <65%',
         light_guidance: 'Target 1000 lux, 6h daily',
-        environmental_notes: hasKey ? 'Provisional offline assessment — AI provider unreachable' : 'Offline analysis — add API key in Settings for precise AI diagnosis',
+        environmental_notes: hasKey ? `Provisional offline assessment — ${errMsg}` : 'Offline analysis — add API key in Settings for precise AI diagnosis',
         recommendations: ['Monitor new growth for 7 days'],
         analyzer_model: 'offline-mock',
         processing_time_ms: 800,
       };
       setResult(mock as any);
       try { const { savePlantHistory } = await import('@/services/ai'); await savePlantHistory({ id: `pl_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: mock as any, crop: crop || undefined }); } catch {}
-      if (hasKey) Alert.alert('AI provider unreachable', `Could not reach the AI provider (${e.message}). Check your internet connection and try again.`);
+      if (hasKey) Alert.alert('AI analysis failed', `The AI provider returned an error:\n\n${errMsg}\n\nCheck that your API key is valid in Settings and that your plan has not exceeded its quota.`);
       else Alert.alert('Offline Mode', 'No API key configured — showing offline analysis. Add an API key in Settings for full AI.');
     } finally { setAnalyzing(false); }
   };
