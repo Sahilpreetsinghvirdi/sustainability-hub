@@ -40,15 +40,15 @@ export default function AgriSenseScreen() {
         dosage: '5g/L',
         best_timing: 'Early morning',
         alternatives: [],
-        environmental_notes: hasKey ? 'Offline — backend not reachable, key saved' : 'Offline — add API key for precise',
+        environmental_notes: hasKey ? 'Provisional offline estimate — AI provider unreachable' : 'Offline — add API key for precise',
         recommendations: ['Test soil after 2 weeks'],
         analyzer_model: 'offline-mock',
         processing_time_ms: 700,
       };
       setResult(mock);
       try { const { saveAgriHistory } = await import('@/services/ai'); await saveAgriHistory({ id: `ag_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: mock, crop }); } catch {}
-      if (hasKey) Alert.alert('Backend not reachable', `Key saved, backend not reachable (${e.message}). For physical device, set LAN IP in config.ts`);
-      else Alert.alert('Offline Mode', 'Network unavailable — showing offline estimate. Add API key in Settings for full AI.');
+      if (hasKey) Alert.alert('AI provider unreachable', `Could not reach the AI provider (${e.message}). Check your internet connection and try again.`);
+      else Alert.alert('Offline Mode', 'No API key configured — showing offline estimate. Add an API key in Settings for full AI.');
     } finally { setAnalyzing(false); }
   };
   return (

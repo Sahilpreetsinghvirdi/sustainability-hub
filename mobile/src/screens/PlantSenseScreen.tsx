@@ -37,15 +37,15 @@ export default function PlantSenseScreen() {
         manures_suggested: ['Vermicompost 10% top dressing'],
         watering_guidance: 'Water 250ml when soil moisture <65%',
         light_guidance: 'Target 1000 lux, 6h daily',
-        environmental_notes: hasKey ? 'Offline — backend not reachable, key saved locally' : 'Offline analysis — add API key in Settings for precise AI diagnosis',
+        environmental_notes: hasKey ? 'Provisional offline assessment — AI provider unreachable' : 'Offline analysis — add API key in Settings for precise AI diagnosis',
         recommendations: ['Monitor new growth for 7 days'],
         analyzer_model: 'offline-mock',
         processing_time_ms: 800,
       };
       setResult(mock as any);
       try { const { savePlantHistory } = await import('@/services/ai'); await savePlantHistory({ id: `pl_${Date.now()}`, timestamp: new Date().toISOString(), previewUrl: imageUri, outcome: mock as any, crop: crop || undefined }); } catch {}
-      if (hasKey) Alert.alert('Backend not reachable', `Key saved, but backend at ${e.message.includes('10.0.2.2') ? '10.0.2.2' : 'configured URL'} not reachable. For physical device, set your PC LAN IP in src/constants/config.ts and run backend with --host 0.0.0.0`);
-      else Alert.alert('Offline Mode', 'Network unavailable — showing offline analysis. Add API key in Settings for full AI.');
+      if (hasKey) Alert.alert('AI provider unreachable', `Could not reach the AI provider (${e.message}). Check your internet connection and try again.`);
+      else Alert.alert('Offline Mode', 'No API key configured — showing offline analysis. Add an API key in Settings for full AI.');
     } finally { setAnalyzing(false); }
   };
   const score = result?.health?.score ?? 92;

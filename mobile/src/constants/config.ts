@@ -1,13 +1,26 @@
 // mobile/src/constants/config.ts
+import { Platform } from 'react-native';
+
+// Determine the backend host for the current platform.
+// - Web (running in a PC browser, e.g. localhost:8083): the backend is on the
+//   same machine -> use localhost:8000.
+// - Android emulator: 10.0.2.2 maps to the host's loopback (localhost).
+// - Physical device: replace with the PC's LAN IP (run `ipconfig` on the PC)
+//   and start the backend on 0.0.0.0.
+function resolveBaseUrl(): string {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:8000/api/v1';
+  }
+  if (__DEV__) {
+    return 'http://10.0.2.2:8000/api/v1';
+  }
+  return 'https://api.sustainabilityhub.app/api/v1';
+}
+
 export const config = {
   // API
   api: {
-    // For phone → desktop backend: replace localhost with your PC's LAN IP (e.g. '192.168.1.50')
-    // Run 'ipconfig' on PC to find your IPv4 address. Backend must run on 0.0.0.0 or the LAN IP.
-    // Android emulator uses 10.0.2.2 to reach host's localhost; physical device needs LAN IP
-    baseUrl: __DEV__
-      ? 'http://10.0.2.2:8000/api/v1'
-      : 'https://api.sustainabilityhub.app/api/v1',
+    baseUrl: resolveBaseUrl(),
     timeout: 60000,
     retryAttempts: 3,
     retryDelay: 1000,

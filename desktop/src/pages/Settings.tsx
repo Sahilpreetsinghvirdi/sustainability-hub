@@ -24,7 +24,7 @@ export default function SettingsPage() {
   const [showGemini, setShowGemini] = useState(false);
   const [showOpenai, setShowOpenai] = useState(false);
   const [savingAI, setSavingAI] = useState(false);
-  const [aiSaved, setAiSaved] = useState<'' | 'backend' | 'local'>('');
+  const [aiSaved, setAiSaved] = useState(false);
   const [aiSaveError, setAiSaveError] = useState<string | null>(null);
 
   // Profile / Household / Notifications — persisted to localStorage via store
@@ -56,7 +56,7 @@ export default function SettingsPage() {
       setGeminiModel(data.gemini_model || 'gemini-3.6-flash');
       setOpenaiModel(data.openai_model || 'gpt-4o-mini');
     } catch (e) {
-      setAiError(e instanceof Error ? e.message : 'Failed to load AI settings. Is the backend running?');
+      setAiError(e instanceof Error ? e.message : 'Failed to load AI settings.');
     } finally {
       setAiLoading(false);
     }
@@ -88,7 +88,7 @@ export default function SettingsPage() {
   }
 
   async function handleSaveAI() {
-    setSavingAI(true); setAiSaveError(null); setAiSaved('');
+    setSavingAI(true); setAiSaveError(null); setAiSaved(false);
     try {
       const payload: Record<string, string> = {};
       if (geminiKey.trim()) payload.gemini_api_key = geminiKey.trim();
@@ -100,8 +100,8 @@ export default function SettingsPage() {
       setAiData(updated);
       setGeminiKey('');
       setOpenaiKey('');
-      setAiSaved(updated.backendSynced ? 'backend' : 'local');
-      setTimeout(() => setAiSaved('' as never), 3500);
+      setAiSaved(true);
+      setTimeout(() => setAiSaved(false), 3500);
     } catch (e) {
       setAiSaveError(e instanceof Error ? e.message : 'Save failed');
     } finally {
@@ -165,7 +165,7 @@ export default function SettingsPage() {
                     {aiLoading ? 'Checking AI configuration…' : aiData?.ai_configured ? `AI ready — ${aiData.ai_provider} · ${aiData.ai_provider === 'openai' ? aiData.openai_model : aiData.gemini_model}` : 'AI not configured — analyses will fail'}
                   </p>
                   <p className="text-xs text-dark-200 mt-1 leading-relaxed">
-                    Keys are used by <strong>both</strong> AI Waste Analyzer and AgriSense. Stored securely in <code className="px-1 py-0.5 rounded bg-dark-600 border border-dark-500 text-[11px]">backend/.env</code> on this machine and never shown in full again.
+                    Keys are used by <strong>AI Waste Analyzer, AgriSense and PlantSense</strong>. They are stored safely on this device and sent directly to Google/OpenAI for each analysis — never through any local server, and never shown in full again.
                   </p>
                 </div>
                 <span className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-medium ${aiData?.ai_configured ? 'bg-success/15 border-success/30 text-success' : 'bg-warning/15 border-warning/30 text-warning'}`}>
@@ -293,16 +293,14 @@ export default function SettingsPage() {
                     {savingAI ? 'Saving…' : aiSaved ? 'Saved!' : 'Save AI Keys'}
                   </button>
                   <span className="text-xs text-dark-300">
-                    {aiSaved ? (aiSaved === 'local' ? 'Keys saved on this device. Start the local backend to use them in analyses.' : 'Keys saved — analyses will use them immediately.') : 'Both analyzers (Waste + AgriSense) use these keys.'}
+                    {aiSaved ? 'Keys saved on this device. Your analyses will call the AI provider directly — no server needed.' : 'Waste Analyzer, AgriSense and PlantSense all use these keys.'}
                   </span>
                 </div>
                 {aiSaveError && <div className="rounded-lg border border-error/30 bg-error/10 p-2.5 text-sm text-error">{aiSaveError}</div>}
                 {aiSaved && (
-                  <div className={`rounded-lg border p-2.5 text-sm flex items-center gap-2 ${aiSaved === 'local' ? 'border-warning/30 bg-warning/10 text-warning' : 'border-success/30 bg-success/10 text-success'}`}>
+                  <div className="rounded-lg border border-success/30 bg-success/10 p-2.5 text-sm flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" />
-                    {aiSaved === 'local'
-                      ? 'Saved to this device. The local backend was not reachable — start it with: cd backend && .venv\\Scripts\\python -m uvicorn app.main:app --port 8000'
-                      : 'Saved & synced to the local backend. Try an analysis now.'}
+                    Keys saved on this device. Photos are analysed directly by the AI using your key — works on this app wherever it runs.
                   </div>
                 )}
               </div>
@@ -313,7 +311,7 @@ export default function SettingsPage() {
                   <li><strong>Gemini</strong> — <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">aistudio.google.com/app/apikey <ExternalLink className="w-3 h-3" /></a> (free tier available)</li>
                   <li><strong>OpenAI</strong> — <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">platform.openai.com/api-keys <ExternalLink className="w-3 h-3" /></a></li>
                 </ul>
-                <p className="text-[11px] text-dark-300 mt-2">Keys never leave this machine — they’re written to <code>backend/.env</code> and used by your local Python backend only.</p>
+                <p className="text-[11px] text-dark-300 mt-2">Keys are stored on this device and sent directly to Google/OpenAI only when you run an analysis. They never pass through our servers.</p>
               </div>
             </div>
           )}
@@ -430,7 +428,7 @@ export default function SettingsPage() {
             <div className="space-y-4 animate-pageIn">
               <div className="card-elevated p-5 space-y-4">
                 <h3 className="text-sm font-semibold text-dark-50 flex items-center gap-2"><Database className="w-4 h-4 text-primary" /> Data & Privacy</h3>
-                <p className="text-xs text-dark-300">All data is stored locally on this machine (localStorage + <code>backend/.env</code> for AI keys). No cloud sync.</p>
+                <p className="text-xs text-dark-300">All data — including your AI keys — is stored locally on this device. No cloud sync, no server required.</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
                     { label: 'Waste scans', value: counts.scans },
@@ -510,7 +508,7 @@ export default function SettingsPage() {
                   >
                     <Trash2 className="w-4 h-4" /> Reset All Local Data
                   </button>
-                  <p className="text-[11px] text-dark-300 mt-2">AI keys in <code>backend/.env</code> are not cleared by this — clear them in the AI Configuration tab if needed.</p>
+                  <p className="text-[11px] text-dark-300 mt-2">AI keys are not cleared by this — clear them in the AI Configuration tab if needed.</p>
                 </div>
               </div>
             </div>

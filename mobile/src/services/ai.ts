@@ -1,9 +1,6 @@
 // mobile/src/services/ai.ts
-import { config } from '@/constants/config';
-import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const BASE = config.api.baseUrl;
+import { useAiConfigStore } from '@/store/aiConfigStore';
 
 export interface WasteAnalysisResponse {
   summary: string;
@@ -160,85 +157,62 @@ export async function clearPlantHistory(): Promise<void> {
 }
 
 export async function getAiSettings(): Promise<AISettingsResponse> {
-  const res = await fetch(`${BASE}/settings/ai`);
-  if (!res.ok) throw new Error(`Failed to load AI settings: ${res.status}`);
-  return res.json();
+  const s = useAiConfigStore.getState();
+  return {
+    gemini_api_key_masked: s.geminiKey ? maskKey(s.geminiKey) : null,
+    openai_api_key_masked: s.openaiKey ? maskKey(s.openaiKey) : null,
+    gemini_model: s.geminiModel,
+    openai_model: s.openaiModel,
+    ai_provider: s.provider,
+    ai_configured: !!(s.geminiKey || s.openaiKey),
+  };
+}
+
+function maskKey(k: string): string {
+  if (k.length <= 4) return '****';
+  return `${k.slice(0, 3)}****${k.slice(-4)}`;
 }
 
 export async function getWasteStatus(): Promise<{ ai_configured: boolean; provider: string | null; model: string }> {
-  const res = await fetch(`${BASE}/waste/status`);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  const s = useAiConfigStore.getState();
+  const provider = s.provider === 'openai' && s.openaiKey
+    ? 'openai'
+    : s.provider === 'gemini' && s.geminiKey
+      ? 'gemini'
+      : s.openaiKey
+        ? 'openai'
+        : s.geminiKey
+          ? 'gemini'
+          : null;
+  return {
+    ai_configured: !!(s.geminiKey || s.openaiKey),
+    provider,
+    model: provider === 'openai' ? s.openaiModel : s.geminiModel,
+  };
 }
 
 export async function analyzeWaste(
   imageUri: string,
   question?: string,
 ): Promise<WasteAnalysisResponse> {
-  const form = new FormData();
-  form.append('file', {
-    uri: imageUri,
-    name: 'capture.jpg',
-    type: 'image/jpeg',
-  } as any);
-  if (question?.trim()) form.append('question', question.trim());
-
-  const res = await fetch(`${BASE}/waste/analyze`, { method: 'POST', body: form });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const msg = data?.detail || `API error ${res.status}`;
-    throw new Error(typeof msg === 'string' ? msg : String(msg));
-  }
-  return data as WasteAnalysisResponse;
+  const { analyzeWaste: run } = await import('./directAI');
+  return run(imageUri, question ?? '');
 }
 
 export async function analyzeFertilizer(
   imageUri: string,
   context: { crop: string; growth_stage?: string; soil_type?: string; irrigation?: string; season?: string; notes?: string },
 ): Promise<AgriAnalysisResponse> {
-  const form = new FormData();
-  form.append('file', {
-    uri: imageUri,
-    name: 'fertilizer.jpg',
-    type: 'image/jpeg',
-  } as any);
-  form.append('crop', context.crop);
-  (['growth_stage', 'soil_type', 'irrigation', 'season', 'notes'] as const).forEach((k) => {
-    const v = context[k];
-    if (v?.trim()) form.append(k, v.trim());
-  });
-
-  const res = await fetch(`${BASE}/agri/analyze`, { method: 'POST', body: form });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const msg = data?.detail || `API error ${res.status}`;
-    throw new Error(typeof msg === 'string' ? msg : String(msg));
-  }
-  return data as AgriAnalysisResponse;
+  const { analyzeFertilizer: run } = await import('./directAI');
+  return run(imageUri, context);
 }
 
 export async function analyzePlant(
   imageUri: string,
   context: { crop?: string; growth_stage?: string; soil_type?: string; notes?: string } = {},
 ): Promise<PlantAnalysisResponse> {
-  const form = new FormData();
-  form.append('file', {
-    uri: imageUri,
-    name: 'plant.jpg',
-    type: 'image/jpeg',
-  } as any);
-  (['crop', 'growth_stage', 'soil_type', 'notes'] as const).forEach((k) => {
-    const v = context[k];
-    if (v?.trim()) form.append(k, v.trim());
-  });
-
-  const res = await fetch(`${BASE}/plant/analyze`, { method: 'POST', body: form });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const msg = data?.detail || `API error ${res.status}`;
-    throw new Error(typeof msg === 'string' ? msg : String(msg));
-  }
-  return data as PlantAnalysisResponse;
+  const { analyzePlant: run } = await import('./directAI');
+  return run(imageUri, context);
 }
 
 export function relTime(ts: string): string {

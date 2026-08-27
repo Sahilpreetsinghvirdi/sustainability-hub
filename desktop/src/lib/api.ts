@@ -1,55 +1,18 @@
 import type {
-  CarbonScan,
-  EnergyBill,
-  EnergyAppliance,
-  FoodWasteLog,
-  UserProfile,
-  DashboardSummary,
   WasteAnalysisResponse,
   AgriAnalysisResponse,
+  PlantAnalysisResponse,
 } from '@/types';
+import {
+  analyzeWasteImage as _analyzeWasteImage,
+  analyzeFertilizer as _analyzeFertilizer,
+  analyzePlant as _analyzePlant,
+  statusSignal,
+} from './directAI';
 
-const API_BASE = 'http://localhost:8000/api/v1';
-
-async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
-
-/** Multipart upload — must NOT set Content-Type manually (browser adds boundary). */
-export async function analyzeWasteImage(
-  file: File | Blob,
-  question = '',
-  fileName = 'capture.jpg',
-): Promise<WasteAnalysisResponse> {
-  const form = new FormData();
-  form.append('file', file, fileName);
-  if (question.trim()) form.append('question', question.trim());
-  const res = await fetch(`${API_BASE}/waste/analyze`, { method: 'POST', body: form });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const detail =
-      data && typeof data === 'object' && 'detail' in data
-        ? String((data as { detail: unknown }).detail)
-        : `API error ${res.status}`;
-    throw new Error(detail);
-  }
-  return data as WasteAnalysisResponse;
-}
-
-export async function fetchAnalyzerStatus(): Promise<{
-  ai_configured: boolean;
-  provider: string | null;
-  model: string;
-}> {
-  const res = await fetch(`${API_BASE}/waste/status`);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
-}
+// This module is now fully local & backend-free. All AI calls go directly to
+// the user's own Gemini/OpenAI key from the browser — there is no localhost
+// server dependency, so it works identically on Windows, web and mobile.
 
 export interface AISettingsResponse {
   gemini_api_key_masked: string | null;
@@ -61,13 +24,6 @@ export interface AISettingsResponse {
   gemini_configured: boolean;
   openai_configured: boolean;
 }
-
-/**
- * AI keys are persisted to localStorage so the Settings panel works on any
- * machine — even when the local Python backend is not running. The backend is
- * written too when reachable (best-effort), but a missing backend never blocks
- * saving or reading keys.
- */
 
 const AI_LOCAL_KEY = 'sh_ai_settings';
 
@@ -120,42 +76,19 @@ function maskKey(key: string): string {
   return key.slice(0, 4) + '••••••' + key.slice(-4);
 }
 
-/** Backend is running + reachable at its configured base URL. */
-export async function isBackendReachable(): Promise<boolean> {
-  try {
-    const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Read AI settings from the backend when available, otherwise fall back to the
- * local copy. Never throws for a missing backend.
- */
+/** Keys are always local — reading never fails and never needs a server. */
 export async function fetchAISettings(): Promise<AISettingsResponse> {
-  const local = loadLocalAISettings();
-  try {
-    const res = await fetch(`${API_BASE}/settings/ai`);
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    return res.json();
-  } catch {
-    return localToAISettingsResponse(local);
-  }
+  return localToAISettingsResponse(loadLocalAISettings());
 }
 
-/**
- * Save AI keys locally (always works) and push to the backend when reachable.
- * Resolves with a result describing whether the backend sync succeeded.
- */
+/** Save AI keys locally (always succeeds). */
 export async function updateAISettings(payload: {
   gemini_api_key?: string;
   openai_api_key?: string;
   gemini_model?: string;
   openai_model?: string;
   ai_provider?: string;
-}): Promise<AISettingsResponse & { backendSynced: boolean }> {
+}): Promise<AISettingsResponse & { backendSynced: true }> {
   const local = loadLocalAISettings();
   const next: AISettingsLocal = {
     ...local,
@@ -166,22 +99,7 @@ export async function updateAISettings(payload: {
     ai_provider: (payload.ai_provider as AISettingsLocal['ai_provider']) ?? local.ai_provider,
   };
   saveLocalAISettings(next);
-
-  let backendSynced = false;
-  try {
-    const res = await fetch(`${API_BASE}/settings/ai`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error(`Save failed: ${res.status}`);
-    backendSynced = true;
-    const data = await res.json().catch(() => null);
-    if (data && typeof data === 'object') return { ...(data as AISettingsResponse), backendSynced };
-  } catch {
-    backendSynced = false;
-  }
-  return { ...localToAISettingsResponse(next), backendSynced };
+  return { ...localToAISettingsResponse(next), backendSynced: true };
 }
 
 export interface FertilizerContext {
@@ -193,30 +111,6 @@ export interface FertilizerContext {
   notes?: string;
 }
 
-/** Multipart upload for the AgriSense fertilizer advisor. */
-export async function analyzeFertilizer(
-  file: File | Blob,
-  context: FertilizerContext,
-): Promise<AgriAnalysisResponse> {
-  const form = new FormData();
-  form.append('file', file, file instanceof File ? file.name : 'fertilizer.jpg');
-  form.append('crop', context.crop);
-  (['growth_stage', 'soil_type', 'irrigation', 'season', 'notes'] as const).forEach((k) => {
-    const v = context[k];
-    if (v && v.trim()) form.append(k, v.trim());
-  });
-  const res = await fetch(`${API_BASE}/agri/analyze`, { method: 'POST', body: form });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const detail =
-      data && typeof data === 'object' && 'detail' in data
-        ? String((data as { detail: unknown }).detail)
-        : `API error ${res.status}`;
-    throw new Error(detail);
-  }
-  return data as AgriAnalysisResponse;
-}
-
 export interface PlantContext {
   crop?: string;
   growth_stage?: string;
@@ -224,61 +118,36 @@ export interface PlantContext {
   notes?: string;
 }
 
+export async function analyzeWasteImage(
+  file: File | Blob,
+  question = '',
+  fileName = 'capture.jpg',
+): Promise<WasteAnalysisResponse> {
+  return _analyzeWasteImage(file, question, fileName);
+}
+
+export async function fetchAnalyzerStatus(): Promise<{
+  ai_configured: boolean;
+  provider: string | null;
+  model: string;
+}> {
+  return statusSignal();
+}
+
+export async function analyzeFertilizer(
+  file: File | Blob,
+  context: FertilizerContext,
+): Promise<AgriAnalysisResponse> {
+  return _analyzeFertilizer(file, context);
+}
+
 export async function analyzePlant(
   file: File | Blob,
   context: PlantContext,
-): Promise<import('@/types').PlantAnalysisResponse> {
-  const form = new FormData();
-  form.append('file', file, file instanceof File ? file.name : 'plant.jpg');
-  (['crop', 'growth_stage', 'soil_type', 'notes'] as const).forEach((k) => {
-    const v = context[k as keyof PlantContext];
-    if (v && String(v).trim()) form.append(k, String(v).trim());
-  });
-  const res = await fetch(`${API_BASE}/plant/analyze`, { method: 'POST', body: form });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const detail = data && typeof data === 'object' && 'detail' in data ? String((data as any).detail) : `API error ${res.status}`;
-    throw new Error(detail);
-  }
-  return data as import('@/types').PlantAnalysisResponse;
+): Promise<PlantAnalysisResponse> {
+  return _analyzePlant(file, context);
 }
 
 export async function fetchPlantStatus(): Promise<{ ai_configured: boolean; provider: string | null; model: string }> {
-  const res = await fetch(`${API_BASE}/plant/status`);
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  return res.json();
+  return statusSignal();
 }
-
-export const api = {
-  carbon: {
-    list: () => fetchAPI<CarbonScan[]>('/carbon/scans'),
-    get: (id: string) => fetchAPI<CarbonScan>(`/carbon/scans/${id}`),
-    create: (data: Partial<CarbonScan>) =>
-      fetchAPI<CarbonScan>('/carbon/scans', { method: 'POST', body: JSON.stringify(data) }),
-    delete: (id: string) =>
-      fetchAPI<void>(`/carbon/scans/${id}`, { method: 'DELETE' }),
-  },
-  energy: {
-    listBills: () => fetchAPI<EnergyBill[]>('/energy/bills'),
-    createBill: (data: Partial<EnergyBill>) =>
-      fetchAPI<EnergyBill>('/energy/bills', { method: 'POST', body: JSON.stringify(data) }),
-    listAppliances: () => fetchAPI<EnergyAppliance[]>('/energy/appliances'),
-    createAppliance: (data: Partial<EnergyAppliance>) =>
-      fetchAPI<EnergyAppliance>('/energy/appliances', { method: 'POST', body: JSON.stringify(data) }),
-    getAudit: () => fetchAPI<any>('/energy/audit'),
-  },
-  foodWaste: {
-    list: () => fetchAPI<FoodWasteLog[]>('/food-waste/logs'),
-    create: (data: Partial<FoodWasteLog>) =>
-      fetchAPI<FoodWasteLog>('/food-waste/logs', { method: 'POST', body: JSON.stringify(data) }),
-    getStreak: () => fetchAPI<{ current_streak_days: number; best_streak_days: number }>('/food-waste/streak'),
-  },
-  profile: {
-    get: () => fetchAPI<UserProfile>('/profile'),
-    update: (data: Partial<UserProfile>) =>
-      fetchAPI<UserProfile>('/profile', { method: 'PUT', body: JSON.stringify(data) }),
-  },
-  dashboard: {
-    getSummary: () => fetchAPI<DashboardSummary>('/dashboard/summary'),
-  },
-};

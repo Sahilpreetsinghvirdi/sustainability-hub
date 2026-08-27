@@ -206,7 +206,7 @@ export default function WasteAnalyzerPage() {
       })
       .catch((e: unknown) => {
         const msg = e instanceof Error ? e.message : 'Analysis failed';
-        outcome = { ok: false, error: msg.includes('Failed to fetch') ? 'Cannot reach the backend. Start it with: cd backend && .venv\\Scripts\\python -m uvicorn app.main:app --port 8000' : msg };
+        outcome = { ok: false, error: msg.includes('Failed to fetch') ? 'Could not reach the AI provider. Check your internet connection and try again.' : msg };
         window.dispatchEvent(new CustomEvent('analysis-complete', { detail: { kind: 'waste', title: 'Waste scan failed', detail: outcome.error as string, target: '/analyzer', ok: false } }));
       })
       .finally(() => subscribers.forEach((s) => outcome && s(outcome!)));
@@ -388,7 +388,7 @@ export default function WasteAnalyzerPage() {
           }`}
         >
           <span className={`w-2 h-2 rounded-full ${aiStatus?.ai_configured ? 'bg-success' : aiStatus === null ? 'bg-error' : 'bg-warning animate-pulse'}`} />
-          {aiStatus?.ai_configured ? `${aiStatus.provider} · ${aiStatus.model}` : aiStatus === null ? 'Backend offline' : 'API key not configured'}
+          {aiStatus?.ai_configured ? `${aiStatus.provider} · ${aiStatus.model}` : aiStatus === null ? 'Checking…' : 'API key not configured'}
         </span>
       </div>
 

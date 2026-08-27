@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { config } from '@/constants/config';
 import { useAuthStore } from '@/store/authStore';
 import { useAiConfigStore } from '@/store/aiConfigStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -58,20 +57,10 @@ export const SettingsScreen: React.FC = () => {
             const k = draftKey.trim();
             if (!k) { Alert.alert('Key required'); return; }
             if (provider === 'gemini') setGeminiKey(k); else setOpenaiKey(k);
-            try {
-              const BASE = config.api.baseUrl;
-              const body: any = { ai_provider: provider };
-              if (provider === 'gemini') body.gemini_api_key = k; else body.openai_api_key = k;
-              const res = await fetch(`${BASE}/settings/ai`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-              if (!res.ok) throw new Error(`${res.status}`);
-              Alert.alert('Saved', `${provider === 'gemini' ? 'Gemini' : 'OpenAI'} key saved on backend`);
-            } catch (e: any) {
-              Alert.alert('Saved locally', `Key saved on device, backend not reachable (${e.message}). Diagnose will use offline mock until backend at ${config.api.baseUrl} is reachable. For physical device, set LAN IP in config.ts`);
-            }
+            Alert.alert('Saved', `${provider === 'gemini' ? 'Gemini' : 'OpenAI'} key saved on this device. Analyses call the AI provider directly — no server needed.`);
           }}><Text style={s.outlineText}>Verify & Save</Text></Pressable>
           <Pressable style={s.outlineBtn} onPress={async () => {
             setDraftKey(''); if (provider === 'gemini') setGeminiKey(''); else setOpenaiKey('');
-            try { const BASE = config.api.baseUrl; await fetch(`${BASE}/settings/ai`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(provider === 'gemini' ? { gemini_api_key: '' } : { openai_api_key: '' }) }); } catch {}
             Alert.alert('Reset', 'Key cleared');
           }}><Text style={s.outlineText}>Reset</Text></Pressable>
         </View>
