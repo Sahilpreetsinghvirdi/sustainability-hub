@@ -1,23 +1,10 @@
 // mobile/src/store/authStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { MMKV } from 'react-native-mmkv';
 import { User, AuthTokens } from '@/types';
+import { createMMKVMiddleware } from './mmkvWebFallback';
 
-const mmkvStorage = new MMKV({ id: 'auth-storage' });
-
-const mmkvMiddleware = {
-  getItem: (name: string) => {
-    const value = mmkvStorage.getString(name);
-    return value ? JSON.parse(value) : null;
-  },
-  setItem: (name: string, value: unknown) => {
-    mmkvStorage.set(name, JSON.stringify(value));
-  },
-  removeItem: (name: string) => {
-    mmkvStorage.delete(name);
-  },
-};
+const mmkvMiddleware = createMMKVMiddleware('auth-storage');
 
 interface AuthState {
   user: User | null;

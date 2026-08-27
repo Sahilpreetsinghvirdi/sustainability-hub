@@ -1,23 +1,10 @@
 // mobile/src/store/settingsStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { MMKV } from 'react-native-mmkv';
 import { UserPreferences } from '@/types';
+import { createMMKVMiddleware } from './mmkvWebFallback';
 
-const mmkvStorage = new MMKV({ id: 'settings-storage' });
-
-const mmkvMiddleware = {
-  getItem: (name: string) => {
-    const value = mmkvStorage.getString(name);
-    return value ? JSON.parse(value) : null;
-  },
-  setItem: (name: string, value: unknown) => {
-    mmkvStorage.set(name, JSON.stringify(value));
-  },
-  removeItem: (name: string) => {
-    mmkvStorage.delete(name);
-  },
-};
+const mmkvMiddleware = createMMKVMiddleware('settings-storage');
 
 interface SettingsState {
   preferences: UserPreferences;

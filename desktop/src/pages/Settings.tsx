@@ -24,7 +24,7 @@ export default function SettingsPage() {
   const [showGemini, setShowGemini] = useState(false);
   const [showOpenai, setShowOpenai] = useState(false);
   const [savingAI, setSavingAI] = useState(false);
-  const [aiSaved, setAiSaved] = useState(false);
+  const [aiSaved, setAiSaved] = useState<'' | 'backend' | 'local'>('');
   const [aiSaveError, setAiSaveError] = useState<string | null>(null);
 
   // Profile / Household / Notifications — persisted to localStorage via store
@@ -88,7 +88,7 @@ export default function SettingsPage() {
   }
 
   async function handleSaveAI() {
-    setSavingAI(true); setAiSaveError(null); setAiSaved(false);
+    setSavingAI(true); setAiSaveError(null); setAiSaved('');
     try {
       const payload: Record<string, string> = {};
       if (geminiKey.trim()) payload.gemini_api_key = geminiKey.trim();
@@ -100,8 +100,8 @@ export default function SettingsPage() {
       setAiData(updated);
       setGeminiKey('');
       setOpenaiKey('');
-      setAiSaved(true);
-      setTimeout(() => setAiSaved(false), 2500);
+      setAiSaved(updated.backendSynced ? 'backend' : 'local');
+      setTimeout(() => setAiSaved('' as never), 3500);
     } catch (e) {
       setAiSaveError(e instanceof Error ? e.message : 'Save failed');
     } finally {
@@ -293,11 +293,18 @@ export default function SettingsPage() {
                     {savingAI ? 'Saving…' : aiSaved ? 'Saved!' : 'Save AI Keys'}
                   </button>
                   <span className="text-xs text-dark-300">
-                    {aiSaved ? 'Keys saved to backend/.env — analyses will use them immediately.' : 'Both analyzers (Waste + AgriSense) use these keys.'}
+                    {aiSaved ? (aiSaved === 'local' ? 'Keys saved on this device. Start the local backend to use them in analyses.' : 'Keys saved — analyses will use them immediately.') : 'Both analyzers (Waste + AgriSense) use these keys.'}
                   </span>
                 </div>
                 {aiSaveError && <div className="rounded-lg border border-error/30 bg-error/10 p-2.5 text-sm text-error">{aiSaveError}</div>}
-                {aiSaved && <div className="rounded-lg border border-success/30 bg-success/10 p-2.5 text-sm text-success flex items-center gap-2"><CheckCircle2 className="w-4 h-4" /> Saved. Try an analysis now.</div>}
+                {aiSaved && (
+                  <div className={`rounded-lg border p-2.5 text-sm flex items-center gap-2 ${aiSaved === 'local' ? 'border-warning/30 bg-warning/10 text-warning' : 'border-success/30 bg-success/10 text-success'}`}>
+                    <CheckCircle2 className="w-4 h-4" />
+                    {aiSaved === 'local'
+                      ? 'Saved to this device. The local backend was not reachable — start it with: cd backend && .venv\\Scripts\\python -m uvicorn app.main:app --port 8000'
+                      : 'Saved & synced to the local backend. Try an analysis now.'}
+                  </div>
+                )}
               </div>
 
               <div className="card p-4 bg-dark-700/30 border-dashed">

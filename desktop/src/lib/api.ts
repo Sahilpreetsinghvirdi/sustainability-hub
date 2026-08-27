@@ -62,30 +62,126 @@ export interface AISettingsResponse {
   openai_configured: boolean;
 }
 
-export async function fetchAISettings(): Promise<AISettingsResponse> {
-  const res = await fetch(`${API_BASE}/settings/ai`);
-  if (!res.ok) throw new Error(`Failed to load AI settings: ${res.status}`);
-  return res.json();
+/**
+ * AI keys are persisted to localStorage so the Settings panel works on any
+ * machine — even when the local Python backend is not running. The backend is
+ * written too when reachable (best-effort), but a missing backend never blocks
+ * saving or reading keys.
+ */
+
+const AI_LOCAL_KEY = 'sh_ai_settings';
+
+const DEFAULT_AI_LOCAL = {
+  gemini_api_key: null as string | null,
+  openai_api_key: null as string | null,
+  gemini_model: 'gemini-3.6-flash',
+  openai_model: 'gpt-4o-mini',
+  ai_provider: 'gemini' as 'gemini' | 'openai',
+};
+
+interface AISettingsLocal {
+  gemini_api_key: string | null;
+  openai_api_key: string | null;
+  gemini_model: string;
+  openai_model: string;
+  ai_provider: 'gemini' | 'openai';
 }
 
+export function loadLocalAISettings(): AISettingsLocal {
+  try {
+    const raw = localStorage.getItem(AI_LOCAL_KEY);
+    return raw ? { ...DEFAULT_AI_LOCAL, ...JSON.parse(raw) } : { ...DEFAULT_AI_LOCAL };
+  } catch {
+    return { ...DEFAULT_AI_LOCAL };
+  }
+}
+
+export function saveLocalAISettings(data: Partial<AISettingsLocal>) {
+  const merged = { ...loadLocalAISettings(), ...data };
+  try { localStorage.setItem(AI_LOCAL_KEY, JSON.stringify(merged)); } catch {}
+  return merged;
+}
+
+export function localToAISettingsResponse(l: AISettingsLocal): AISettingsResponse {
+  return {
+    gemini_api_key_masked: l.gemini_api_key ? maskKey(l.gemini_api_key) : null,
+    openai_api_key_masked: l.openai_api_key ? maskKey(l.openai_api_key) : null,
+    gemini_model: l.gemini_model,
+    openai_model: l.openai_model,
+    ai_provider: l.ai_provider,
+    ai_configured: !!(l.gemini_api_key || l.openai_api_key),
+    gemini_configured: !!l.gemini_api_key,
+    openai_configured: !!l.openai_api_key,
+  };
+}
+
+function maskKey(key: string): string {
+  if (key.length <= 6) return '••••' + key.slice(-4);
+  return key.slice(0, 4) + '••••••' + key.slice(-4);
+}
+
+/** Backend is running + reachable at its configured base URL. */
+export async function isBackendReachable(): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/health`, { method: 'GET' });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Read AI settings from the backend when available, otherwise fall back to the
+ * local copy. Never throws for a missing backend.
+ */
+export async function fetchAISettings(): Promise<AISettingsResponse> {
+  const local = loadLocalAISettings();
+  try {
+    const res = await fetch(`${API_BASE}/settings/ai`);
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    return res.json();
+  } catch {
+    return localToAISettingsResponse(local);
+  }
+}
+
+/**
+ * Save AI keys locally (always works) and push to the backend when reachable.
+ * Resolves with a result describing whether the backend sync succeeded.
+ */
 export async function updateAISettings(payload: {
   gemini_api_key?: string;
   openai_api_key?: string;
   gemini_model?: string;
   openai_model?: string;
   ai_provider?: string;
-}): Promise<AISettingsResponse> {
-  const res = await fetch(`${API_BASE}/settings/ai`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  const data = await res.json().catch(() => null);
-  if (!res.ok) {
-    const msg = data && typeof data === 'object' && 'detail' in data ? String((data as any).detail) : `Save failed: ${res.status}`;
-    throw new Error(msg);
+}): Promise<AISettingsResponse & { backendSynced: boolean }> {
+  const local = loadLocalAISettings();
+  const next: AISettingsLocal = {
+    ...local,
+    gemini_api_key: payload.gemini_api_key !== undefined ? payload.gemini_api_key || null : local.gemini_api_key,
+    openai_api_key: payload.openai_api_key !== undefined ? payload.openai_api_key || null : local.openai_api_key,
+    gemini_model: payload.gemini_model ?? local.gemini_model,
+    openai_model: payload.openai_model ?? local.openai_model,
+    ai_provider: (payload.ai_provider as AISettingsLocal['ai_provider']) ?? local.ai_provider,
+  };
+  saveLocalAISettings(next);
+
+  let backendSynced = false;
+  try {
+    const res = await fetch(`${API_BASE}/settings/ai`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`Save failed: ${res.status}`);
+    backendSynced = true;
+    const data = await res.json().catch(() => null);
+    if (data && typeof data === 'object') return { ...(data as AISettingsResponse), backendSynced };
+  } catch {
+    backendSynced = false;
   }
-  return data as AISettingsResponse;
+  return { ...localToAISettingsResponse(next), backendSynced };
 }
 
 export interface FertilizerContext {

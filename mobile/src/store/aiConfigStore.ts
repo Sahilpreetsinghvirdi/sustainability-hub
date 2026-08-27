@@ -1,13 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { MMKV } from 'react-native-mmkv';
+import { createMMKVMiddleware } from './mmkvWebFallback';
 
-const mmkv = new MMKV({ id: 'ai-config' });
-const storage = {
-  getItem: (k: string) => { const v = mmkv.getString(k); return v ? JSON.parse(v) : null; },
-  setItem: (k: string, v: unknown) => mmkv.set(k, JSON.stringify(v)),
-  removeItem: (k: string) => mmkv.delete(k),
-};
+const storage = createMMKVMiddleware('ai-config');
 
 type Provider = 'gemini' | 'openai';
 
