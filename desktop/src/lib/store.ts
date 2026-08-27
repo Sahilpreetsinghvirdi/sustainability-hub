@@ -156,7 +156,7 @@ export const store = {
   addAppliance: (a: ApplianceRecord) => { const all = load<ApplianceRecord>(KEYS.appliances); all.push(a); save(KEYS.appliances, all); },
 
   // ---------- Settings: profile / household / notifications ----------
-  getProfile: (): ProfileData => loadOne<ProfileData>(KEYS.profile, { name: 'Sahil Virdi', email: 'sahil@example.com', location: 'Ontario, Canada', diet: 'Omnivore' }),
+  getProfile: (): ProfileData => loadOne<ProfileData>(KEYS.profile, { name: '', email: '', location: '', diet: 'Omnivore' }),
   setProfile: (p: ProfileData) => saveOne(KEYS.profile, p),
   getHousehold: (): HouseholdData => loadOne<HouseholdData>(KEYS.household, { size: 4, homeType: 'House', sqft: 2000, heating: 'Natural Gas' }),
   setHousehold: (h: HouseholdData) => saveOne(KEYS.household, h),

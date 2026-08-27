@@ -34,6 +34,8 @@ import ThemeToggle from './components/ui/ThemeToggle';
 import { store } from './lib/store';
 import softwareLogo from './assets/logo.png';
 import { checkForUpdate, CURRENT_VERSION } from './lib/updater';
+import { getCurrentUser, getSession, logout } from './lib/auth';
+import LoginPage from './pages/Login';
 
 interface NavItem {
   path: string;
@@ -71,19 +73,23 @@ const navSections: { title?: string; items: NavItem[] }[] = [
 const allNavItems = navSections.flatMap((s) => s.items);
 
 function Sidebar() {
-  const [profile, setProfile] = useState(() => store.getProfile());
+  const [user, setUser] = useState(() => getCurrentUser() || store.getProfile() as any);
 
   useEffect(() => {
-    const h = () => setProfile(store.getProfile());
+    const h = () => setUser(getCurrentUser() || (store.getProfile() as any));
+    window.addEventListener('auth-changed', h as EventListener);
     window.addEventListener('profile-updated', h as EventListener);
     window.addEventListener('storage', h);
     return () => {
+      window.removeEventListener('auth-changed', h as EventListener);
       window.removeEventListener('profile-updated', h as EventListener);
       window.removeEventListener('storage', h);
     };
   }, []);
 
-  const initials = profile.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('') || 'SV';
+  const displayName = (user?.name || '').trim() || 'User';
+  const displayEmail = (user?.email || '').trim() || '';
+  const initials = displayName.split(/\s+/).slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('') || 'U';
 
   return (
     <aside className="w-64 h-screen bg-dark-700 border-r border-dark-500 flex flex-col shrink-0">
@@ -126,10 +132,17 @@ function Sidebar() {
       <div className="p-4 border-t border-dark-500">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">{initials}</div>
-          <div className="min-w-0">
-            <p className="text-sm font-medium text-dark-50 truncate">{profile.name}</p>
-            <p className="text-xs text-dark-200 truncate">{profile.email}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-dark-50 truncate">{displayName}</p>
+            <p className="text-xs text-dark-200 truncate">{displayEmail}</p>
           </div>
+          <button
+            onClick={() => { if (confirm('Sign out?')) { logout(); window.location.reload(); } }}
+            className="shrink-0 p-1.5 rounded-md hover:bg-dark-600 text-dark-300 hover:text-dark-50"
+            title="Sign out"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
     </aside>
@@ -281,10 +294,24 @@ function AppLayout() {
   );
 }
 
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const [authed, setAuthed] = useState(() => !!getSession());
+  useEffect(() => {
+    const h = () => setAuthed(!!getSession());
+    window.addEventListener('auth-changed', h as EventListener);
+    window.addEventListener('storage', h);
+    return () => { window.removeEventListener('auth-changed', h as EventListener); window.removeEventListener('storage', h); };
+  }, []);
+  if (!authed) return <LoginPage onDone={() => setAuthed(true)} />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <AppLayout />
+      <AuthGate>
+        <AppLayout />
+      </AuthGate>
     </BrowserRouter>
   );
 }
