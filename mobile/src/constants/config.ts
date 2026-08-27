@@ -1,20 +1,12 @@
 // mobile/src/constants/config.ts
 import { Platform } from 'react-native';
 
-// Determine the backend host for the current platform.
-// - Web (running in a PC browser, e.g. localhost:8083): the backend is on the
-//   same machine -> use localhost:8000.
-// - Android emulator: 10.0.2.2 maps to the host's loopback (localhost).
-// - Physical device: replace with the PC's LAN IP (run `ipconfig` on the PC)
-//   and start the backend on 0.0.0.0.
+// App is now fully backend-free & direct — AI calls go straight to
+// Gemini/OpenAI from the device using the user's own API key.
+// No localhost server, no 10.0.2.2, no LAN IP needed.
+// Keeping resolveBaseUrl for legacy imports; it now returns ''.
 function resolveBaseUrl(): string {
-  if (Platform.OS === 'web') {
-    return 'http://localhost:8000/api/v1';
-  }
-  if (__DEV__) {
-    return 'http://10.0.2.2:8000/api/v1';
-  }
-  return 'https://api.sustainabilityhub.app/api/v1';
+  return '';
 }
 
 export const config = {

@@ -11,8 +11,10 @@ class ApiClient {
   private refreshPromise: Promise<string> | null = null;
 
   constructor() {
+    // Backend-free: if baseUrl is '' we still create the client (unused for AI,
+    // which now goes direct to Gemini/OpenAI via directAI.ts)
     this.client = axios.create({
-      baseURL: config.api.baseUrl,
+      baseURL: config.api.baseUrl || 'http://127.0.0.1:1',
       timeout: config.api.timeout,
       headers: {
         'Content-Type': 'application/json',
