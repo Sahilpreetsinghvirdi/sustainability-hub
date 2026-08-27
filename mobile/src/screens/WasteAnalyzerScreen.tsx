@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Animated, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { analyzeWaste, clearWasteHistory, getWasteHistory, getWasteStatus, saveWasteHistory, WasteAnalysisResponse, WasteHistoryItem } from '@/services/ai';
@@ -12,6 +12,28 @@ export default function WasteAnalyzerScreen() {
   const [result, setResult] = useState<WasteAnalysisResponse | null>(null);
   const [history, setHistory] = useState<WasteHistoryItem[]>([]);
   const [mode, setMode] = useState<'scan' | 'recent'>('scan');
+  const progress = useRef(new Animated.Value(0)).current;
+  const progressValue = useRef(0);
+  const [progressLabel, setProgressLabel] = useState('');
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startProgress = () => {
+    setProgressLabel('Starting analysis…');
+    progress.setValue(0);
+    progressValue.current = 0;
+    timerRef.current = setInterval(() => {
+      progressValue.current = Math.min(progressValue.current + 0.035 + Math.random() * 0.03, 0.96);
+      progress.setValue(progressValue.current);
+      setProgressLabel(progressValue.current < 0.3 ? 'Uploading & reading image…' : progressValue.current < 0.6 ? 'Sending to AI model…' : progressValue.current < 0.9 ? 'Analyzing materials…' : 'Finalizing…');
+    }, 220);
+  };
+
+  const completeProgress = () => {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    progress.setValue(1);
+    setProgressLabel('Done ✓');
+    setTimeout(() => { progress.setValue(0); progressValue.current = 0; setProgressLabel(''); }, 600);
+  };
 
   useEffect(() => {
     getWasteStatus().catch(() => null);
@@ -28,6 +50,7 @@ export default function WasteAnalyzerScreen() {
   const runAnalysis = async () => {
     if (!imageUri) { Alert.alert('No image', 'Point camera at item first'); return; }
     setAnalyzing(true);
+    startProgress();
     try {
       const out = await analyzeWaste(imageUri, question);
       setResult(out);
@@ -52,7 +75,7 @@ export default function WasteAnalyzerScreen() {
       setHistory(prev => [item, ...prev]);
       if (hasKey) Alert.alert('AI analysis failed', `The AI provider returned an error:\n\n${errMsg}\n\nCheck that your API key is valid in Settings and that your plan has not exceeded its quota.`);
       else Alert.alert('Offline Mode', 'No API key configured — showing offline analysis. Add an API key in Settings for full AI.');
-    } finally { setAnalyzing(false); }
+    } finally { completeProgress(); setAnalyzing(false); }
   };
 
   return (
@@ -76,6 +99,15 @@ export default function WasteAnalyzerScreen() {
         <Pressable style={s.analyzeBtn} onPress={runAnalysis} disabled={analyzing}>
           {analyzing ? <ActivityIndicator color="#fff" /> : <><Ionicons name="scan-outline" size={18} color="#FFFFFF" /><Text style={s.analyzeText}>Analyze Material</Text></>}
         </Pressable>
+
+        {analyzing && (
+          <View style={s.progressWrap}>
+            <View style={s.progressTrack}>
+              <Animated.View style={[s.progressFill, { width: progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+            </View>
+            <Text style={s.progressLabel}>{progressLabel}</Text>
+          </View>
+        )}
 
         <View style={s.segmentRow}>
           <Pressable style={[s.segment, mode === 'scan' && s.segmentActive]} onPress={() => setMode('scan')}>
@@ -162,6 +194,10 @@ const s = StyleSheet.create({
   readyText: { fontSize: 13, fontWeight: '600', color: '#0A0A0A', marginTop: 2 },
   analyzeBtn: { backgroundColor: '#0A0A0A', borderRadius: 12, paddingVertical: 14, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
   analyzeText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  progressWrap: { marginTop: 10 },
+  progressTrack: { height: 8, borderRadius: 9999, backgroundColor: '#E5E5E5', overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 9999, backgroundColor: '#0A0A0A' },
+  progressLabel: { fontSize: 11, color: '#666666', marginTop: 6, textAlign: 'center', fontWeight: '600' },
   segmentRow: { flexDirection: 'row', gap: 10 },
   segment: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 9999, borderWidth: 1, borderColor: '#E5E5E5', backgroundColor: '#FFFFFF' },
   segmentActive: { backgroundColor: '#0A0A0A', borderColor: '#0A0A0A' },

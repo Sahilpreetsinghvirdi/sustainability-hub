@@ -101,7 +101,7 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:generateContent`;
     const payload = {
       contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: imageB64 } }] }],
-      generationConfig: { response_mime_type: 'application/json', temperature: 0.2, maxOutputTokens: 4096 },
+      generationConfig: { temperature: 0.2, maxOutputTokens: 4096 },
     };
     const res = await fetch(url, {
       method: 'POST',
@@ -113,8 +113,13 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
       throw new Error(`Gemini API error ${res.status}: ${detail}`);
     }
     const data = await res.json();
-    const parts = data?.candidates?.[0]?.content?.parts ?? [];
-    const text = parts.map((p: { text?: string }) => p?.text ?? '').join('');
+    const cand = data?.candidates?.[0];
+    const finish = cand?.finishReason || 'UNKNOWN';
+    const parts = cand?.content?.parts ?? [];
+    const text = parts.map((p: { text?: string }) => p?.text ?? '').join('').trim();
+    if (!text) {
+      throw new Error(`Gemini returned no content (finishReason: ${finish}). The model may have blocked the image for safety, or the key has no quota.`);
+    }
     return extractJson(text);
   }
 
@@ -159,7 +164,8 @@ function extractJson(text: string): Record<string, unknown> {
     const parsed = JSON.parse(t);
     if (parsed && typeof parsed === 'object') return parsed as Record<string, unknown>;
   } catch { /* fall through */ }
-  throw new Error('The AI did not return a usable result. Please try again.');
+  const snippet = text.length > 160 ? text.slice(0, 160) + '…' : text;
+  throw new Error(`The AI response could not be read as a result. The model returned: "${snippet}"`);
 }
 
 // ---------------------------------------------------------------------------
@@ -345,7 +351,8 @@ export async function analyzeWaste(imageUri: string, question = ''): Promise<Was
     const msg = e instanceof Error ? e.message : String(e);
     if (/No AI key|not configured/i.test(msg)) throw e;
     if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
-    return heuristicWaste();
+    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) return heuristicWaste();
+    throw e;
   }
 }
 
@@ -449,7 +456,8 @@ export async function analyzeFertilizer(imageUri: string, context: FertilizerCon
     const msg = e instanceof Error ? e.message : String(e);
     if (/No AI key|not configured/i.test(msg)) throw e;
     if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
-    return heuristicAgri(context.crop);
+    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) return heuristicAgri(context.crop);
+    throw e;
   }
 }
 
@@ -544,6 +552,7 @@ export async function analyzePlant(imageUri: string, context: PlantContext = {})
     const msg = e instanceof Error ? e.message : String(e);
     if (/No AI key|not configured/i.test(msg)) throw e;
     if (/Gemini API error|OpenAI API error/i.test(msg)) throw e;
-    return heuristicPlant();
+    if (e instanceof TypeError || /Failed to fetch|Network request failed/i.test(msg)) return heuristicPlant();
+    throw e;
   }
 }
