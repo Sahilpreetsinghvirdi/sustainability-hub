@@ -93,34 +93,45 @@ function useCurrentUser() {
 }
 
 function LeftIsland() {
+  const labels: Record<string, string> = {
+    '/': 'Home',
+    '/analyzer': 'Scan',
+    '/agrisense': 'Agri',
+    '/plantsense': 'Plant',
+    '/carbon': 'Carbon',
+    '/energy': 'Energy',
+    '/food-waste': 'Food',
+    '/settings': 'Settings',
+  };
   return (
     <div className="shrink-0 h-screen sticky top-0 z-20 hidden sm:block py-4 pl-4">
-      <div className="h-full w-[76px] rounded-3xl border border-white/10 bg-dark-700/80 backdrop-blur-xl shadow-2xl flex flex-col items-center py-4 overflow-y-auto">
+      <div className="h-full w-[80px] rounded-3xl border border-white/10 bg-dark-700/80 backdrop-blur-xl shadow-2xl flex flex-col items-center py-4 overflow-y-auto">
         <img src={softwareLogo} alt="ELARA logo" title="ELARA" className="w-9 h-9 rounded-2xl object-cover shrink-0" />
-        <nav className="flex-1 flex flex-col items-center justify-center gap-1 w-full px-2">
+        <nav className="flex-1 flex flex-col items-center justify-center gap-0.5 w-full px-2">
           {navSections.map((section, si) => (
             <Fragment key={si}>
-              {si > 0 && <div className="w-1 h-1 rounded-full bg-dark-400/70 my-1.5 shrink-0" />}
+              {si > 0 && <div className="w-1 h-1 rounded-full bg-dark-400/70 my-2 shrink-0" />}
               {section.items.map((item) => (
                 <NavLink
                   key={item.path}
                   to={item.path}
                   title={item.label}
                   className={({ isActive }) =>
-                    `p-2.5 rounded-2xl transition-all shrink-0 ${
+                    `w-full flex flex-col items-center gap-1 py-2 rounded-2xl transition-all shrink-0 ${
                       isActive
-                        ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
+                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
                         : 'text-dark-300 hover:bg-dark-600 hover:text-dark-50'
                     }`
                   }
                 >
                   <item.icon className="w-5 h-5" />
+                  <span className="text-[9px] font-semibold leading-none tracking-wide">{labels[item.path] ?? item.label}</span>
                 </NavLink>
               ))}
             </Fragment>
           ))}
         </nav>
-        <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" title="All systems local" />
+        <span className="w-1.5 h-1.5 rounded-full bg-dark-400 shrink-0" title="All systems local" />
       </div>
     </div>
   );
