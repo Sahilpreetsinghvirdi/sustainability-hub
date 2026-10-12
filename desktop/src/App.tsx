@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import {
   BrowserRouter,
   Routes,
@@ -18,7 +18,6 @@ import {
   Zap,
   Trash2,
   Settings,
-  Menu,
   ScanSearch,
   Download,
 } from 'lucide-react';
@@ -73,7 +72,18 @@ const navSections: { title?: string; items: NavItem[] }[] = [
 
 const allNavItems = navSections.flatMap((s) => s.items);
 
-function Sidebar() {
+const SHORT_LABELS: Record<string, string> = {
+  '/': 'Home',
+  '/analyzer': 'Scan',
+  '/agrisense': 'Agri',
+  '/plantsense': 'Plant',
+  '/carbon': 'Carbon',
+  '/energy': 'Energy',
+  '/food-waste': 'Food',
+  '/settings': 'Settings',
+};
+
+function IconRail() {
   const [user, setUser] = useState(() => getCurrentUser() || store.getProfile() as any);
 
   useEffect(() => {
@@ -89,62 +99,44 @@ function Sidebar() {
   }, []);
 
   const displayName = (user?.name || '').trim() || 'User';
-  const displayEmail = (user?.email || '').trim() || '';
   const initials = displayName.split(/\s+/).slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('') || 'U';
 
   return (
-    <aside className="w-64 h-screen bg-dark-700 flex flex-col shrink-0 shadow-[8px_0_28px_-8px_rgba(0,0,0,0.35)] z-20">
-      <div className="p-5 flex items-center gap-3">
-        <img src={softwareLogo} alt="ELARA logo" className="w-10 h-10 rounded-xl object-cover" />
-        <div className="min-w-0">
-          <h1 className="text-lg font-bold tracking-wide text-dark-50">ELARA</h1>
-          <p className="text-[10px] leading-tight text-dark-200">Environmental Learning, Analysis and Resource Awareness</p>
-        </div>
-      </div>
-      <nav className="flex-1 px-3 pb-3 overflow-y-auto">
+    <aside className="w-[80px] h-screen bg-dark-700 flex flex-col items-center shrink-0 py-4 z-20 shadow-[8px_0_28px_-8px_rgba(0,0,0,0.35)] overflow-y-auto">
+      <img src={softwareLogo} alt="ELARA logo" title="ELARA" className="w-10 h-10 rounded-2xl object-cover shrink-0" />
+      <nav className="flex-1 flex flex-col items-center gap-1 w-full px-2.5 mt-5">
         {navSections.map((section, si) => (
-          <div key={si} className={si === 0 ? '' : 'pt-4'}>
-            {section.title && (
-              <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-dark-300 select-none">
-                {section.title}
-              </p>
-            )}
-            <div className="space-y-1">
-              {section.items.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-primary/15 text-primary'
-                        : 'text-dark-200 hover:bg-dark-600 hover:text-dark-50'
-                    }`
-                  }
-                >
-                  <item.icon className="w-5 h-5" />
-                  {item.label}
-                </NavLink>
-              ))}
-            </div>
-          </div>
+          <Fragment key={si}>
+            {si > 0 && <div className="w-1 h-1 rounded-full bg-dark-400/70 my-1.5 shrink-0" />}
+            {section.items.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                title={item.label}
+                className={({ isActive }) =>
+                  `w-full flex flex-col items-center gap-1 py-2 rounded-xl transition-colors ${
+                    isActive
+                      ? 'bg-primary/15 text-primary'
+                      : 'text-dark-300 hover:bg-dark-600 hover:text-dark-50'
+                  }`
+                }
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="text-[9px] font-semibold leading-none tracking-wide">{SHORT_LABELS[item.path] ?? item.label}</span>
+              </NavLink>
+            ))}
+          </Fragment>
         ))}
       </nav>
-      <div className="p-4">
-        <div className="flex items-center gap-3 min-w-0 rounded-xl bg-dark-600/60 px-3 py-2.5">
-          <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">{initials}</div>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-dark-50 truncate">{displayName}</p>
-            <p className="text-xs text-dark-200 truncate">{displayEmail}</p>
-          </div>
-          <button
-            onClick={() => { if (confirm('Sign out?')) { logout(); window.location.reload(); } }}
-            className="shrink-0 p-1.5 rounded-md hover:bg-dark-600 text-dark-300 hover:text-dark-50"
-            title="Sign out"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
+      <div className="flex flex-col items-center gap-2 mt-3 shrink-0">
+        <div title={displayName} className="w-9 h-9 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold cursor-default">{initials}</div>
+        <button
+          onClick={() => { if (confirm('Sign out?')) { logout(); window.location.reload(); } }}
+          className="p-1.5 rounded-md hover:bg-dark-600 text-dark-300 hover:text-dark-50"
+          title="Sign out"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
       </div>
     </aside>
   );
@@ -159,7 +151,6 @@ type Toast = {
 };
 
 function AppLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -218,12 +209,11 @@ function AppLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden max-w-[100vw]">
-      {sidebarOpen && <Sidebar />}
+      {<IconRail />}
       <main className="flex-1 min-w-0 overflow-auto overflow-x-hidden max-w-full">
         <header className="h-12 bg-dark-700/60 backdrop-blur-md flex items-center px-4 sticky top-0 z-10 min-w-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-dark-600 text-dark-200 mr-3 shrink-0">
-            <Menu className="w-5 h-5" />
-          </button>
+          <span className="text-sm font-bold tracking-widest text-dark-50 shrink-0">ELARA</span>
+          <span className="mx-3 w-1 h-1 rounded-full bg-dark-400/70 shrink-0" />
           <h2 className="text-sm font-semibold text-dark-100 truncate">{headerTitle}</h2>
           <div className="ml-auto flex items-center gap-2 shrink-0">
             {update && (
