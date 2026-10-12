@@ -42,19 +42,18 @@ export default function LoginPage({ onDone }: { onDone: () => void }) {
             className="pointer-events-none absolute inset-0 opacity-60"
             style={{ backgroundImage: 'radial-gradient(600px 320px at 20% 10%, rgba(255,255,255,0.10), transparent 70%), radial-gradient(500px 300px at 85% 90%, rgba(255,255,255,0.05), transparent 70%)' }}
           />
-          <div className="relative flex items-center gap-3">
-            <img src={softwareLogo} alt="ELARA logo" className="w-10 h-10 rounded-2xl object-cover shadow-lg" />
+          <div className="relative flex items-center gap-4">
+            <img src={softwareLogo} alt="ELARA logo" className="w-16 h-16 rounded-3xl object-cover shadow-xl" />
             <div>
-              <p className="font-display text-lg font-bold tracking-wide text-white">ELARA</p>
-              <p className="text-[11px] text-zinc-400">Environmental Learning, Analysis and Resource Awareness</p>
+              <p className="font-display text-3xl font-bold tracking-wide text-white">ELARA</p>
+              <p className="text-xs text-zinc-400 mt-0.5">Environmental Learning, Analysis and Resource Awareness</p>
             </div>
           </div>
           <div className="relative">
-            <h1 className="font-display text-3xl xl:text-4xl font-bold text-white leading-tight">
-              Know your waste.<br />
-              Change the planet.
+            <h1 className="font-display text-xl xl:text-2xl font-bold text-white leading-snug">
+              Know your waste. Change the planet.
             </h1>
-            <p className="text-sm text-zinc-400 mt-3 leading-relaxed">
+            <p className="text-[13px] text-zinc-400 mt-2 leading-relaxed">
               Snap anything you throw away — ELARA identifies materials, flags toxins and tells you exactly where it should go.
             </p>
             <div className="space-y-2.5 mt-6">
