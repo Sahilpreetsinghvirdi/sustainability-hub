@@ -606,7 +606,7 @@ export default function SettingsPage() {
               <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/20 via-dark-700 to-dark-700 p-5">
                 <div className="pointer-events-none absolute -right-12 -top-12 w-48 h-48 rounded-full bg-primary/20 blur-2xl" />
                 <div className="relative flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30 shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-950 border border-white/10 flex items-center justify-center shadow-lg shadow-black/40 shrink-0">
                     <Rocket className="w-6 h-6 text-white" />
                   </div>
                   <div className="min-w-0 flex-1">

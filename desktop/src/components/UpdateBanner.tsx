@@ -37,7 +37,7 @@ export default function UpdateBanner() {
     <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/25 via-primary/10 to-transparent p-4 sm:p-5 animate-pageIn">
       <div className="pointer-events-none absolute -right-10 -top-10 w-40 h-40 rounded-full bg-primary/20 blur-2xl" />
       <div className="relative flex items-center gap-4 min-w-0">
-        <div className="shrink-0 w-11 h-11 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
+        <div className="shrink-0 w-11 h-11 rounded-2xl bg-zinc-950 border border-white/10 flex items-center justify-center shadow-lg shadow-black/40">
           <Rocket className="w-5 h-5 text-white" />
         </div>
         <div className="min-w-0 flex-1">
