@@ -37,7 +37,11 @@ export default {
         warning: 'rgb(var(--warning) / <alpha-value>)',
         error: 'rgb(var(--error) / <alpha-value>)',
       },
-      borderRadius: { xl: '12px', '2xl': '16px', '3xl': '24px' },
+      borderRadius: { xl: '14px', '2xl': '20px', '3xl': '28px' },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
+        display: ['Sora', 'Inter', 'system-ui', 'sans-serif'],
+      },
     },
   },
   plugins: [],

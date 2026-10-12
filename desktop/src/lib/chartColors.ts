@@ -16,23 +16,23 @@ export function useChartChrome(): ChartChrome {
   const isDark = useTheme() === 'dark';
   return isDark
     ? {
-        grid: '#23232C',
-        axis: '#9A9AA6',
-        tooltipBg: '#1D1D26',
-        tooltipBorder: '#34343F',
-        tooltipText: '#E3E3EA',
-        surface: '#14141B',
-        legend: '#9A9AA6',
-        fallback: '#52525E',
+        grid: '#1E2A24',
+        axis: '#7D9C8C',
+        tooltipBg: '#131D18',
+        tooltipBorder: '#2A3B32',
+        tooltipText: '#E9F5EE',
+        surface: '#121B16',
+        legend: '#7D9C8C',
+        fallback: '#4A5F54',
       }
     : {
-        grid: '#E5E5E4',
-        axis: '#737373',
+        grid: '#DDE7E1',
+        axis: '#5F7A6B',
         tooltipBg: '#FFFFFF',
-        tooltipBorder: '#DADADA',
-        tooltipText: '#0A0A0A',
+        tooltipBorder: '#D3E0D7',
+        tooltipText: '#0C1A12',
         surface: '#FFFFFF',
-        legend: '#6B6B6B',
-        fallback: '#737373',
+        legend: '#5F7A6B',
+        fallback: '#8AA395',
       };
 }

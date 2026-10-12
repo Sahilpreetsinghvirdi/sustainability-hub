@@ -89,7 +89,7 @@ function StreakRing({ streak, best }: { streak: number; best: number }) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <Flame className="w-5 h-5 text-orange-500" />
-          <span className="text-xl font-bold text-dark-50 leading-none mt-0.5">{streak}</span>
+          <span className="font-display text-xl font-bold text-dark-50 leading-none mt-0.5">{streak}</span>
         </div>
       </div>
       <div>
@@ -210,7 +210,7 @@ export default function DashboardPage() {
               </div>
               <div className="min-w-0">
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-xl font-bold text-dark-50">{s.value}</span>
+                  <span className="font-display text-xl font-bold text-dark-50">{s.value}</span>
                   <span className="text-xs text-dark-300">{s.unit}</span>
                 </div>
                 <p className="text-xs font-medium text-dark-100 truncate">{s.label}</p>
