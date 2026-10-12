@@ -153,40 +153,63 @@ export function clearAllAccounts(): void {
   logout();
 }
 
-// Google / Microsoft — real OAuth (requires VITE_*_CLIENT_ID). No popup fallback for now.
+// Google — modern GIS token flow (works with new client IDs; the old
+// response_type=id_token redirect flow is rejected with unsupported_response_type).
+function loadGisScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const w = window as any;
+    if (w.google?.accounts?.oauth2) return resolve();
+    if (w.__gis_loading) {
+      w.__gis_loading.push({ resolve, reject });
+      return;
+    }
+    w.__gis_loading = [{ resolve, reject }];
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true;
+    s.defer = true;
+    s.onload = () => {
+      w.__gis_loading.forEach((p: any) => p.resolve());
+      w.__gis_loading = null;
+    };
+    s.onerror = () => {
+      const e = new Error('Could not load Google sign-in. Check your connection and retry.');
+      w.__gis_loading.forEach((p: any) => p.reject(e));
+      w.__gis_loading = null;
+    };
+    document.head.appendChild(s);
+  });
+}
+
 export async function loginWithGoogle(): Promise<AuthUser> {
   const clientId = (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
   if (!clientId) throw new Error('OAUTH_NO_CLIENT_ID');
-  return new Promise((resolve, reject) => {
-    const width = 520, height = 640;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-    const state = Math.random().toString(36).slice(2);
-    const redirect = `${window.location.origin}/auth/callback?provider=google`;
-    // @ts-ignore — stash for callback detection
-    (window as any).__oauth_provider = 'google';
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirect)}&response_type=id_token&scope=${encodeURIComponent('openid email profile')}&nonce=${state}&prompt=select_account`;
-    const popup = window.open(url, 'google_oauth', `width=${width},height=${height},left=${left},top=${top}`);
-    if (!popup) return reject(new Error('Popup blocked. Allow popups for Google sign-in.'));
-    const timer = setInterval(() => {
-      try { if (popup.closed) { clearInterval(timer); reject(new Error('Google sign-in cancelled.')); } } catch {}
-    }, 500);
-    const handler = (e: MessageEvent) => {
-      if (e.data?.type === 'google_oauth' && e.data?.email) {
-        clearInterval(timer);
-        window.removeEventListener('message', handler);
-        try { popup.close(); } catch {}
-        resolve(upsertOAuthUser(e.data.email, e.data.name || '', 'google'));
-      }
-      if (e.data?.type === 'oauth_error') {
-        clearInterval(timer);
-        window.removeEventListener('message', handler);
-        reject(new Error(e.data.error || 'Google sign-in failed'));
-      }
-    };
-    window.addEventListener('message', handler);
-    setTimeout(() => { clearInterval(timer); window.removeEventListener('message', handler); try { popup.close(); } catch {} reject(new Error('Google sign-in timed out.')); }, 120000);
+  await loadGisScript();
+  const token: string = await new Promise((resolve, reject) => {
+    try {
+      const client = (window as any).google.accounts.oauth2.initTokenClient({
+        client_id: clientId,
+        scope: 'openid email profile',
+        callback: (resp: any) => {
+          if (resp?.access_token) resolve(resp.access_token);
+          else reject(new Error(resp?.error_description || resp?.error || 'Google sign-in failed.'));
+        },
+        error_callback: (err: any) =>
+          reject(new Error(err?.message || 'Google sign-in was closed.')),
+      });
+      client.requestAccessToken();
+    } catch (e) {
+      reject(e instanceof Error ? e : new Error('Google sign-in failed to start.'));
+    }
   });
+  const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Could not read Google profile.');
+  const profile = await res.json();
+  const email: string = profile.email || '';
+  if (!email) throw new Error('Google did not share an email address.');
+  return upsertOAuthUser(email, profile.name || '', 'google');
 }
 
 export async function loginWithMicrosoft(): Promise<AuthUser> {
