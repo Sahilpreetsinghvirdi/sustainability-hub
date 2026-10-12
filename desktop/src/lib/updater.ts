@@ -60,3 +60,22 @@ export async function downloadUpdate(downloadUrl: string) {
 }
 
 export const CURRENT_VERSION = CURRENT;
+
+const LAST_CHECK_KEY = 'sh_update_lastcheck';
+
+export function getLastCheckISO(): string | null {
+  try {
+    return localStorage.getItem(LAST_CHECK_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Same as checkForUpdate but records when the check happened (even on failure). */
+export async function refreshUpdateCheck(): Promise<UpdateInfo | null> {
+  const info = await checkForUpdate();
+  try {
+    localStorage.setItem(LAST_CHECK_KEY, new Date().toISOString());
+  } catch {}
+  return info;
+}

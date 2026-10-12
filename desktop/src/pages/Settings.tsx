@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import {
   User, Home, Bell, Shield, KeyRound, Eye, EyeOff,
   CheckCircle2, AlertTriangle, ExternalLink, Sparkles, Sprout, ScanSearch, Loader2, Save,
-  Trash2, Database, Download, Users, LogOut,
+  Trash2, Database, Download, Users, LogOut, Rocket, RefreshCw,
 } from 'lucide-react';
 import { fetchAISettings, updateAISettings, type AISettingsResponse } from '@/lib/api';
+import { CURRENT_VERSION, refreshUpdateCheck, downloadUpdate, getLastCheckISO, type UpdateInfo } from '@/lib/updater';
+import { relTime } from '@/lib/thumb';
 import { store, type ProfileData, type HouseholdData, type NotificationPrefs } from '@/lib/store';
 import { listAccounts, deleteAccount, clearAllAccounts, getCurrentUser, logout, type AuthUser } from '@/lib/auth';
 
-type Tab = 'ai' | 'accounts' | 'profile' | 'household' | 'notifications' | 'data';
+type Tab = 'ai' | 'accounts' | 'profile' | 'household' | 'notifications' | 'data' | 'app';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('ai');
@@ -43,6 +45,25 @@ export default function SettingsPage() {
     setCurrentUser(getCurrentUser());
   }
 
+  // Application / updates
+  const [upd, setUpd] = useState<UpdateInfo | null>(null);
+  const [updChecking, setUpdChecking] = useState(false);
+  const [updChecked, setUpdChecked] = useState(false);
+  const [updBusy, setUpdBusy] = useState(false);
+  const [lastCheck, setLastCheck] = useState<string | null>(() => getLastCheckISO());
+
+  async function runUpdateCheck() {
+    setUpdChecking(true);
+    try {
+      const r = await refreshUpdateCheck();
+      setUpd(r);
+    } finally {
+      setLastCheck(getLastCheckISO());
+      setUpdChecking(false);
+      setUpdChecked(true);
+    }
+  }
+
   // Data tab counts
   const [counts, setCounts] = useState({ scans: 0, agri: 0, waste: 0, carbon: 0, energy: 0 });
 
@@ -72,7 +93,7 @@ export default function SettingsPage() {
   }
 
   useEffect(() => { loadAI(); refreshCounts(); refreshAccounts(); }, []);
-  useEffect(() => { if (activeTab === 'ai') loadAI(); if (activeTab === 'data') refreshCounts(); if (activeTab === 'accounts') refreshAccounts(); }, [activeTab]);
+  useEffect(() => { if (activeTab === 'ai') loadAI(); if (activeTab === 'data') refreshCounts(); if (activeTab === 'accounts') refreshAccounts(); if (activeTab === 'app' && !updChecked) runUpdateCheck(); }, [activeTab]);
   useEffect(() => {
     const h = () => refreshAccounts();
     window.addEventListener('auth-changed', h as EventListener);
@@ -160,6 +181,7 @@ export default function SettingsPage() {
             { key: 'household' as Tab, label: 'Household', icon: Home },
             { key: 'notifications' as Tab, label: 'Notifications', icon: Bell },
             { key: 'data' as Tab, label: 'Data & Privacy', icon: Database },
+            { key: 'app' as Tab, label: 'Application', icon: Rocket },
           ].map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key ? 'bg-primary/15 text-primary' : 'text-dark-200 hover:bg-dark-600 hover:text-dark-50'}`}>
@@ -576,6 +598,87 @@ export default function SettingsPage() {
                   </button>
                   <p className="text-[11px] text-dark-300 mt-2">AI keys are not cleared by this — clear them in the AI Configuration tab if needed.</p>
                 </div>
+              </div>
+            </div>
+          )}
+          {activeTab === 'app' && (
+            <div className="space-y-4 animate-pageIn">
+              <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/20 via-dark-700 to-dark-700 p-5">
+                <div className="pointer-events-none absolute -right-12 -top-12 w-48 h-48 rounded-full bg-primary/20 blur-2xl" />
+                <div className="relative flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30 shrink-0">
+                    <Rocket className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-lg font-bold text-dark-50">ELARA</p>
+                    <p className="text-xs text-dark-200">Environmental Learning, Analysis and Resource Awareness</p>
+                  </div>
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-dark-600 border border-dark-500 text-xs font-mono text-dark-100">
+                    v{CURRENT_VERSION}
+                  </span>
+                </div>
+              </div>
+
+              <div className="card-elevated p-5 space-y-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <h3 className="text-sm font-semibold text-dark-50 flex items-center gap-2">
+                      {upd?.hasUpdate
+                        ? <AlertTriangle className="w-4 h-4 text-warning" />
+                        : updChecked
+                          ? <CheckCircle2 className="w-4 h-4 text-success" />
+                          : <RefreshCw className={`w-4 h-4 text-primary ${updChecking ? 'animate-spin' : ''}`} />}
+                      {updChecking
+                        ? 'Checking GitHub for updates…'
+                        : upd?.hasUpdate
+                          ? `Update available — ${upd.latest}`
+                          : updChecked
+                            ? 'You are on the latest version'
+                            : 'Check for updates'}
+                    </h3>
+                    <p className="text-xs text-dark-300 mt-1">
+                      {lastCheck ? `Last checked ${relTime(lastCheck)}` : 'Never checked on this device yet'} · releases come straight from GitHub
+                    </p>
+                  </div>
+                  <button
+                    onClick={runUpdateCheck}
+                    disabled={updChecking}
+                    className="btn-outline inline-flex items-center gap-2 text-sm disabled:opacity-60"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${updChecking ? 'animate-spin' : ''}`} />
+                    {updChecking ? 'Checking…' : 'Check for updates'}
+                  </button>
+                </div>
+
+                {upd?.hasUpdate && (
+                  <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 flex items-center gap-3 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-dark-50">ELARA {upd.latest} is ready</p>
+                      <p className="text-xs text-dark-200 mt-0.5">v{CURRENT_VERSION} → {upd.latest} · one click to download the installer</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={async () => {
+                          if (!upd.downloadUrl) { window.open(upd.url, '_blank', 'noreferrer'); return; }
+                          setUpdBusy(true);
+                          try { await downloadUpdate(upd.downloadUrl); }
+                          finally { setTimeout(() => setUpdBusy(false), 2000); }
+                        }}
+                        disabled={updBusy}
+                        className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-sm disabled:opacity-60"
+                      >
+                        {updBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                        {updBusy ? 'Starting…' : 'Download update'}
+                      </button>
+                      <button
+                        onClick={() => window.open(upd.url, '_blank', 'noreferrer')}
+                        className="btn-outline inline-flex items-center gap-1.5 px-3 py-2 text-sm"
+                      >
+                        <ExternalLink className="w-4 h-4" /> Release notes
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

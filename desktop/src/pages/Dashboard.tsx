@@ -4,6 +4,7 @@ import { Leaf, Zap, Trash2, TrendingUp, TrendingDown, Flame, Target } from 'luci
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { store, lastNDayLabels } from '../lib/store';
 import { useChartChrome } from '../lib/chartColors';
+import UpdateBanner from '../components/UpdateBanner';
 
 function weeklyCarbon(): { week: string; value: number }[] {
   const entries = store.getCarbon();
@@ -121,6 +122,8 @@ export default function DashboardPage() {
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-dark-200 text-sm mt-1">Your sustainability overview — live from your logged data</p>
       </div>
+
+      <UpdateBanner />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Leaf} label="Carbon Footprint" value={dashData.carbon || 0} unit="kg CO\u2082e" trend={dashData.carbonEntries > 0 ? `${dashData.carbonEntries} receipts` : 'No data yet'} trendUp={false} color="bg-primary" path="/carbon" />
