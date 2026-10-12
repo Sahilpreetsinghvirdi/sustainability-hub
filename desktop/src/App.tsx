@@ -35,7 +35,7 @@ import CommandPalette from './components/CommandPalette';
 import { store } from './lib/store';
 import softwareLogo from './assets/logo.png';
 import { checkForUpdate, CURRENT_VERSION } from './lib/updater';
-import { getCurrentUser, getSession, logout } from './lib/auth';
+import { getCurrentUser, getSession } from './lib/auth';
 import LoginPage from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
 
@@ -239,13 +239,6 @@ function AppLayout() {
               className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 hover:scale-105 transition-transform"
             >
               {initials}
-            </button>
-            <button
-              onClick={() => { if (confirm('Sign out?')) { logout(); window.location.reload(); } }}
-              className="p-1.5 rounded-md hover:bg-dark-600 text-dark-300 hover:text-dark-50 shrink-0"
-              title="Sign out"
-            >
-              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
