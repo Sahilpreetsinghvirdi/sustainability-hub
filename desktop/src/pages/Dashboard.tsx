@@ -203,9 +203,8 @@ export default function DashboardPage() {
         <div className="md:col-span-2">
           <StreakCard streak={dashData.streak} best={dashData.bestStreak} />
         </div>
-        <div className="md:col-span-4 relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/25 via-dark-700 to-dark-700 p-6 sm:p-7">
-          <div className="pointer-events-none absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary/20 blur-3xl" />
-          <div className="relative">
+        <div className="md:col-span-4 card">
+          <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">AI waste analyzer — Elara's superpower</p>
             <h2 className="font-display text-2xl font-bold text-dark-50 mt-2">What are you throwing today?</h2>
             <p className="text-sm text-dark-200 mt-1.5 max-w-lg leading-relaxed">
@@ -213,7 +212,7 @@ export default function DashboardPage() {
             </p>
             <div className="flex flex-wrap gap-2 mt-4">
               {['Materials %', 'Toxins', 'Recyclers', 'Eco swaps'].map((c) => (
-                <span key={c} className="px-2.5 py-1 rounded-full bg-dark-800/60 text-[11px] font-medium text-dark-100">{c}</span>
+                <span key={c} className="px-2.5 py-1 rounded-full bg-dark-600 text-[11px] font-medium text-dark-100">{c}</span>
               ))}
             </div>
           </div>

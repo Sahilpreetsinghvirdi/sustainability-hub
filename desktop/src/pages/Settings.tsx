@@ -605,17 +605,16 @@ export default function SettingsPage() {
           )}
           {activeTab === 'app' && (
             <div className="space-y-4 animate-pageIn">
-              <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/20 via-dark-700 to-dark-700 p-5">
-                <div className="pointer-events-none absolute -right-12 -top-12 w-48 h-48 rounded-full bg-primary/20 blur-2xl" />
-                <div className="relative flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-zinc-950 border border-white/10 flex items-center justify-center shadow-lg shadow-black/40 shrink-0">
+              <div className="card">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-950 flex items-center justify-center shadow-lg shrink-0">
                     <Rocket className="w-6 h-6 text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-lg font-bold text-dark-50">ELARA</p>
                     <p className="text-xs text-dark-200">Environmental Learning, Analysis and Resource Awareness</p>
                   </div>
-                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-dark-600 border border-transparent text-xs font-mono text-dark-100">
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-dark-600 text-xs font-mono text-dark-100">
                     v{CURRENT_VERSION}
                   </span>
                 </div>
@@ -653,7 +652,7 @@ export default function SettingsPage() {
                 </div>
 
                 {upd?.hasUpdate && (
-                  <div className="rounded-xl border border-primary/30 bg-primary/10 p-4 flex items-center gap-3 flex-wrap">
+                  <div className="rounded-xl bg-dark-600/60 p-4 flex items-center gap-3 flex-wrap">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-dark-50">ELARA {upd.latest} is ready</p>
                       <p className="text-xs text-dark-200 mt-0.5">v{CURRENT_VERSION} → {upd.latest} · one click to download the installer</p>
