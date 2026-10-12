@@ -1,7 +1,7 @@
 [package]
 name = "sustainability-hub-desktop"
-version = "1.4.6"
-description = "Sustainability Hub - Desktop Edition"
+version = "1.5.3"
+description = "ELARA - Desktop Edition"
 authors = ["Sahil Virdi"]
 edition = "2021"
 

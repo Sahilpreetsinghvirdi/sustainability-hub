@@ -50,7 +50,7 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=8192
         run: |
-          keytool -genkey -v -keystore android/app/release.keystore -alias sustainability -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Sustainability Hub, OU=ISC, O=Sustainability, L=City, S=State, C=IN" -noprompt
+          keytool -genkey -v -keystore android/app/release.keystore -alias sustainability -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=ELARA, OU=ISC, O=ELARA, L=City, S=State, C=IN" -noprompt
           echo "MYAPP_UPLOAD_STORE_FILE=release.keystore" >> android/gradle.properties
           echo "MYAPP_UPLOAD_KEY_ALIAS=sustainability" >> android/gradle.properties
           echo "MYAPP_UPLOAD_STORE_PASSWORD=android" >> android/gradle.properties
@@ -64,12 +64,12 @@ jobs:
         working-directory: mobile
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/release/app-release.apk dist/SustainabilityHub-${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.version }}.apk
+          cp android/app/build/outputs/apk/release/app-release.apk dist/ELARA-${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.version }}.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SustainabilityHub-APK
+          name: ELARA-APK
           path: mobile/dist/*.apk
           retention-days: 30
 
@@ -100,7 +100,7 @@ jobs:
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
-          name: SustainabilityHub-Windows
+          name: ELARA-Windows
           path: desktop/src-tauri/target/release/bundle/msi/*.msi
           retention-days: 30
 
@@ -116,20 +116,20 @@ jobs:
       - name: Download APK
         uses: actions/download-artifact@v4
         with:
-          name: SustainabilityHub-APK
+          name: ELARA-APK
           path: release-assets
 
       - name: Download Windows installer
         uses: actions/download-artifact@v4
         with:
-          name: SustainabilityHub-Windows
+          name: ELARA-Windows
           path: release-assets
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.version }}
-          name: Sustainability Hub ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.version }}
+          name: ELARA ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.version }}
           files: release-assets/**/*
           generate_release_notes: true
           prerelease: false

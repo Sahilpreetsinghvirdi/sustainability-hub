@@ -1,6 +1,6 @@
 const OWNER = 'Sahilpreetsinghvirdi';
 const REPO = 'sustainability-hub';
-const CURRENT = '1.5.2';
+const CURRENT = '1.5.3';
 
 function cmp(a: string, b: string): number {
   const pa = a.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
