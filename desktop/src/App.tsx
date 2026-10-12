@@ -110,7 +110,7 @@ function LeftIsland() {
         <nav className="flex-1 flex flex-col items-center justify-center gap-0.5 w-full px-2">
           {navSections.map((section, si) => (
             <Fragment key={si}>
-              {si > 0 && <div className="w-1 h-1 rounded-full bg-dark-400/70 my-2 shrink-0" />}
+              {si > 0 && <div className="h-3 shrink-0" />}
               {section.items.map((item) => (
                 <NavLink
                   key={item.path}
@@ -119,19 +119,23 @@ function LeftIsland() {
                   className={({ isActive }) =>
                     `w-full flex flex-col items-center gap-1 py-2 rounded-2xl transition-all shrink-0 ${
                       isActive
-                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                        : 'text-dark-300 hover:bg-dark-600 hover:text-dark-50'
+                        ? 'text-dark-50'
+                        : 'text-dark-300 hover:text-dark-50 hover:bg-dark-600/60'
                     }`
                   }
                 >
-                  <item.icon className="w-5 h-5" />
-                  <span className="text-[9px] font-semibold leading-none tracking-wide">{labels[item.path] ?? item.label}</span>
+                  {({ isActive }) => (
+                    <Fragment>
+                      <item.icon className="w-5 h-5" />
+                      <span className="text-[9px] font-semibold leading-none tracking-wide">{labels[item.path] ?? item.label}</span>
+                      <span className={`w-1 h-1 rounded-full transition-colors ${isActive ? 'bg-current' : 'bg-transparent'}`} />
+                    </Fragment>
+                  )}
                 </NavLink>
               ))}
             </Fragment>
           ))}
         </nav>
-        <span className="w-1.5 h-1.5 rounded-full bg-dark-400 shrink-0" title="All systems local" />
       </div>
     </div>
   );
