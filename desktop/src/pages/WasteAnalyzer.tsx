@@ -311,7 +311,7 @@ export default function WasteAnalyzerPage() {
         {/* Keep history accessible at bottom of report too */}
         {history.length > 1 && (
           <div className="flex justify-end pt-2 min-w-0">
-            <div className="w-full max-w-[400px] rounded-xl border border-dark-500 bg-dark-700/80 backdrop-blur shadow-sm overflow-hidden min-w-0">
+            <div className="w-full max-w-[400px] rounded-2xl border border-transparent bg-dark-700/80 backdrop-blur shadow-xl overflow-hidden min-w-0">
               <button
                 onClick={() => setHistoryExpanded((v) => !v)}
                 className="w-full flex items-center justify-between px-3 py-2 text-dark-100 hover:bg-dark-600 transition-colors"
@@ -329,7 +329,7 @@ export default function WasteAnalyzerPage() {
                       <div
                         key={h.id}
                         onClick={() => openHistoryItem(h)}
-                        className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-primary/15 border-primary/40' : 'bg-dark-800 border-dark-500 hover:border-primary/30'}`}
+                        className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-primary/15 border-primary/40' : 'bg-dark-800 border-transparent hover:border-primary/30'}`}
                       >
                         <div className="relative">
                           <img src={h.thumb} alt="" className="w-full h-[62px] object-cover rounded-md bg-black" />
@@ -504,7 +504,7 @@ export default function WasteAnalyzerPage() {
       {/* Recent scans — thin inline strip tucked bottom-right below analyzer */}
       {history.length > 0 && (
         <div className="flex justify-end min-w-0">
-          <div className="w-full max-w-[400px] rounded-xl border border-dark-500 bg-dark-700/80 backdrop-blur shadow-sm overflow-hidden min-w-0">
+          <div className="w-full max-w-[400px] rounded-2xl border border-transparent bg-dark-700/80 backdrop-blur shadow-xl overflow-hidden min-w-0">
             <button
               onClick={() => setHistoryExpanded((v) => !v)}
               className="w-full flex items-center justify-between px-3 py-2 text-dark-100 hover:bg-dark-600 transition-colors"
@@ -529,7 +529,7 @@ export default function WasteAnalyzerPage() {
                     <div
                       key={h.id}
                       onClick={() => openHistoryItem(h)}
-                      className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-primary/15 border-primary/40' : 'bg-dark-800 border-dark-500 hover:border-primary/30'}`}
+                      className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-primary/15 border-primary/40' : 'bg-dark-800 border-transparent hover:border-primary/30'}`}
                     >
                       <div className="relative">
                         <img src={h.thumb} alt="" className="w-full h-[62px] object-cover rounded-md bg-black" />

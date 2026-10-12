@@ -93,8 +93,8 @@ function Sidebar() {
   const initials = displayName.split(/\s+/).slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('') || 'U';
 
   return (
-    <aside className="w-64 h-screen bg-dark-700 border-r border-dark-500 flex flex-col shrink-0">
-      <div className="p-5 flex items-center gap-3 border-b border-dark-500">
+    <aside className="w-64 h-screen bg-dark-700 flex flex-col shrink-0 shadow-[8px_0_28px_-8px_rgba(0,0,0,0.35)] z-20">
+      <div className="p-5 flex items-center gap-3">
         <img src={softwareLogo} alt="ELARA logo" className="w-10 h-10 rounded-xl object-cover" />
         <div className="min-w-0">
           <h1 className="text-lg font-bold tracking-wide text-dark-50">ELARA</h1>
@@ -130,8 +130,8 @@ function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="p-4 border-t border-dark-500">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="p-4">
+        <div className="flex items-center gap-3 min-w-0 rounded-xl bg-dark-600/60 px-3 py-2.5">
           <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0">{initials}</div>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-dark-50 truncate">{displayName}</p>
@@ -220,7 +220,7 @@ function AppLayout() {
     <div className="flex h-screen overflow-hidden max-w-[100vw]">
       {sidebarOpen && <Sidebar />}
       <main className="flex-1 min-w-0 overflow-auto overflow-x-hidden max-w-full">
-        <header className="h-12 border-b border-dark-500 bg-dark-700/50 backdrop-blur-sm flex items-center px-4 sticky top-0 z-10 min-w-0">
+        <header className="h-12 bg-dark-700/60 backdrop-blur-md flex items-center px-4 sticky top-0 z-10 min-w-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]">
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-1.5 rounded-lg hover:bg-dark-600 text-dark-200 mr-3 shrink-0">
             <Menu className="w-5 h-5" />
           </button>
@@ -263,7 +263,7 @@ function AppLayout() {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="pointer-events-auto flex items-start gap-3 p-3 rounded-xl border shadow-xl backdrop-blur bg-dark-700/95 border-dark-500 animate-toastIn"
+            className="pointer-events-auto flex items-start gap-3 p-3 rounded-2xl shadow-2xl backdrop-blur bg-dark-700/95 border border-transparent animate-toastIn"
           >
             <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${t.kind === 'error' ? 'bg-error/15 text-error' : t.kind === 'agri' ? 'bg-primary/15 text-primary' : 'bg-success/15 text-success'}`}>
               {t.kind === 'error' ? <AlertTriangle className="w-4 h-4" /> : t.kind === 'agri' ? <Sprout className="w-4 h-4" /> : <ScanSearch className="w-4 h-4" />}

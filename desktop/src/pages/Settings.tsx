@@ -244,7 +244,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-dark-500 bg-dark-700/50 p-4 space-y-3">
+                <div className="rounded-xl border border-transparent bg-dark-700/50 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold text-dark-50 flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-primary" /> Google Gemini
@@ -255,7 +255,7 @@ export default function SettingsPage() {
                     </a>
                   </div>
                   {aiData?.gemini_api_key_masked && (
-                    <p className="text-[11px] font-mono text-dark-200 bg-dark-700 border border-dark-500 rounded-lg px-3 py-1.5">
+                    <p className="text-[11px] font-mono text-dark-200 bg-dark-700 border border-transparent rounded-lg px-3 py-1.5">
                       Current: {aiData.gemini_api_key_masked}
                     </p>
                   )}
@@ -285,7 +285,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-dark-500 bg-dark-700/50 p-4 space-y-3">
+                <div className="rounded-xl border border-transparent bg-dark-700/50 p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <h4 className="text-sm font-semibold text-dark-50 flex items-center gap-2">
                       <ScanSearch className="w-4 h-4 text-primary" /> OpenAI
@@ -296,7 +296,7 @@ export default function SettingsPage() {
                     </a>
                   </div>
                   {aiData?.openai_api_key_masked && (
-                    <p className="text-[11px] font-mono text-dark-200 bg-dark-700 border border-dark-500 rounded-lg px-3 py-1.5">
+                    <p className="text-[11px] font-mono text-dark-200 bg-dark-700 border border-transparent rounded-lg px-3 py-1.5">
                       Current: {aiData.openai_api_key_masked}
                     </p>
                   )}
@@ -498,7 +498,7 @@ export default function SettingsPage() {
                 { key: 'tips' as const, label: 'Energy-saving tips', desc: 'Show personalized tips on Energy page' },
                 { key: 'badges' as const, label: 'Achievement toasts', desc: 'Bottom-right toasts when analyses finish' },
               ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between p-3 rounded-xl border border-dark-500 bg-dark-700">
+                <div key={item.key} className="flex items-center justify-between p-3 rounded-xl border border-transparent bg-dark-700">
                   <div className="pr-4">
                     <p className="text-sm font-medium text-dark-50">{item.label}</p>
                     <p className="text-xs text-dark-300 mt-0.5">{item.desc}</p>
@@ -525,7 +525,7 @@ export default function SettingsPage() {
                     { label: 'Carbon entries', value: counts.carbon },
                     { label: 'Energy bills', value: counts.energy },
                   ].map((s) => (
-                    <div key={s.label} className="rounded-xl border border-dark-500 bg-dark-700 p-3 text-center">
+                    <div key={s.label} className="rounded-xl border border-transparent bg-dark-700 p-3 text-center">
                       <p className="text-lg font-bold text-dark-50">{s.value}</p>
                       <p className="text-[11px] uppercase tracking-wide text-dark-300">{s.label}</p>
                     </div>
@@ -613,7 +613,7 @@ export default function SettingsPage() {
                     <p className="text-lg font-bold text-dark-50">ELARA</p>
                     <p className="text-xs text-dark-200">Environmental Learning, Analysis and Resource Awareness</p>
                   </div>
-                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-dark-600 border border-dark-500 text-xs font-mono text-dark-100">
+                  <span className="shrink-0 inline-flex items-center px-2.5 py-1 rounded-full bg-dark-600 border border-transparent text-xs font-mono text-dark-100">
                     v{CURRENT_VERSION}
                   </span>
                 </div>

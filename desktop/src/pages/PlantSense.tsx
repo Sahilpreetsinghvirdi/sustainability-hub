@@ -256,7 +256,7 @@ export default function PlantSensePage() {
         <PlantResults result={result} onReset={reset} />
         {history.length > 1 && (
           <div className="flex justify-end pt-2 min-w-0">
-            <div className="w-full max-w-[400px] rounded-xl border border-dark-500 bg-dark-700/80 backdrop-blur shadow-sm overflow-hidden min-w-0">
+            <div className="w-full max-w-[400px] rounded-2xl border border-transparent bg-dark-700/80 backdrop-blur shadow-xl overflow-hidden min-w-0">
               <button onClick={() => setHistoryExpanded((v) => !v)} className="w-full flex items-center justify-between px-3 py-2 text-dark-100 hover:bg-dark-600 transition-colors">
                 <span className="text-xs font-semibold flex items-center gap-1.5"><History className="w-3.5 h-3.5 text-primary" /> Other checks <span className="text-dark-300 font-normal">· {history.length}</span></span>
                 {historyExpanded ? <ChevronDown className="w-3.5 h-3.5 text-dark-300" /> : <ChevronUp className="w-3.5 h-3.5 text-dark-300" />}
@@ -265,7 +265,7 @@ export default function PlantSensePage() {
                 <div>
                   <div className="flex gap-2 p-2 scroll-x-contained border-t border-dark-500">
                     {history.map((h) => (
-                      <div key={h.id} onClick={() => openHistoryItem(h)} className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-primary/15 border-primary/40' : 'bg-dark-800 border-dark-500 hover:border-primary/30'}`}>
+                      <div key={h.id} onClick={() => openHistoryItem(h)} className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-primary/15 border-primary/40' : 'bg-dark-800 border-transparent hover:border-primary/30'}`}>
                         <div className="relative">
                           <img src={h.thumb} alt="" className="w-full h-[62px] object-cover rounded-md bg-black" />
                           <button onClick={(e) => { e.stopPropagation(); deleteHistoryItem(h.id); }} className="absolute -top-1 -right-1 p-1 rounded-full bg-black/70 text-white/80 hover:text-error opacity-0 group-hover:opacity-100 transition-all shadow"><Trash2 className="w-3 h-3" /></button>
@@ -419,7 +419,7 @@ export default function PlantSensePage() {
 
       {history.length > 0 && (
         <div className="flex justify-end min-w-0">
-          <div className="w-full max-w-[400px] rounded-xl border border-dark-500 bg-dark-700/80 backdrop-blur shadow-sm overflow-hidden min-w-0">
+          <div className="w-full max-w-[400px] rounded-2xl border border-transparent bg-dark-700/80 backdrop-blur shadow-xl overflow-hidden min-w-0">
             <button onClick={() => setHistoryExpanded((v) => !v)} className="w-full flex items-center justify-between px-3 py-2 text-dark-100 hover:bg-dark-600 transition-colors">
               <span className="text-xs font-semibold flex items-center gap-1.5">
                 <History className="w-3.5 h-3.5 text-emerald-500" /> Recent plant checks
@@ -437,7 +437,7 @@ export default function PlantSensePage() {
               <div>
                 <div className="flex gap-2 p-2 scroll-x-contained border-t border-dark-500">
                   {history.map((h) => (
-                    <div key={h.id} onClick={() => openHistoryItem(h)} className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-dark-800 border-dark-500 hover:border-emerald-500/30'}`}>
+                    <div key={h.id} onClick={() => openHistoryItem(h)} className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-dark-800 border-transparent hover:border-emerald-500/30'}`}>
                       <div className="relative">
                         <img src={h.thumb} alt="" className="w-full h-[62px] object-cover rounded-md bg-black" />
                         <button onClick={(e) => { e.stopPropagation(); deleteHistoryItem(h.id); }} className="absolute -top-1 -right-1 p-1 rounded-full bg-black/70 text-white/80 hover:text-error opacity-0 group-hover:opacity-100 transition-all shadow"><Trash2 className="w-3 h-3" /></button>
