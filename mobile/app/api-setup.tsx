@@ -46,7 +46,7 @@ export default function ApiSetupScreen() {
       <Pressable style={s.blackBtn} onPress={onSave}><Text style={s.blackText}>SAVE & CONTINUE</Text><Ionicons name="arrow-forward" size={16} color="#fff" /></Pressable>
       <Pressable style={s.skip} onPress={() => router.replace('/' as any)}><Text style={s.skipText}>Skip for now — explore without AI</Text></Pressable>
 
-      <Text style={s.footer}>SUSTAINABILITY HUB © 2024 · AI-CORE V2.4</Text>
+      <Text style={s.footer}>ELARA © 2024 · AI-CORE V2.4</Text>
     </ScrollView>
   );
 }

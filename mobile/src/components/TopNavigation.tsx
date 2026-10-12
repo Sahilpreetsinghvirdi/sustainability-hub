@@ -26,7 +26,7 @@ export default function TopNavigation() {
     <View style={[styles.shell, { backgroundColor: palette.bg, borderBottomColor: palette.border }]}>
       <View style={styles.brandRow}>
         <View style={[styles.logoCircle, { backgroundColor: isDark ? '#FFFFFF' : '#0A0A0A' }]}><Image source={logo} style={styles.logoImg} /></View>
-        <Text style={[styles.brandTitle, { color: palette.text }]}>Sustainability Hub</Text>
+        <Text style={[styles.brandTitle, { color: palette.text }]}>ELARA</Text>
       </View>
       <View style={styles.actions}>
         <ThemeToggle size="sm" />

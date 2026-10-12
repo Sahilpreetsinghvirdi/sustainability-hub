@@ -112,7 +112,7 @@ export const config = {
 
   // App info
   app: {
-    name: 'Sustainability Hub',
+    name: 'ELARA',
     version: '1.5.2',
     buildNumber: '2',
     supportEmail: 'support@sustainabilityhub.app',

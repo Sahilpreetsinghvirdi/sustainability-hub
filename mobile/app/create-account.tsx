@@ -33,7 +33,7 @@ export default function CreateAccountScreen() {
 
   return (
     <ScrollView style={s.container} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-      <View style={s.headRow}><Pressable onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={20} color="#0A0A0A" /></Pressable><View style={s.brandRow}><View style={s.logoCircle}><Text style={s.logoText}>🌿</Text></View><Text style={s.brandTitle}>Sustainability Hub</Text></View><View style={{ width: 32 }} /></View>
+      <View style={s.headRow}><Pressable onPress={() => router.back()} style={s.back}><Ionicons name="chevron-back" size={20} color="#0A0A0A" /></Pressable><View style={s.brandRow}><View style={s.logoCircle}><Text style={s.logoText}>🌿</Text></View><Text style={s.brandTitle}>ELARA</Text></View><View style={{ width: 32 }} /></View>
 
       <View style={s.heroImg}><View style={s.heroPlaceholder}><Ionicons name="leaf-outline" size={28} color="#9CA3AF" /></View><View style={s.newReg}><Text style={s.newRegText}>NEW REGISTRY</Text></View></View>
 
@@ -62,7 +62,7 @@ export default function CreateAccountScreen() {
 
       <View style={s.privacyCard}><View style={s.privIcon}><Ionicons name="shield-checkmark-outline" size={18} color="#0A0A0A" /></View><View style={{ flex: 1 }}><Text style={s.privTitle}>Privacy First Encryption</Text><Text style={s.privSub}>All environmental telemetry is end-to-end encrypted. We comply with global ISO 14001 sustainability data standards.</Text></View></View>
 
-      <Text style={s.footer}>SUSTAINABILITY HUB © 2024 · IDP-CORE V4.2</Text>
+      <Text style={s.footer}>ELARA © 2024 · IDP-CORE V4.2</Text>
     </ScrollView>
   );
 }

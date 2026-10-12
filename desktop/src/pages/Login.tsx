@@ -34,7 +34,8 @@ export default function LoginPage({ onDone }: { onDone: () => void }) {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/15 border border-primary/20 mb-3">
             <img src={softwareLogo} alt="logo" className="w-9 h-9 rounded-xl object-cover" />
           </div>
-          <h1 className="text-2xl font-bold text-dark-50">Sustainability Hub</h1>
+          <h1 className="text-2xl font-bold tracking-wide text-dark-50">ELARA</h1>
+          <p className="text-[11px] text-dark-200 mt-1">Environmental Learning, Analysis and Resource Awareness</p>
           <p className="text-sm text-dark-200 mt-1 flex items-center justify-center gap-1.5">
             <Leaf className="w-4 h-4 text-primary" /> Sign in to continue
           </p>

@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
 
     # App
-    APP_NAME: str = "Sustainability Hub API"
+    APP_NAME: str = "ELARA API"
     APP_VERSION: str = "1.0.0"
     API_V1_PREFIX: str = "/api/v1"
 

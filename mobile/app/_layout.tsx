@@ -53,7 +53,7 @@ function RootStack() {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: palette.bg }}>
         <ActivityIndicator color={palette.primary} />
-        <Text style={{ marginTop: 12, fontSize: 12, color: palette.textMuted, fontWeight: '600' }}>Loading Sustainability Hub…</Text>
+        <Text style={{ marginTop: 12, fontSize: 12, color: palette.textMuted, fontWeight: '600' }}>Loading ELARA…</Text>
       </View>
     );
   }

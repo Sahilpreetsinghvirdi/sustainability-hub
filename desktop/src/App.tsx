@@ -58,7 +58,7 @@ const navSections: { title?: string; items: NavItem[] }[] = [
     ],
   },
   {
-    title: 'Sustainability Tracker',
+    title: 'ELARA Tracker',
     items: [
       { path: '/carbon', label: 'Carbon', icon: Leaf },
       { path: '/energy', label: 'Energy', icon: Zap },
@@ -95,10 +95,10 @@ function Sidebar() {
   return (
     <aside className="w-64 h-screen bg-dark-700 border-r border-dark-500 flex flex-col shrink-0">
       <div className="p-5 flex items-center gap-3 border-b border-dark-500">
-        <img src={softwareLogo} alt="Sustainability Hub logo" className="w-10 h-10 rounded-xl object-cover" />
+        <img src={softwareLogo} alt="ELARA logo" className="w-10 h-10 rounded-xl object-cover" />
         <div className="min-w-0">
-          <h1 className="text-lg font-bold text-dark-50">Sustainability</h1>
-          <p className="text-xs text-dark-200">Hub Desktop</p>
+          <h1 className="text-lg font-bold tracking-wide text-dark-50">ELARA</h1>
+          <p className="text-[10px] leading-tight text-dark-200">Environmental Learning, Analysis and Resource Awareness</p>
         </div>
       </div>
       <nav className="flex-1 px-3 pb-3 overflow-y-auto">
@@ -192,7 +192,7 @@ function AppLayout() {
     }
   };
   const headerTitle =
-    allNavItems.find((n) => n.path === location.pathname)?.label || 'Sustainability Hub';
+    allNavItems.find((n) => n.path === location.pathname)?.label || 'ELARA';
 
   useEffect(() => {
     const handler = (e: Event) => {

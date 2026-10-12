@@ -36,8 +36,8 @@ export default function LoginScreen() {
         <View style={s.logoBox}><Image source={logo} style={s.logo} /></View>
         <View style={s.vBadge}><Text style={s.vText}>V2.4</Text></View>
       </View>
-      <Text style={s.title}>SUSTAINABILITY HUB</Text>
-      <Text style={s.sub}>Precision Environmental Intelligence</Text>
+      <Text style={s.title}>ELARA</Text>
+      <Text style={s.sub}>Environmental Learning, Analysis and Resource Awareness</Text>
 
       <Text style={s.welcome}>Welcome Back</Text>
       <Text style={s.welcomeSub}>Sign in to manage your sustainable ecosystem.</Text>
@@ -59,7 +59,7 @@ export default function LoginScreen() {
       <Text style={s.noAcc}>Don't have an account yet?</Text>
       <Pressable style={s.outlineBtn} onPress={() => router.push('/create-account' as any)}><Text style={s.outlineText}>Create a new account</Text></Pressable>
 
-      <Text style={s.footer}>SUSTAINABILITY HUB © 2024 · ISO 14001 COMPLIANT</Text>
+      <Text style={s.footer}>ELARA © 2024 · ISO 14001 COMPLIANT</Text>
     </ScrollView>
   );
 }

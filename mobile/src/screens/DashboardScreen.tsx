@@ -154,7 +154,7 @@ export const DashboardScreen: React.FC = () => {
               <View style={s.activityRow}>
                 <View style={s.activityIcon}><Ionicons name="information-circle-outline" size={14} color="#0A0A0A" /></View>
                 <View style={{ flex: 1 }}>
-                  <Text style={s.activityTitle}>WELCOME TO SUSTAINABILITY HUB</Text>
+                  <Text style={s.activityTitle}>WELCOME TO ELARA</Text>
                   <Text style={s.activityTime}>Start by logging consumption</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
