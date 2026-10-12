@@ -37,40 +37,36 @@ export default function LoginPage({ onDone }: { onDone: () => void }) {
     <div className="min-h-screen flex items-center justify-center bg-dark-800 p-4 sm:p-8">
       <div className="w-full max-w-5xl grid lg:grid-cols-[1.05fr_1fr] rounded-3xl overflow-hidden bg-dark-700 shadow-2xl">
         {/* Brand panel */}
-        <div className="hidden lg:flex relative overflow-hidden flex-col justify-between p-9 bg-gradient-to-br from-zinc-950 via-[#0B0B0D] to-dark-800">
+        <div className="hidden lg:flex relative overflow-hidden flex-col p-9 bg-gradient-to-br from-zinc-950 via-[#0B0B0D] to-dark-800">
           <div
             className="pointer-events-none absolute inset-0 opacity-60"
-            style={{ backgroundImage: 'radial-gradient(600px 320px at 20% 10%, rgba(255,255,255,0.10), transparent 70%), radial-gradient(500px 300px at 85% 90%, rgba(255,255,255,0.05), transparent 70%)' }}
+            style={{ backgroundImage: 'radial-gradient(600px 320px at 50% 0%, rgba(255,255,255,0.10), transparent 70%), radial-gradient(500px 300px at 50% 100%, rgba(255,255,255,0.05), transparent 70%)' }}
           />
-          <div className="relative flex items-center gap-4">
-            <img src={softwareLogo} alt="ELARA logo" className="w-16 h-16 rounded-3xl object-cover shadow-xl" />
-            <div>
-              <p className="font-display text-3xl font-bold tracking-wide text-white">ELARA</p>
-              <p className="text-xs text-zinc-400 mt-0.5">Environmental Learning, Analysis and Resource Awareness</p>
+          <div className="relative flex-1 flex flex-col items-center justify-center text-center py-6">
+            <img src={softwareLogo} alt="ELARA logo" className="w-20 h-20 rounded-[28px] object-cover shadow-2xl" />
+            <p className="font-display text-4xl font-bold tracking-wide text-white mt-4">ELARA</p>
+            <p className="text-xs text-zinc-400 mt-1.5 max-w-[260px] leading-relaxed">Environmental Learning, Analysis and Resource Awareness</p>
+            <div className="flex items-center gap-2.5 my-5 w-full max-w-[240px]">
+              <div className="h-px flex-1 bg-white/15" />
+              <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+              <div className="h-px flex-1 bg-white/15" />
             </div>
-          </div>
-          <div className="relative">
-            <h1 className="font-display text-xl xl:text-2xl font-bold text-white leading-snug">
-              Know your waste. Change the planet.
-            </h1>
-            <p className="text-[13px] text-zinc-400 mt-2 leading-relaxed">
+            <p className="font-display text-lg font-bold text-white">Know your waste. Change the planet.</p>
+            <p className="text-[13px] text-zinc-400 mt-2 max-w-[320px] leading-relaxed">
               Snap anything you throw away — ELARA identifies materials, flags toxins and tells you exactly where it should go.
             </p>
-            <div className="space-y-2.5 mt-6">
+            <div className="grid grid-cols-3 gap-2.5 w-full mt-6">
               {HIGHLIGHTS.map((h) => (
-                <div key={h.title} className="flex items-center gap-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm px-4 py-2.5">
+                <div key={h.title} className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm px-2 py-3.5 flex flex-col items-center gap-2">
                   <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
                     <h.icon className="w-4 h-4 text-white" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white">{h.title}</p>
-                    <p className="text-xs text-zinc-400 truncate">{h.desc}</p>
-                  </div>
+                  <p className="text-[11px] font-semibold text-white leading-tight">{h.title}</p>
                 </div>
               ))}
             </div>
           </div>
-          <p className="relative text-[11px] text-zinc-500">ELARA · v1.5.3 · keys stay on this device</p>
+          <p className="relative text-[11px] text-zinc-500 text-center">ELARA · v1.5.3 · keys stay on this device</p>
         </div>
 
         {/* Form side */}
