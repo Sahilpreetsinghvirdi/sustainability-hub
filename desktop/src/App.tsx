@@ -20,6 +20,8 @@ import {
   Settings,
   ScanSearch,
   Download,
+  Rocket,
+  Search,
 } from 'lucide-react';
 import WasteAnalyzerPage from './pages/WasteAnalyzer';
 import DashboardPage from './pages/Dashboard';
@@ -30,6 +32,7 @@ import SettingsPage from './pages/Settings';
 import AgriSensePage from './pages/AgriSense';
 import PlantSensePage from './pages/PlantSense';
 import ThemeToggle from './components/ui/ThemeToggle';
+import CommandPalette from './components/CommandPalette';
 import { store } from './lib/store';
 import softwareLogo from './assets/logo.png';
 import { checkForUpdate, CURRENT_VERSION } from './lib/updater';
@@ -72,19 +75,8 @@ const navSections: { title?: string; items: NavItem[] }[] = [
 
 const allNavItems = navSections.flatMap((s) => s.items);
 
-const SHORT_LABELS: Record<string, string> = {
-  '/': 'Home',
-  '/analyzer': 'Scan',
-  '/agrisense': 'Agri',
-  '/plantsense': 'Plant',
-  '/carbon': 'Carbon',
-  '/energy': 'Energy',
-  '/food-waste': 'Food',
-  '/settings': 'Settings',
-};
-
-function IconRail() {
-  const [user, setUser] = useState(() => getCurrentUser() || store.getProfile() as any);
+function useCurrentUser() {
+  const [user, setUser] = useState(() => getCurrentUser() || (store.getProfile() as any));
 
   useEffect(() => {
     const h = () => setUser(getCurrentUser() || (store.getProfile() as any));
@@ -98,47 +90,37 @@ function IconRail() {
     };
   }, []);
 
-  const displayName = (user?.name || '').trim() || 'User';
-  const initials = displayName.split(/\s+/).slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('') || 'U';
+  return user as any;
+}
 
+function Dock() {
   return (
-    <aside className="w-[80px] h-screen bg-dark-700 flex flex-col items-center shrink-0 py-4 z-20 shadow-[8px_0_28px_-8px_rgba(0,0,0,0.35)] overflow-y-auto">
-      <img src={softwareLogo} alt="ELARA logo" title="ELARA" className="w-10 h-10 rounded-2xl object-cover shrink-0" />
-      <nav className="flex-1 flex flex-col items-center gap-1 w-full px-2.5 mt-5">
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-[calc(100vw-2rem)]">
+      <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-dark-700/85 backdrop-blur-xl px-2.5 py-2 shadow-2xl overflow-x-auto scroll-x-contained">
+        <img src={softwareLogo} alt="ELARA logo" title="ELARA" className="w-8 h-8 rounded-xl object-cover shrink-0 mr-1" />
         {navSections.map((section, si) => (
           <Fragment key={si}>
-            {si > 0 && <div className="w-1 h-1 rounded-full bg-dark-400/70 my-1.5 shrink-0" />}
+            {si > 0 && <div className="w-px h-6 bg-dark-400/50 mx-1 shrink-0" />}
             {section.items.map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
                 title={item.label}
                 className={({ isActive }) =>
-                  `w-full flex flex-col items-center gap-1 py-2 rounded-xl transition-colors ${
+                  `p-2.5 rounded-xl transition-all shrink-0 ${
                     isActive
-                      ? 'bg-primary/15 text-primary'
+                      ? 'bg-primary/20 text-primary scale-105 shadow-lg'
                       : 'text-dark-300 hover:bg-dark-600 hover:text-dark-50'
                   }`
                 }
               >
                 <item.icon className="w-5 h-5" />
-                <span className="text-[9px] font-semibold leading-none tracking-wide">{SHORT_LABELS[item.path] ?? item.label}</span>
               </NavLink>
             ))}
           </Fragment>
         ))}
-      </nav>
-      <div className="flex flex-col items-center gap-2 mt-3 shrink-0">
-        <div title={displayName} className="w-9 h-9 bg-accent rounded-full flex items-center justify-center text-white text-sm font-bold cursor-default">{initials}</div>
-        <button
-          onClick={() => { if (confirm('Sign out?')) { logout(); window.location.reload(); } }}
-          className="p-1.5 rounded-md hover:bg-dark-600 text-dark-300 hover:text-dark-50"
-          title="Sign out"
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -153,9 +135,24 @@ type Toast = {
 function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const user = useCurrentUser();
+  const displayName = (user?.name || '').trim() || 'User';
+  const initials = displayName.split(/\s+/).slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? '').join('') || 'U';
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [update, setUpdate] = useState<null | { latest: string; url: string; downloadUrl: string | null }>(null);
   const [downloading, setDownloading] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -185,6 +182,12 @@ function AppLayout() {
   const headerTitle =
     allNavItems.find((n) => n.path === location.pathname)?.label || 'ELARA';
 
+  const paletteItems = [
+    ...allNavItems.map((n) => ({ label: n.label, hint: n.path, path: n.path, icon: n.icon })),
+    { label: 'Scan waste now', hint: 'AI Analyzer', path: '/analyzer', icon: ScanSearch },
+    { label: 'Check for updates', hint: 'Application settings', path: '/settings', icon: Rocket },
+  ];
+
   useEffect(() => {
     const handler = (e: Event) => {
       const ce = e as CustomEvent<{ kind: 'waste' | 'agri'; title: string; detail: string; target: string; ok: boolean }>;
@@ -209,13 +212,19 @@ function AppLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden max-w-[100vw]">
-      {<IconRail />}
       <main className="flex-1 min-w-0 overflow-auto overflow-x-hidden max-w-full">
-        <header className="h-12 bg-dark-700/60 backdrop-blur-md flex items-center px-4 sticky top-0 z-10 min-w-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]">
+        <header className="h-14 bg-dark-700/60 backdrop-blur-md flex items-center gap-3 px-4 sticky top-0 z-10 min-w-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]">
           <span className="text-sm font-bold tracking-widest text-dark-50 shrink-0">ELARA</span>
-          <span className="mx-3 w-1 h-1 rounded-full bg-dark-400/70 shrink-0" />
-          <h2 className="text-sm font-semibold text-dark-100 truncate">{headerTitle}</h2>
-          <div className="ml-auto flex items-center gap-2 shrink-0">
+          <span className="w-1 h-1 rounded-full bg-dark-400/70 shrink-0" />
+          <h2 className="text-sm font-semibold text-dark-100 truncate shrink-0">{headerTitle}</h2>
+          <div className="flex-1 flex justify-center min-w-0">
+            <button onClick={() => setPaletteOpen(true)} className="hidden sm:flex items-center gap-2 w-full max-w-xs rounded-xl bg-dark-600/60 hover:bg-dark-600 px-3 py-1.5 text-xs text-dark-300 hover:text-dark-100 transition-colors">
+              <Search className="w-3.5 h-3.5 shrink-0" />
+              <span className="flex-1 text-left truncate">Jump to…</span>
+              <kbd className="shrink-0 text-[10px] font-mono rounded-md bg-dark-700 px-1.5 py-0.5 border border-dark-500">Ctrl K</kbd>
+            </button>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             {update && (
               <button
                 onClick={handleUpdate}
@@ -229,9 +238,23 @@ function AppLayout() {
               </button>
             )}
             <ThemeToggle />
+            <button
+              onClick={() => navigate('/settings')}
+              title={displayName}
+              className="w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 hover:scale-105 transition-transform"
+            >
+              {initials}
+            </button>
+            <button
+              onClick={() => { if (confirm('Sign out?')) { logout(); window.location.reload(); } }}
+              className="p-1.5 rounded-md hover:bg-dark-600 text-dark-300 hover:text-dark-50 shrink-0"
+              title="Sign out"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         </header>
-        <div className="p-6 min-w-0 max-w-full overflow-x-hidden page-wrap">
+        <div className="p-6 pb-28 min-w-0 max-w-full overflow-x-hidden page-wrap">
           <div key={location.pathname} className="animate-pageIn min-w-0 max-w-full overflow-x-hidden">
             <Routes>
               <Route path="/" element={<DashboardPage />} />
@@ -247,6 +270,9 @@ function AppLayout() {
           </div>
         </div>
       </main>
+
+      <Dock />
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={paletteItems} />
 
       {/* Bottom-right analysis toasts */}
       <div className="fixed bottom-4 right-4 z-[80] flex flex-col gap-2 pointer-events-none max-w-[360px] w-[calc(100vw-32px)] sm:w-[360px]">
