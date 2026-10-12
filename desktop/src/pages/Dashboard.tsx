@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
   void tick;
   return (
-    <div className="space-y-5 max-w-6xl">
+    <div className="space-y-5 max-w-6xl mx-auto w-full">
       <UpdateBanner />
 
       {/* Hero — the front door to the AI analyzer */}
