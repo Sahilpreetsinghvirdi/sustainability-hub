@@ -16,14 +16,14 @@ export function useChartChrome(): ChartChrome {
   const isDark = useTheme() === 'dark';
   return isDark
     ? {
-        grid: '#1E2A24',
-        axis: '#7D9C8C',
-        tooltipBg: '#131D18',
-        tooltipBorder: '#2A3B32',
-        tooltipText: '#E9F5EE',
-        surface: '#121B16',
-        legend: '#7D9C8C',
-        fallback: '#4A5F54',
+        grid: '#23232C',
+        axis: '#9A9AA6',
+        tooltipBg: '#1D1D26',
+        tooltipBorder: '#34343F',
+        tooltipText: '#E3E3EA',
+        surface: '#14141B',
+        legend: '#9A9AA6',
+        fallback: '#52525E',
       }
     : {
         grid: '#DDE7E1',

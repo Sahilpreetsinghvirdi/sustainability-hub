@@ -21,7 +21,6 @@ import {
   ScanSearch,
   Download,
   Rocket,
-  Search,
 } from 'lucide-react';
 import WasteAnalyzerPage from './pages/WasteAnalyzer';
 import DashboardPage from './pages/Dashboard';
@@ -218,15 +217,9 @@ function AppLayout() {
       <LeftIsland />
       <main className="flex-1 min-w-0 overflow-auto overflow-x-hidden max-w-full">
         <div className="flex items-center gap-3 px-6 lg:px-10 pt-5">
+          <div className="flex-1 min-w-0" />
           <h2 className="font-display text-xl font-bold text-dark-50 truncate shrink-0">{headerTitle}</h2>
-          <div className="flex-1 flex justify-center min-w-0">
-            <button onClick={() => setPaletteOpen(true)} className="flex items-center gap-2 w-full max-w-xs rounded-xl bg-dark-600/60 hover:bg-dark-600 px-3 py-1.5 text-xs text-dark-300 hover:text-dark-100 transition-colors">
-              <Search className="w-3.5 h-3.5 shrink-0" />
-              <span className="flex-1 text-left truncate">Jump to…</span>
-              <kbd className="shrink-0 text-[10px] font-mono rounded-md bg-dark-700 px-1.5 py-0.5 border border-dark-500">Ctrl K</kbd>
-            </button>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
             {update && (
               <button
                 onClick={handleUpdate}

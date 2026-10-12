@@ -46,27 +46,27 @@
 }
 
 html.dark {
-  /* text — soft mint-ivory ramp, never pure white */
-  --c50: 236 253 243;
-  --c100: 211 232 220;
-  --c200: 168 196 180;
-  --c300: 125 156 138;
+  /* text — soft ivory ramp, never pure white */
+  --c50: 246 246 249;
+  --c100: 227 227 234;
+  --c200: 178 178 190;
+  --c300: 139 139 152;
 
-  /* borders — deep moss, visible but quiet */
-  --c400: 58 78 67;
-  --c500: 38 56 46;
+  /* borders — cool slate, visible but quiet */
+  --c400: 62 62 74;
+  --c500: 41 41 51;
 
-  /* fills & surfaces — the elevation ladder */
-  --c600: 30 43 36;      /* chips / hover fill — clearly raised */
-  --c700: 15 22 18;      /* sidebar / header */
-  --c800: 9 14 11;       /* page background — deepest */
-  --c900: 5 8 7;         /* inset wells / scrollbar track */
+  /* fills & surfaces — simple black elevation ladder */
+  --c600: 33 33 42;     /* chips / hover fill — clearly raised */
+  --c700: 17 17 23;     /* sidebar / header */
+  --c800: 10 10 14;     /* page background — deepest */
+  --c900: 6 6 9;        /* inset wells / scrollbar track */
 
   --page: var(--c800);
-  --surface: 19 29 24;   /* card — one full step above the page */
-  --well: 12 18 14;
+  --surface: 20 20 27;  /* card — one full step above the page */
+  --well: 13 13 18;
 
-  --p-default: 16 185 129;   /* emerald-500 glows on forest black */
+  --p-default: 16 185 129;   /* emerald accent on black */
   --p-light: 52 211 153;
   --p-dark: 4 120 87;
 
@@ -74,8 +74,8 @@ html.dark {
   --s-light: 64 64 78;
   --s-dark: 34 34 44;
 
-  --a-default: 52 211 153;
-  --a-light: 110 231 183;
+  --a-default: 222 222 230;
+  --a-light: 150 150 164;
 
   --success: 34 197 94;
   --warning: 250 166 26;
@@ -123,9 +123,9 @@ body {
   transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-/* Obsidian depth: faint emerald aura bleeding down from the top edge */
+/* Simple black — no aura, just depth */
 html.dark body {
-  background-image: radial-gradient(1100px 480px at 50% -180px, rgba(16, 185, 129, 0.09), transparent 70%);
+  background-image: none;
 }
 
 *::-webkit-scrollbar { width: 6px; }
