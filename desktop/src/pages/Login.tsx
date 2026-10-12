@@ -88,7 +88,7 @@ export default function LoginPage({ onDone }: { onDone: () => void }) {
               ))}
             </div>
           </div>
-          <div className="relative text-[11px] text-zinc-500 text-center">ELARA · v1.5.3</div>
+          <div className="relative text-[11px] text-zinc-500 text-center">ELARA · v1.6.0</div>
         </div>
 
         {/* Form side */}
