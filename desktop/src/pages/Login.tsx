@@ -59,7 +59,7 @@ export default function LoginPage({ onDone }: { onDone: () => void }) {
     <div className="min-h-screen flex items-center justify-center bg-dark-800 p-4 sm:p-8">
       <div className="w-full max-w-5xl grid lg:grid-cols-[1.05fr_1fr] rounded-3xl overflow-hidden bg-dark-700 shadow-2xl">
         {/* Brand panel */}
-        <div className="hidden lg:flex relative overflow-hidden flex-col p-9 bg-gradient-to-br from-zinc-950 via-[#0B0B0D] to-dark-800">
+        <div className="hidden lg:flex relative overflow-hidden flex-col p-9 bg-gradient-to-br from-zinc-950 via-[#0B0B0D] to-[#141417]">
           <div
             className="pointer-events-none absolute inset-0 opacity-60"
             style={{ backgroundImage: 'radial-gradient(600px 320px at 50% 0%, rgba(255,255,255,0.10), transparent 70%), radial-gradient(500px 300px at 50% 100%, rgba(255,255,255,0.05), transparent 70%)' }}

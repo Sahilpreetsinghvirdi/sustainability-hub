@@ -322,7 +322,11 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     window.addEventListener('storage', h);
     return () => { window.removeEventListener('auth-changed', h as EventListener); window.removeEventListener('storage', h); };
   }, []);
-  if (!authed) return <LoginPage onDone={() => setAuthed(true)} />;
+  if (!authed) {
+    // OAuth popups land here with no session yet — let the callback run.
+    if (window.location.pathname === '/auth/callback') return <>{children}</>;
+    return <LoginPage onDone={() => setAuthed(true)} />;
+  }
   return <>{children}</>;
 }
 
