@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Plus, Camera, FileText, Trash2, ChevronRight, Search, Filter, X, Upload, Store, CheckCircle2, AlertCircle, Loader2, Image as ImageIcon } from 'lucide-react';
+import PageHero from '../components/PageHero';
 import { analyzeReceipt } from '../lib/aiAnalysis';
 import { store as appStore } from '../lib/store';
 
@@ -326,16 +327,17 @@ export default function CarbonPage() {
       {showScan && <ScanReceiptModal onClose={() => setShowScan(false)} onSave={(receipt) => { setScans([receipt, ...scans]); appStore.addCarbon({ id: receipt.id, date: receipt.date, items: receipt.items, total: receipt.price, totalCarbon: receipt.carbon, store: receipt.store }); setShowScan(false); }} />}
       {detailScan && <ReceiptDetailModal scan={detailScan} onClose={() => setDetailScan(null)} />}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Carbon Tracker</h1>
-          <p className="text-dark-200 text-sm mt-1">Scan receipts to estimate your carbon footprint</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowScan(true)} className="btn-primary flex items-center gap-2"><Camera className="w-4 h-4" /> Scan Receipt</button>
-          <button onClick={() => setShowManual(true)} className="btn-outline flex items-center gap-2"><FileText className="w-4 h-4" /> Manual Entry</button>
-        </div>
-      </div>
+      <PageHero
+        eyebrow="Elara Tracker"
+        title="Carbon Tracker"
+        desc="Scan receipts to estimate your carbon footprint."
+        right={(
+          <>
+            <button onClick={() => setShowScan(true)} className="btn-primary flex items-center gap-2"><Camera className="w-4 h-4" /> Scan Receipt</button>
+            <button onClick={() => setShowManual(true)} className="btn-outline flex items-center gap-2"><FileText className="w-4 h-4" /> Manual Entry</button>
+          </>
+        )}
+      />
 
       <div className="grid grid-cols-3 gap-4">
         <div className="card-elevated">

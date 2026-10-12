@@ -9,6 +9,7 @@ import { CURRENT_VERSION, refreshUpdateCheck, downloadUpdate, getLastCheckISO, t
 import { relTime } from '@/lib/thumb';
 import { store, type ProfileData, type HouseholdData, type NotificationPrefs } from '@/lib/store';
 import { listAccounts, deleteAccount, clearAllAccounts, getCurrentUser, logout, type AuthUser } from '@/lib/auth';
+import PageHero from '../components/PageHero';
 
 type Tab = 'ai' | 'accounts' | 'profile' | 'household' | 'notifications' | 'data' | 'app';
 
@@ -166,14 +167,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto w-full min-w-0 overflow-x-hidden space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-dark-50">Settings</h1>
-        <p className="text-dark-200 text-sm mt-1">Manage your AI keys, profile and app data</p>
-      </div>
+    <div className="max-w-6xl mx-auto w-full min-w-0 overflow-x-hidden space-y-6">
+      <PageHero
+        eyebrow="System"
+        title="Settings"
+        desc="Manage your AI keys, profile and app data."
+      />
 
-      <div className="flex flex-col lg:flex-row gap-6 min-w-0">
-        <div className="w-full lg:w-56 space-y-1 shrink-0">
+      <div className="min-w-0">
+        <div className="flex gap-2 overflow-x-auto scroll-x-contained pb-1 -mx-1 px-1">
           {[
             { key: 'ai' as Tab, label: 'AI Configuration', icon: KeyRound },
             { key: 'accounts' as Tab, label: 'Accounts', icon: Users },
@@ -184,16 +186,16 @@ export default function SettingsPage() {
             { key: 'app' as Tab, label: 'Application', icon: Rocket },
           ].map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeTab === tab.key ? 'bg-primary/15 text-primary' : 'text-dark-200 hover:bg-dark-600 hover:text-dark-50'}`}>
+              className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === tab.key ? 'bg-primary text-white shadow-lg shadow-primary/25' : 'bg-dark-600/60 text-dark-200 hover:bg-dark-600 hover:text-dark-50'}`}>
               <tab.icon className="w-4 h-4" /> {tab.label}
               {tab.key === 'ai' && aiData && (
-                <span className={`ml-auto w-2 h-2 rounded-full ${aiData.ai_configured ? 'bg-success' : 'bg-error animate-pulse'}`} />
+                <span className={`w-2 h-2 rounded-full ${aiData.ai_configured ? 'bg-success' : 'bg-error animate-pulse'}`} />
               )}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 min-w-0 space-y-4">
+        <div className="min-w-0 space-y-4 mt-5">
           {activeTab === 'ai' && (
             <div className="space-y-4 animate-pageIn">
               <div className={`rounded-xl border p-4 flex items-start gap-3 ${aiData?.ai_configured ? 'bg-success/10 border-success/30' : 'bg-warning/10 border-warning/30'}`}>

@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Zap, Plus, TrendingDown, Lightbulb, Wrench, ArrowRight, X, Upload, CheckCircle2, Loader2, Image as ImageIcon, Camera } from 'lucide-react';
+import PageHero from '../components/PageHero';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { analyzeBill } from '../lib/aiAnalysis';
 import { store } from '../lib/store';
@@ -285,16 +286,17 @@ export default function EnergyPage() {
         setShowAddAppliance(false);
       }} />}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Energy Monitor</h1>
-          <p className="text-dark-200 text-sm mt-1">Track your home energy usage</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowScanBill(true)} className="btn-primary flex items-center gap-2"><Zap className="w-4 h-4" /> Scan Bill</button>
-          <button onClick={() => setShowAddBill(true)} className="btn-outline flex items-center gap-2"><Plus className="w-4 h-4" /> Add Bill</button>
-        </div>
-      </div>
+      <PageHero
+        eyebrow="Elara Tracker"
+        title="Energy Monitor"
+        desc="Track your home energy usage."
+        right={(
+          <>
+            <button onClick={() => setShowScanBill(true)} className="btn-primary flex items-center gap-2"><Zap className="w-4 h-4" /> Scan Bill</button>
+            <button onClick={() => setShowAddBill(true)} className="btn-outline flex items-center gap-2"><Plus className="w-4 h-4" /> Add Bill</button>
+          </>
+        )}
+      />
 
       <div className="flex gap-1 bg-dark-700 rounded-lg p-1 w-fit">
         {(['overview', 'appliances', 'audit'] as const).map((t) => (

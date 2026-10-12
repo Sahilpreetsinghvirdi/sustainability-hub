@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Plus, Camera, Flame, Calendar, TrendingDown, Leaf, AlertTriangle, X, Upload, CheckCircle2, Loader2, Image as ImageIcon } from 'lucide-react';
+import PageHero from '../components/PageHero';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { analyzeImage } from '../lib/aiAnalysis';
 import { store, computeStreak, bestStreak, lastNDayLabels } from '../lib/store';
@@ -309,16 +310,17 @@ export default function FoodWastePage() {
       {showManual && <ManualLogModal onClose={() => setShowManual(false)} onSave={(log) => { setLogs([log, ...logs]); store.addWaste({ id: log.id, date: log.date, meal: log.meal, desc: log.desc, amount: log.amount, reason: log.reason, carbon: log.carbon }); setShowManual(false); }} />}
       {detailLog && <LogDetailModal log={detailLog} onClose={() => setDetailLog(null)} />}
 
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Food Waste Tracker</h1>
-          <p className="text-dark-200 text-sm mt-1">Log meals and reduce food waste</p>
-        </div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowPhoto(true)} className="btn-primary flex items-center gap-2"><Camera className="w-4 h-4" /> Log with Photo</button>
-          <button onClick={() => setShowManual(true)} className="btn-outline flex items-center gap-2"><Plus className="w-4 h-4" /> Manual Log</button>
-        </div>
-      </div>
+      <PageHero
+        eyebrow="Elara Tracker"
+        title="Food Waste Tracker"
+        desc="Log meals and reduce food waste."
+        right={(
+          <>
+            <button onClick={() => setShowPhoto(true)} className="btn-primary flex items-center gap-2"><Camera className="w-4 h-4" /> Log with Photo</button>
+            <button onClick={() => setShowManual(true)} className="btn-outline flex items-center gap-2"><Plus className="w-4 h-4" /> Manual Log</button>
+          </>
+        )}
+      />
 
       <div className="grid grid-cols-4 gap-4">
         <div className="card-elevated">

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Leaf, Zap, Trash2, Flame, ScanSearch,
-  Receipt, PlugZap, UtensilsCrossed, Sparkles,
+  Receipt, PlugZap, UtensilsCrossed, Sparkles, ArrowUpRight,
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { store, lastNDayLabels } from '../lib/store';
@@ -73,13 +73,13 @@ function MiniChart({ title, data, dataKey, color, xKey }: { title: string; data:
   );
 }
 
-function StreakRing({ streak, best }: { streak: number; best: number }) {
+function StreakCard({ streak, best }: { streak: number; best: number }) {
   const R = 40;
   const C = 2 * Math.PI * R;
   const pct = Math.min(streak / 30, 1);
   return (
-    <div className="shrink-0 flex items-center gap-4 rounded-2xl bg-dark-800/60 px-5 py-4">
-      <div className="relative w-24 h-24 shrink-0">
+    <div className="card flex flex-col items-center justify-center text-center gap-1 py-6 h-full">
+      <div className="relative w-24 h-24">
         <svg viewBox="0 0 96 96" className="w-24 h-24 -rotate-90">
           <circle cx="48" cy="48" r={R} fill="none" strokeWidth="9" className="stroke-dark-600" />
           <circle
@@ -92,11 +92,8 @@ function StreakRing({ streak, best }: { streak: number; best: number }) {
           <span className="font-display text-xl font-bold text-dark-50 leading-none mt-0.5">{streak}</span>
         </div>
       </div>
-      <div>
-        <p className="text-sm font-bold text-dark-50">day streak</p>
-        <p className="text-xs text-dark-300 mt-0.5">Best: {best} days</p>
-        <p className="text-[11px] text-dark-300 mt-1 leading-snug">Log waste daily<br />to grow it.</p>
-      </div>
+      <p className="text-sm font-bold text-dark-50 mt-2">day streak</p>
+      <p className="text-xs text-dark-300">Best: {best} days · log daily to grow it</p>
     </div>
   );
 }
@@ -170,33 +167,56 @@ export default function DashboardPage() {
     { icon: Flame, chip: 'bg-orange-500/15 text-orange-500', value: dashData.streak, unit: 'days', label: 'Logging streak', sub: `Best: ${dashData.bestStreak}`, path: '/food-waste' },
   ];
 
+  const quick = [
+    { icon: Receipt, label: 'Scan receipt', desc: 'Carbon footprint', path: '/carbon' },
+    { icon: PlugZap, label: 'Log energy bill', desc: 'Track usage', path: '/energy' },
+    { icon: UtensilsCrossed, label: 'Log food waste', desc: 'Cut waste', path: '/food-waste' },
+    { icon: ScanSearch, label: 'Open analyzer', desc: 'AI scans', path: '/analyzer' },
+  ];
+
   void tick;
   return (
     <div className="space-y-5 max-w-6xl mx-auto w-full">
       <UpdateBanner />
 
-      {/* Hero — the front door to the AI analyzer */}
-      <div className="relative overflow-hidden rounded-3xl border border-primary/25 bg-gradient-to-br from-primary/25 via-dark-700 to-dark-700 p-6 sm:p-8">
-        <div className="pointer-events-none absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary/20 blur-3xl" />
-        <div className="relative flex flex-col lg:flex-row lg:items-center gap-6">
-          <div className="flex-1 min-w-0">
-            <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-primary">
-              <Sparkles className="w-3.5 h-3.5" /> AI waste analyzer — Elara's superpower
-            </p>
-            <h1 className="text-2xl sm:text-3xl font-bold text-dark-50 mt-2">{hello}</h1>
+      {/* Headline row */}
+      <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+        <div className="flex-1 min-w-0">
+          <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-primary">
+            <Sparkles className="w-3.5 h-3.5" /> Elara home
+          </p>
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-dark-50 mt-1.5">{hello}</h1>
+          <p className="text-sm text-dark-200 mt-1.5">Here's your planet, at a glance.</p>
+        </div>
+        <div className="shrink-0 flex flex-wrap gap-2.5">
+          <button onClick={() => navigate('/analyzer')} className="btn-primary inline-flex items-center gap-2 px-5 py-2.5">
+            <ScanSearch className="w-4 h-4" /> Scan waste now
+          </button>
+          <button onClick={() => navigate('/food-waste')} className="btn-outline inline-flex items-center gap-2 px-5 py-2.5">
+            Log food waste
+          </button>
+        </div>
+      </div>
+
+      {/* Bento row 1 — streak + scan card (swapped sides) */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        <div className="md:col-span-2">
+          <StreakCard streak={dashData.streak} best={dashData.bestStreak} />
+        </div>
+        <div className="md:col-span-4 relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/25 via-dark-700 to-dark-700 p-6 sm:p-7">
+          <div className="pointer-events-none absolute -right-16 -top-16 w-64 h-64 rounded-full bg-primary/20 blur-3xl" />
+          <div className="relative">
+            <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-primary">AI waste analyzer — Elara's superpower</p>
+            <h2 className="font-display text-2xl font-bold text-dark-50 mt-2">What are you throwing today?</h2>
             <p className="text-sm text-dark-200 mt-1.5 max-w-lg leading-relaxed">
               Point your camera at any waste — ELARA breaks down materials, toxins and exactly what to do with them.
             </p>
-            <div className="flex flex-wrap gap-2.5 mt-5">
-              <button onClick={() => navigate('/analyzer')} className="btn-primary inline-flex items-center gap-2 px-5 py-2.5">
-                <ScanSearch className="w-4 h-4" /> Scan waste now
-              </button>
-              <button onClick={() => navigate('/food-waste')} className="btn-outline inline-flex items-center gap-2 px-5 py-2.5">
-                Log food waste
-              </button>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {['Materials %', 'Toxins', 'Recyclers', 'Eco swaps'].map((c) => (
+                <span key={c} className="px-2.5 py-1 rounded-full bg-dark-800/60 text-[11px] font-medium text-dark-100">{c}</span>
+              ))}
             </div>
           </div>
-          <StreakRing streak={dashData.streak} best={dashData.bestStreak} />
         </div>
       </div>
 
@@ -221,34 +241,54 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Recent activity */}
-      <div className="card">
-        <h3 className="text-sm font-semibold text-dark-100 mb-3">Recent activity</h3>
-        {feed.length === 0 ? (
-          <div className="rounded-2xl bg-dark-600/50 px-4 py-6 text-center">
-            <p className="text-sm font-medium text-dark-100">Nothing logged yet</p>
-            <p className="text-xs text-dark-300 mt-1">Scan your first waste above and it will show up here.</p>
-          </div>
-        ) : (
-          <div className="grid sm:grid-cols-2 gap-2">
-            {feed.map((f) => (
+      {/* Bento row 2 — activity + quick actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+        <div className="card lg:col-span-4">
+          <h3 className="text-sm font-semibold text-dark-100 mb-3">Recent activity</h3>
+          {feed.length === 0 ? (
+            <div className="rounded-2xl bg-dark-600/50 px-4 py-6 text-center">
+              <p className="text-sm font-medium text-dark-100">Nothing logged yet</p>
+              <p className="text-xs text-dark-300 mt-1">Scan your first waste above and it will show up here.</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-2">
+              {feed.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => navigate(f.path)}
+                  className="flex items-center gap-3 rounded-xl p-2.5 text-left hover:bg-dark-600/50 transition-colors"
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${f.chip}`}>
+                    <f.icon className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-dark-50 truncate">{f.title}</p>
+                    <p className="text-[11px] text-dark-300 truncate">{f.meta}</p>
+                  </div>
+                  <span className="text-[11px] text-dark-300 shrink-0">{relTime(f.ts)}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="card lg:col-span-2">
+          <h3 className="text-sm font-semibold text-dark-100 mb-2">Quick actions</h3>
+          <div className="flex flex-col">
+            {quick.map((a) => (
               <button
-                key={f.id}
-                onClick={() => navigate(f.path)}
-                className="flex items-center gap-3 rounded-xl p-2.5 text-left hover:bg-dark-600/50 transition-colors"
+                key={a.label}
+                onClick={() => navigate(a.path)}
+                className="group flex items-center gap-3 rounded-xl px-2 py-2.5 text-left hover:bg-dark-600/50 transition-colors"
               >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${f.chip}`}>
-                  <f.icon className="w-4 h-4" />
-                </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-dark-50 truncate">{f.title}</p>
-                  <p className="text-[11px] text-dark-300 truncate">{f.meta}</p>
+                  <p className="text-sm font-medium text-dark-50">{a.label}</p>
+                  <p className="text-[11px] text-dark-300">{a.desc}</p>
                 </div>
-                <span className="text-[11px] text-dark-300 shrink-0">{relTime(f.ts)}</span>
+                <ArrowUpRight className="w-4 h-4 text-dark-300 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
               </button>
             ))}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Trends */}

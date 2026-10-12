@@ -24,6 +24,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import PageHero from '../components/PageHero';
 import type { PlantAnalysisResponse, HealthStatus } from '@/types';
 import { analyzePlant, fetchPlantStatus } from '@/lib/api';
 import { store, type PlantHistoryItem } from '@/lib/store';
@@ -290,25 +291,18 @@ export default function PlantSensePage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto w-full min-w-0 overflow-x-hidden space-y-6 relative">
-      <div className="flex items-start justify-between gap-4 flex-wrap min-w-0">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-dark-50 flex items-center gap-2.5">
-            <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shrink-0 shadow">
-              <Leaf className="w-5 h-5 text-white" />
-            </div>
-            PlantSense
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold tracking-widest uppercase">New</span>
-          </h1>
-          <p className="text-sm text-dark-200 mt-1.5 max-w-2xl">
-            Photograph any plant, leaf or crop. AI diagnoses health, deficiencies and diseases (fungus/bacteria/virus/pest) — with care plan and fertilizer/manure suggestions. Every check is saved.
-          </p>
-        </div>
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium shrink-0 ${aiStatus?.ai_configured ? 'bg-success/10 border-success/30 text-success' : aiStatus === null ? 'bg-error/10 border-error/30 text-error' : 'bg-warning/10 border-warning/30 text-warning'}`}>
-          <span className={`w-2 h-2 rounded-full ${aiStatus?.ai_configured ? 'bg-success' : aiStatus === null ? 'bg-error' : 'bg-warning animate-pulse'}`} />
-          {aiStatus?.ai_configured ? `${aiStatus.provider} · ${aiStatus.model}` : aiStatus === null ? 'Checking…' : 'API key not configured'}
-        </span>
-      </div>
+    <div className="max-w-6xl mx-auto w-full min-w-0 overflow-x-hidden space-y-6 relative">
+      <PageHero
+        eyebrow="AI Tools"
+        title={<span className="inline-flex items-center gap-3">PlantSense<span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold tracking-widest uppercase">New</span></span>}
+        desc="Photograph any plant, leaf or crop. AI diagnoses health, deficiencies and diseases (fungus/bacteria/virus/pest) — with care plan and fertilizer/manure suggestions. Every check is saved."
+        right={(
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium shrink-0 ${aiStatus?.ai_configured ? 'bg-success/10 border-success/30 text-success' : aiStatus === null ? 'bg-error/10 border-error/30 text-error' : 'bg-warning/10 border-warning/30 text-warning'}`}>
+            <span className={`w-2 h-2 rounded-full ${aiStatus?.ai_configured ? 'bg-success' : aiStatus === null ? 'bg-error' : 'bg-warning animate-pulse'}`} />
+            {aiStatus?.ai_configured ? `${aiStatus.provider} · ${aiStatus.model}` : aiStatus === null ? 'Checking…' : 'API key not configured'}
+          </span>
+        )}
+      />
 
       <div className="card-elevated p-5 space-y-5 min-w-0 max-w-full overflow-x-hidden">
         {cameraOn ? (

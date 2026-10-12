@@ -93,32 +93,35 @@ function useCurrentUser() {
   return user as any;
 }
 
-function Dock() {
+function LeftIsland() {
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 max-w-[calc(100vw-2rem)]">
-      <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-dark-700/85 backdrop-blur-xl px-2.5 py-2 shadow-2xl overflow-x-auto scroll-x-contained">
-        <img src={softwareLogo} alt="ELARA logo" title="ELARA" className="w-8 h-8 rounded-xl object-cover shrink-0 mr-1" />
-        {navSections.map((section, si) => (
-          <Fragment key={si}>
-            {si > 0 && <div className="w-px h-6 bg-dark-400/50 mx-1 shrink-0" />}
-            {section.items.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                title={item.label}
-                className={({ isActive }) =>
-                  `p-2.5 rounded-xl transition-all shrink-0 ${
-                    isActive
-                      ? 'bg-primary/20 text-primary scale-105 shadow-lg'
-                      : 'text-dark-300 hover:bg-dark-600 hover:text-dark-50'
-                  }`
-                }
-              >
-                <item.icon className="w-5 h-5" />
-              </NavLink>
-            ))}
-          </Fragment>
-        ))}
+    <div className="shrink-0 h-screen sticky top-0 z-20 hidden sm:block py-4 pl-4">
+      <div className="h-full w-[76px] rounded-3xl border border-white/10 bg-dark-700/80 backdrop-blur-xl shadow-2xl flex flex-col items-center py-4 overflow-y-auto">
+        <img src={softwareLogo} alt="ELARA logo" title="ELARA" className="w-9 h-9 rounded-2xl object-cover shrink-0" />
+        <nav className="flex-1 flex flex-col items-center justify-center gap-1 w-full px-2">
+          {navSections.map((section, si) => (
+            <Fragment key={si}>
+              {si > 0 && <div className="w-1 h-1 rounded-full bg-dark-400/70 my-1.5 shrink-0" />}
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  title={item.label}
+                  className={({ isActive }) =>
+                    `p-2.5 rounded-2xl transition-all shrink-0 ${
+                      isActive
+                        ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
+                        : 'text-dark-300 hover:bg-dark-600 hover:text-dark-50'
+                    }`
+                  }
+                >
+                  <item.icon className="w-5 h-5" />
+                </NavLink>
+              ))}
+            </Fragment>
+          ))}
+        </nav>
+        <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" title="All systems local" />
       </div>
     </div>
   );
@@ -212,13 +215,12 @@ function AppLayout() {
 
   return (
     <div className="flex h-screen overflow-hidden max-w-[100vw]">
+      <LeftIsland />
       <main className="flex-1 min-w-0 overflow-auto overflow-x-hidden max-w-full">
-        <header className="h-14 bg-dark-700/60 backdrop-blur-md flex items-center gap-3 px-4 sticky top-0 z-10 min-w-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.4)]">
-          <span className="text-sm font-bold tracking-widest text-dark-50 shrink-0">ELARA</span>
-          <span className="w-1 h-1 rounded-full bg-dark-400/70 shrink-0" />
-          <h2 className="text-sm font-semibold text-dark-100 truncate shrink-0">{headerTitle}</h2>
+        <div className="flex items-center gap-3 px-6 lg:px-10 pt-5">
+          <h2 className="font-display text-xl font-bold text-dark-50 truncate shrink-0">{headerTitle}</h2>
           <div className="flex-1 flex justify-center min-w-0">
-            <button onClick={() => setPaletteOpen(true)} className="hidden sm:flex items-center gap-2 w-full max-w-xs rounded-xl bg-dark-600/60 hover:bg-dark-600 px-3 py-1.5 text-xs text-dark-300 hover:text-dark-100 transition-colors">
+            <button onClick={() => setPaletteOpen(true)} className="flex items-center gap-2 w-full max-w-xs rounded-xl bg-dark-600/60 hover:bg-dark-600 px-3 py-1.5 text-xs text-dark-300 hover:text-dark-100 transition-colors">
               <Search className="w-3.5 h-3.5 shrink-0" />
               <span className="flex-1 text-left truncate">Jump to…</span>
               <kbd className="shrink-0 text-[10px] font-mono rounded-md bg-dark-700 px-1.5 py-0.5 border border-dark-500">Ctrl K</kbd>
@@ -253,8 +255,8 @@ function AppLayout() {
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-        </header>
-        <div className="p-6 pb-28 min-w-0 max-w-full overflow-x-hidden page-wrap">
+        </div>
+        <div className="px-6 lg:px-10 pt-4 pb-10 min-w-0 max-w-full overflow-x-hidden page-wrap">
           <div key={location.pathname} className="animate-pageIn min-w-0 max-w-full overflow-x-hidden">
             <Routes>
               <Route path="/" element={<DashboardPage />} />
@@ -271,7 +273,6 @@ function AppLayout() {
         </div>
       </main>
 
-      <Dock />
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} items={paletteItems} />
 
       {/* Bottom-right analysis toasts */}
