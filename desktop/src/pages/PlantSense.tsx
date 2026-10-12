@@ -294,7 +294,7 @@ export default function PlantSensePage() {
     <div className="max-w-6xl mx-auto w-full min-w-0 overflow-x-hidden space-y-6 relative">
       <PageHero
         eyebrow="AI Tools"
-        title={<span className="inline-flex items-center gap-3">PlantSense<span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold tracking-widest uppercase">New</span></span>}
+        title={<span className="inline-flex items-center gap-3">PlantSense<span className="px-2 py-0.5 rounded-full bg-primary/15 border border-primary/30 text-primary text-[10px] font-bold tracking-widest uppercase">New</span></span>}
         desc="Photograph any plant, leaf or crop. AI diagnoses health, deficiencies and diseases (fungus/bacteria/virus/pest) — with care plan and fertilizer/manure suggestions. Every check is saved."
         right={(
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium shrink-0 ${aiStatus?.ai_configured ? 'bg-success/10 border-success/30 text-success' : aiStatus === null ? 'bg-error/10 border-error/30 text-error' : 'bg-warning/10 border-warning/30 text-warning'}`}>
@@ -338,9 +338,9 @@ export default function PlantSensePage() {
               onDragLeave={() => setDragOver(false)}
               onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${dragOver ? 'border-emerald-500 bg-emerald-500/5' : 'border-dark-400 hover:border-emerald-500/50 hover:bg-dark-600/40'}`}
+              className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${dragOver ? 'border-primary bg-primary/5' : 'border-dark-400 hover:border-primary/50 hover:bg-dark-600/40'}`}
             >
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-500/15 flex items-center justify-center mb-3"><Upload className="w-7 h-7 text-emerald-600" /></div>
+              <div className="w-14 h-14 mx-auto rounded-2xl bg-primary/15 flex items-center justify-center mb-3"><Upload className="w-7 h-7 text-primary" /></div>
               <p className="font-semibold text-dark-50">Drop a plant photo here, or click to browse</p>
               <p className="text-xs text-dark-300 mt-1">Leaf / whole plant · JPG or PNG · up to 10 MB</p>
             </div>
@@ -387,9 +387,9 @@ export default function PlantSensePage() {
 
         {analyzing && (
           <div className="rounded-lg bg-dark-700 border border-dark-500 p-3.5">
-            <p className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2 font-medium"><Loader2 className="w-4 h-4 animate-spin" /> {ANALYSIS_STAGES[stageIdx]}</p>
+            <p className="text-sm text-primary dark:text-primary flex items-center gap-2 font-medium"><Loader2 className="w-4 h-4 animate-spin" /> {ANALYSIS_STAGES[stageIdx]}</p>
             <div className="mt-3 h-1.5 bg-dark-600 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: `${((stageIdx + 1) / ANALYSIS_STAGES.length) * 88}%` }} />
+              <div className="h-full bg-primary rounded-full transition-all duration-1000" style={{ width: `${((stageIdx + 1) / ANALYSIS_STAGES.length) * 88}%` }} />
             </div>
             <p className="text-[11px] text-dark-300 mt-2">Plant diagnosis takes 10–40s. You can browse other pages — results appear when you return.</p>
           </div>
@@ -416,7 +416,7 @@ export default function PlantSensePage() {
           <div className="w-full max-w-[400px] rounded-2xl border border-transparent bg-dark-700/80 backdrop-blur shadow-xl overflow-hidden min-w-0">
             <button onClick={() => setHistoryExpanded((v) => !v)} className="w-full flex items-center justify-between px-3 py-2 text-dark-100 hover:bg-dark-600 transition-colors">
               <span className="text-xs font-semibold flex items-center gap-1.5">
-                <History className="w-3.5 h-3.5 text-emerald-500" /> Recent plant checks
+                <History className="w-3.5 h-3.5 text-primary" /> Recent plant checks
                 <span className="text-dark-300 font-normal">· {history.length}</span>
                 {!historyExpanded && history[0] && (
                   <span className={`hidden sm:inline-flex items-center gap-1 ml-2 text-[11px] font-normal capitalize ${HEALTH_TEXT[history[0].healthStatus]}`}>
@@ -431,7 +431,7 @@ export default function PlantSensePage() {
               <div>
                 <div className="flex gap-2 p-2 scroll-x-contained border-t border-dark-500">
                   {history.map((h) => (
-                    <div key={h.id} onClick={() => openHistoryItem(h)} className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-emerald-500/10 border-emerald-500/40' : 'bg-dark-800 border-transparent hover:border-emerald-500/30'}`}>
+                    <div key={h.id} onClick={() => openHistoryItem(h)} className={`relative group shrink-0 w-[112px] rounded-lg border p-1 cursor-pointer transition-all ${activeHistoryId === h.id ? 'bg-primary/10 border-primary/40' : 'bg-dark-800 border-transparent hover:border-primary/30'}`}>
                       <div className="relative">
                         <img src={h.thumb} alt="" className="w-full h-[62px] object-cover rounded-md bg-black" />
                         <button onClick={(e) => { e.stopPropagation(); deleteHistoryItem(h.id); }} className="absolute -top-1 -right-1 p-1 rounded-full bg-black/70 text-white/80 hover:text-error opacity-0 group-hover:opacity-100 transition-all shadow"><Trash2 className="w-3 h-3" /></button>
@@ -534,7 +534,7 @@ function PlantResults({ result, onReset }: { result: PlantAnalysisResponse; onRe
           <ol className="space-y-3">
             {result.care_plan.map((s, i) => (
               <li key={i} className="flex gap-3">
-                <span className="w-7 h-7 rounded-full bg-emerald-500/15 text-emerald-600 text-sm font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                <span className="w-7 h-7 rounded-full bg-primary/15 text-primary text-sm font-bold flex items-center justify-center shrink-0">{i + 1}</span>
                 <div><p className="text-sm font-semibold text-dark-50">{s.title}</p><p className="text-sm text-dark-200 mt-0.5 leading-relaxed">{s.detail}</p></div>
               </li>
             ))}

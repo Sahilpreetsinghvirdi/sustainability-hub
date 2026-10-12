@@ -36,41 +36,41 @@ export default function LoginPage({ onDone }: { onDone: () => void }) {
   return (
     <div className="min-h-screen flex bg-dark-800">
       {/* Brand panel */}
-      <div className="hidden lg:flex w-[46%] relative overflow-hidden flex-col justify-between p-10 bg-gradient-to-br from-emerald-950 via-[#0B1510] to-dark-800">
+      <div className="hidden lg:flex w-[46%] relative overflow-hidden flex-col justify-between p-10 bg-gradient-to-br from-zinc-950 via-[#0B0B0D] to-dark-800">
         <div
           className="pointer-events-none absolute inset-0 opacity-60"
-          style={{ backgroundImage: 'radial-gradient(600px 320px at 20% 10%, rgba(16,185,129,0.22), transparent 70%), radial-gradient(500px 300px at 85% 90%, rgba(52,211,153,0.12), transparent 70%)' }}
+          style={{ backgroundImage: 'radial-gradient(600px 320px at 20% 10%, rgba(255,255,255,0.10), transparent 70%), radial-gradient(500px 300px at 85% 90%, rgba(255,255,255,0.05), transparent 70%)' }}
         />
         <div className="relative flex items-center gap-3">
           <img src={softwareLogo} alt="ELARA logo" className="w-11 h-11 rounded-2xl object-cover shadow-lg" />
           <div>
             <p className="font-display text-xl font-bold tracking-wide text-white">ELARA</p>
-            <p className="text-[11px] text-emerald-200/80">Environmental Learning, Analysis and Resource Awareness</p>
+            <p className="text-[11px] text-zinc-400">Environmental Learning, Analysis and Resource Awareness</p>
           </div>
         </div>
         <div className="relative">
           <h1 className="font-display text-4xl xl:text-5xl font-bold text-white leading-tight">
             Know your waste.<br />
-            <span className="text-emerald-400">Change the planet.</span>
+            <span className="text-white">Change the planet.</span>
           </h1>
-          <p className="text-sm text-emerald-100/70 mt-4 max-w-md leading-relaxed">
+          <p className="text-sm text-zinc-400 mt-4 max-w-md leading-relaxed">
             Snap anything you throw away — ELARA identifies materials, flags toxins and tells you exactly where it should go.
           </p>
           <div className="space-y-3 mt-8">
             {HIGHLIGHTS.map((h) => (
               <div key={h.title} className="flex items-center gap-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm px-4 py-3 max-w-md">
-                <div className="w-9 h-9 rounded-xl bg-emerald-400/15 flex items-center justify-center shrink-0">
-                  <h.icon className="w-4 h-4 text-emerald-300" />
+                <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                  <h.icon className="w-4 h-4 text-white" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-white">{h.title}</p>
-                  <p className="text-xs text-emerald-100/60 truncate">{h.desc}</p>
+                  <p className="text-xs text-zinc-400 truncate">{h.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <p className="relative text-[11px] text-emerald-100/40">ELARA · v1.5.3 · keys stay on this device</p>
+        <p className="relative text-[11px] text-zinc-500">ELARA · v1.5.3 · keys stay on this device</p>
       </div>
 
       {/* Form side */}

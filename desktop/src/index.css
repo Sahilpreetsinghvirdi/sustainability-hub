@@ -10,38 +10,38 @@
    Values are space-separated RGB channels for Tailwind alpha.
    ============================================================ */
 :root {
-  --c50: 12 26 18;       /* headings — deep forest ink */
-  --c100: 32 48 38;      /* primary text */
-  --c200: 84 104 92;     /* secondary text */
-  --c300: 132 148 139;   /* muted text */
-  --c400: 190 203 195;   /* subtle border */
-  --c500: 214 224 217;   /* border */
-  --c600: 236 242 238;   /* chip / hover surface */
-  --c700: 250 252 250;   /* sidebar / header */
-  --c800: 244 247 245;   /* page background */
-  --c900: 232 238 234;   /* inset well */
+  --c50: 10 10 10;      /* headings */
+  --c100: 28 28 28;     /* primary text */
+  --c200: 68 68 68;     /* secondary text */
+  --c300: 107 107 107;  /* muted text */
+  --c400: 154 154 154;  /* subtle border */
+  --c500: 218 218 218;  /* border */
+  --c600: 245 245 244;  /* chip / hover surface */
+  --c700: 250 250 249;  /* sidebar / header */
+  --c800: 255 255 255;  /* page background */
+  --c900: 240 240 238;  /* inset well */
 
   /* dedicated surfaces so cards can lift off the page in dark mode */
-  --page: 244 247 245;
+  --page: 255 255 255;
   --surface: 255 255 255;
-  --well: 236 242 238;
+  --well: 245 245 244;
 
-  --p-default: 5 150 105;    /* emerald-600 — brand green, both modes */
-  --p-light: 16 185 129;
-  --p-dark: 4 120 87;
+  --p-default: 10 10 10;    /* royal black — brand, both modes */
+  --p-light: 38 38 38;
+  --p-dark: 0 0 0;
 
   --s-default: 63 63 70;
   --s-light: 82 82 91;
   --s-dark: 39 39 42;
 
-  --a-default: 4 120 87;
-  --a-light: 16 185 129;
+  --a-default: 24 24 27;
+  --a-light: 63 63 70;
 
   --success: 22 163 74;
   --warning: 217 119 6;
   --error: 220 38 38;
 
-  --focus-ring: rgba(5, 150, 105, 0.16);
+  --focus-ring: rgba(10, 10, 10, 0.08);
   color-scheme: light;
 }
 
@@ -56,7 +56,7 @@ html.dark {
   --c400: 62 62 74;
   --c500: 41 41 51;
 
-  /* fills & surfaces — simple black elevation ladder */
+  /* fills & surfaces — the elevation ladder */
   --c600: 33 33 42;     /* chips / hover fill — clearly raised */
   --c700: 17 17 23;     /* sidebar / header */
   --c800: 10 10 14;     /* page background — deepest */
@@ -66,9 +66,9 @@ html.dark {
   --surface: 20 20 27;  /* card — one full step above the page */
   --well: 13 13 18;
 
-  --p-default: 16 185 129;   /* emerald accent on black */
-  --p-light: 52 211 153;
-  --p-dark: 4 120 87;
+  --p-default: 242 242 246;   /* porcelain chip on black */
+  --p-light: 255 255 255;
+  --p-dark: 208 208 218;
 
   --s-default: 46 46 58;
   --s-light: 64 64 78;
@@ -77,11 +77,11 @@ html.dark {
   --a-default: 222 222 230;
   --a-light: 150 150 164;
 
-  --success: 34 197 94;
+  --success: 39 208 105;
   --warning: 250 166 26;
   --error: 250 110 110;
 
-  --focus-ring: rgba(16, 185, 129, 0.22);
+  --focus-ring: rgba(255, 255, 255, 0.14);
   color-scheme: dark;
 }
 
@@ -95,7 +95,10 @@ h1, h2, .font-display {
 }
 
 ::selection {
-  background: rgba(16, 185, 129, 0.28);
+  background: rgba(10, 10, 10, 0.14);
+}
+html.dark ::selection {
+  background: rgba(255, 255, 255, 0.24);
 }
 
 /* Slim tinted scrollbars everywhere */
@@ -183,8 +186,8 @@ html.dark .btn-primary {
   @apply rounded-2xl p-5 border border-transparent;
   background-color: rgb(var(--surface));
   box-shadow:
-    0 1px 2px rgba(10, 40, 28, 0.05),
-    0 12px 32px rgba(10, 40, 28, 0.09);
+    0 1px 2px rgba(16, 16, 20, 0.05),
+    0 12px 32px rgba(16, 16, 20, 0.08);
   transition: background-color 0.35s ease, box-shadow 0.35s ease, transform 0.2s ease;
 }
 html.dark .card {
@@ -196,8 +199,8 @@ html.dark .card {
 .card-elevated {
   @apply card;
   box-shadow:
-    0 2px 4px rgba(10, 40, 28, 0.05),
-    0 20px 48px rgba(10, 40, 28, 0.12);
+    0 2px 4px rgba(16, 16, 20, 0.05),
+    0 20px 48px rgba(16, 16, 20, 0.11);
 }
 html.dark .card-elevated {
   box-shadow:
