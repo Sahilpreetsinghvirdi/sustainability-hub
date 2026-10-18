@@ -17,12 +17,19 @@ import { loadLocalAISettings } from './api';
 // ---------------------------------------------------------------------------
 
 const GEMINI_FALLBACK: Record<string, string> = {
-  'gemini-2.0-flash': 'gemini-3.6-flash',
-  'gemini-2.5-flash': 'gemini-3.6-flash',
+  'gemini-2.0-flash': 'gemini-3.8-flash',
+  'gemini-2.5-flash': 'gemini-3.8-flash',
+  'gemini-3.6-flash': 'gemini-3.8-flash',
 };
 function geminiModel(raw: string): string {
-  return GEMINI_FALLBACK[raw.trim()] || raw || 'gemini-3.6-flash';
+  return GEMINI_FALLBACK[raw.trim()] || raw || 'gemini-3.8-flash';
 }
+
+// Models guaranteed to accept image input — used for every vision call
+// regardless of what the user picked in Settings (their choice may be text-only).
+const GEMINI_VISION_MODEL = 'gemini-3.8-flash';
+const OPENAI_VISION_MODEL = 'gpt-4o-mini';
+const OPENAI_VISION_FALLBACK = 'gpt-4o';
 export function configuredProviders(): { provider: 'gemini' | 'openai' | null; model: string } {
   const s = loadLocalAISettings();
   if (s.ai_provider === 'openai' && s.openai_api_key) return { provider: 'openai', model: s.openai_model };
@@ -77,7 +84,9 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
   }
 
   if (c.provider === 'gemini') {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:generateContent`;
+    // Always use a vision-capable model regardless of user's text-model choice
+    const model = GEMINI_VISION_MODEL;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
     const payload = {
       contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: mimeType, data: imageB64 } }] }],
       generationConfig: { response_mime_type: 'application/json', temperature: 0.2, maxOutputTokens: 8192 },
@@ -94,12 +103,32 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
     const data = await res.json();
     const parts = data?.candidates?.[0]?.content?.parts ?? [];
     const text = parts.map((p: { text?: string }) => p?.text ?? '').join('');
+
+    // If the model responded with a text refusal instead of JSON, retry once
+    if (/does not support image|cannot read.*image|unable to (?:view|process|analyze).*image/i.test(text)) {
+      const retryPayload = { ...payload };
+      const retryRes = await fetch(url, {
+        method: 'POST',
+        headers: { 'x-goog-api-key': loadLocalAISettings().gemini_api_key || '' },
+        body: JSON.stringify(retryPayload),
+      });
+      if (retryRes.ok) {
+        const retryData = await retryRes.json();
+        const retryParts = retryData?.candidates?.[0]?.content?.parts ?? [];
+        const retryText = retryParts.map((p: { text?: string }) => p?.text ?? '').join('');
+        if (!/does not support image|cannot read.*image/i.test(retryText)) {
+          return extractJson(retryText);
+        }
+      }
+      throw new Error('Model refused to analyze the image. Try a different image or check your AI model settings.');
+    }
     return extractJson(text);
   }
 
-  // openai
-  const payload = {
-    model: c.model,
+  // openai — always use a vision-capable model
+  let openaiModel = OPENAI_VISION_MODEL;
+  const makePayload = (model: string) => ({
+    model,
     messages: [{ role: 'user', content: [
       { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageB64}` } },
       { type: 'text', text: prompt },
@@ -107,17 +136,34 @@ async function callVision(prompt: string, imageB64: string, mimeType: string): P
     response_format: { type: 'json_object' },
     max_tokens: 8192,
     temperature: 0.2,
-  };
+  });
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${loadLocalAISettings().openai_api_key || ''}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(makePayload(openaiModel)),
   });
   if (!res.ok) {
     const detail = (await res.text().catch(() => '')).slice(0, 300);
+    // If model not found, retry with gpt-4o
+    if (res.status === 404 && /model.*not.*found/i.test(detail)) {
+      openaiModel = OPENAI_VISION_FALLBACK;
+      const retryRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${loadLocalAISettings().openai_api_key || ''}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(makePayload(openaiModel)),
+      });
+      if (retryRes.ok) {
+        const retryData = await retryRes.json();
+        const retryContent = retryData?.choices?.[0]?.message?.content;
+        if (typeof retryContent === 'string') return extractJson(retryContent);
+      }
+    }
     throw new Error(`OpenAI API error ${res.status}: ${detail}`);
   }
   const data = await res.json();
@@ -336,12 +382,13 @@ export async function analyzeWasteImage(file: File | Blob, question = '', _fileN
       recommendations: asList(raw.recommendations).slice(0, 10),
       environmental_impact: asStr(raw.environmental_impact),
       estimated_decomposition: raw.estimated_decomposition == null ? null : asStr(raw.estimated_decomposition),
-      analyzer_model: configuredProviders().model,
+      analyzer_model: GEMINI_VISION_MODEL,
       processing_time_ms: Math.round(performance.now() - started),
     };
   } catch (e) {
-    // If key present but model failed to normalize, still give a usable (honest) result
-    if (e instanceof Error && /No AI key|not configured/i.test(e.message)) throw e;
+    // Always surface real API / model errors — never silently return heuristics
+    // for errors the user should know about.
+    if (e instanceof Error && /No AI key|not configured|refused to analyze|API error/i.test(e.message)) throw e;
     return heuristicWaste();
   }
 }
@@ -440,11 +487,11 @@ export async function analyzeFertilizer(file: File | Blob, context: FertilizerCo
       alternatives: asList(raw.alternatives).slice(0, 10),
       environmental_notes: asStr(raw.environmental_notes),
       recommendations: asList(raw.recommendations).slice(0, 10),
-      analyzer_model: configuredProviders().model,
+      analyzer_model: GEMINI_VISION_MODEL,
       processing_time_ms: Math.round(performance.now() - started),
     };
   } catch (e) {
-    if (e instanceof Error && /No AI key|not configured/i.test(e.message)) throw e;
+    if (e instanceof Error && /No AI key|not configured|refused to analyze|API error/i.test(e.message)) throw e;
     return heuristicAgri(context.crop);
   }
 }
@@ -538,11 +585,11 @@ export async function analyzePlant(file: File | Blob, context: PlantContext = {}
       light_guidance: asStr(raw.light_guidance),
       environmental_notes: asStr(raw.environmental_notes),
       recommendations: asList(raw.recommendations).slice(0, 10),
-      analyzer_model: configuredProviders().model,
+      analyzer_model: GEMINI_VISION_MODEL,
       processing_time_ms: Math.round(performance.now() - started),
     };
   } catch (e) {
-    if (e instanceof Error && /No AI key|not configured/i.test(e.message)) throw e;
+    if (e instanceof Error && /No AI key|not configured|refused to analyze|API error/i.test(e.message)) throw e;
     return heuristicPlant();
   }
 }
