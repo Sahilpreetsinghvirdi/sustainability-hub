@@ -51,6 +51,7 @@ export default function SettingsPage() {
   const [updChecking, setUpdChecking] = useState(false);
   const [updChecked, setUpdChecked] = useState(false);
   const [updBusy, setUpdBusy] = useState(false);
+  const [updProgress, setUpdProgress] = useState<number | null>(null);
   const [lastCheck, setLastCheck] = useState<string | null>(() => getLastCheckISO());
 
   async function runUpdateCheck() {
@@ -662,14 +663,28 @@ export default function SettingsPage() {
                         onClick={async () => {
                           if (!upd.downloadUrl) { window.open(upd.url, '_blank', 'noreferrer'); return; }
                           setUpdBusy(true);
-                          try { await downloadUpdate(upd.downloadUrl); }
-                          finally { setTimeout(() => setUpdBusy(false), 2000); }
+                          setUpdProgress(0);
+                          try { await downloadUpdate(upd.downloadUrl, (p) => setUpdProgress(p.fraction)); }
+                          catch { /* error surfaced via banner or silent retry */ }
+                          finally { setTimeout(() => { setUpdBusy(false); setUpdProgress(null); }, 2000); }
                         }}
                         disabled={updBusy}
                         className="btn-primary inline-flex items-center gap-1.5 px-4 py-2 text-sm disabled:opacity-60"
                       >
-                        {updBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                        {updBusy ? 'Starting…' : 'Download update'}
+                        {updBusy && updProgress !== null ? (
+                          <>
+                            <svg viewBox="0 0 36 36" className="w-4 h-4 -rotate-90">
+                              <circle cx="18" cy="18" r="15" fill="none" strokeWidth="4" className="stroke-white/30" />
+                              <circle cx="18" cy="18" r="15" fill="none" strokeWidth="4" stroke="currentColor" className="text-white"
+                                strokeDasharray={2 * Math.PI * 15} strokeDashoffset={2 * Math.PI * 15 * (1 - updProgress)} strokeLinecap="round" />
+                            </svg>
+                            {Math.round(updProgress * 100)}%
+                          </>
+                        ) : updBusy ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Starting…</>
+                        ) : (
+                          <><Download className="w-4 h-4" /> Download update</>
+                        )}
                       </button>
                       <button
                         onClick={() => window.open(upd.url, '_blank', 'noreferrer')}

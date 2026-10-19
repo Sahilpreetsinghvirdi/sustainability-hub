@@ -1,6 +1,6 @@
 const OWNER = 'Sahilpreetsinghvirdi';
 const REPO = 'sustainability-hub';
-const CURRENT = '1.6.0';
+const CURRENT = '1.6.1';
 
 function cmp(a: string, b: string): number {
   const pa = a.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0);
@@ -28,7 +28,6 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
     const j = await res.json();
     const latest: string = j.tag_name || j.name || '';
     if (!latest) return null;
-    // Find Windows MSI asset for one-click download
     const assets: any[] = j.assets || [];
     const msi = assets.find((a: any) => a.name?.toLowerCase().endsWith('.msi')) || assets.find((a: any) => a.name?.toLowerCase().endsWith('.exe'));
     return {
@@ -42,21 +41,58 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
   }
 }
 
-export async function downloadUpdate(downloadUrl: string) {
-  // Works in both web and Tauri webview — triggers browser download
+export type DownloadProgress = { loaded: number; total: number; fraction: number };
+
+/**
+ * Downloads the MSI with real-time progress, then invokes the Tauri
+ * `install_update` command to save it to a temp file and launch msiexec.
+ * Falls back to a plain browser download when running outside Tauri.
+ */
+export async function downloadUpdate(
+  downloadUrl: string,
+  onProgress?: (p: DownloadProgress) => void,
+): Promise<void> {
+  const res = await fetch(downloadUrl, { redirect: 'follow' });
+  if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+
+  const total = parseInt(res.headers.get('content-length') || '0', 10);
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error('Streaming not supported in this environment.');
+
+  const chunks: Uint8Array[] = [];
+  let loaded = 0;
+
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.length;
+    onProgress?.({ loaded, total, fraction: total > 0 ? loaded / total : 0 });
+  }
+
+  const allBytes = new Uint8Array(loaded);
+  let offset = 0;
+  for (const chunk of chunks) {
+    allBytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  // Tauri installed app — hand bytes to Rust to write + launch msiexec
+  const tauri = (window as any).__TAURI__;
+  if (tauri?.core?.invoke) {
+    await tauri.core.invoke('install_update', { bytes: Array.from(allBytes) });
+    return;
+  }
+
+  // Browser fallback — trigger a file download
+  const blob = new Blob([allBytes], { type: 'application/x-msi' });
   const a = document.createElement('a');
-  a.href = downloadUrl;
-  a.download = '';
-  a.target = '_blank';
-  a.rel = 'noreferrer';
+  a.href = URL.createObjectURL(blob);
+  a.download = `ELARA-update.msi`;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  // Also try Tauri shell open as fallback for installed app
-  try {
-    const mod: any = await import('@tauri-apps/plugin-shell').catch(() => null);
-    if (mod?.open) await mod.open(downloadUrl);
-  } catch {}
+  URL.revokeObjectURL(a.href);
 }
 
 export const CURRENT_VERSION = CURRENT;

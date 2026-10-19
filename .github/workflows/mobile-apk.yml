@@ -9,7 +9,7 @@ on:
       version:
         description: "Version tag"
         required: true
-        default: "v1.6.0"
+        default: "v1.6.1"
 
 permissions:
   contents: write
