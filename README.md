@@ -15,6 +15,11 @@ give it for recycling/disposal.
 science congress needs daily proof of work — everything i do each day goes in the
 [logs/](./logs/) folder as `YYYY-MM-DD.md` and gets commited and pushed here.
 
+## Project Logbook
+
+Full project logbook PDF: [ELARA Project Logbook.pdf](./ELARA%20Project%20Logbook.pdf)
+(repo root — `ELARA Project Logbook.pdf`)
+
 ## Tech Stack
 
 | Layer | Technology |
